@@ -89,6 +89,7 @@ TEMPLATE_DIRS = (
 
 
 STATIC_URL = '/static/'
+LOGIN_URL = '/auth/sign-in'
 
 REST_FRAMEWORK = {
     # Use hyperlinked styles by default.

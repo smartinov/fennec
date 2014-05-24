@@ -18,10 +18,10 @@
     {{ state }}
     </p>
 
-    <form action="/auth/sign-in/" method="post">
+    <form action="/auth/sign-in/" method="post" autocomplete="off">
         {% csrf_token %}
-        {% if continueTo %}
-        <input type="hidden" name="continueTo" value="{{ continueTo }}"/>
+        {% if next %}
+        <input type="hidden" name="next" value="{{ next }}"/>
         {% endif %}
         <div class="input">
             <div class="blockinput">
