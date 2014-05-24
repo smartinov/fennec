@@ -9,5 +9,6 @@ from django.conf.urls import patterns, url, include
 urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^rest/',include('fennec.apps.rest.urls')),
+    url(r'^auth/',include('fennec.apps.auth.urls')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 )
