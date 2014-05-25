@@ -2,11 +2,16 @@ from django.db import models
 from django.conf import settings
 # Create your models here.
 
+
 class Project(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=64, help_text="name of the project")
     description = models.CharField(max_length=512, help_text="description of the project")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, help_text="project author")
+    is_deleted = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ('id',)
 
     @classmethod
     def create(name, description):
@@ -23,3 +28,11 @@ class Branch(models.Model):
     current_version = models.IntegerField(default=0)
     project_ref = models.ForeignKey('Project', help_text="project reference")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, help_text="branch author")
+
+
+class BranchRevision(models.Model):
+    id = models.AutoField(primary_key=True)
+    revision_number = models.IntegerField(default=0, help_text="ordinal number of revision")
+    previous_revision_ref = models.ForeignKey("BranchRevision", null=True,
+                                              help_text="references previous revision of the same branch")
+    branch_ref = models.ForeignKey('Branch', null=True, help_text="references owning branch")

@@ -38,6 +38,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'rest_framework',
     'fennec.apps.rest',
+    'south'
 )
 
 MIDDLEWARE_CLASSES = (
