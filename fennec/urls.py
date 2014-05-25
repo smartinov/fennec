@@ -9,6 +9,7 @@ from django.conf.urls import patterns, url, include
 
 urlpatterns = patterns('',
     url(r'^$', RedirectView.as_view(url="/app/dashboard")),
+    url(r'^docs/', include('rest_framework_swagger.urls')),
     url(r'^admin/',include(admin.site.urls)),
     url(r'^rest/',include('fennec.apps.rest.urls')),
     url(r'^auth/',include('fennec.apps.auth.urls')),
