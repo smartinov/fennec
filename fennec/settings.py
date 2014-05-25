@@ -38,6 +38,8 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'rest_framework',
     'fennec.apps.rest',
+    'fennec.apps.web',
+    'fennec.apps.auth',
     'south'
 )
 
@@ -82,7 +84,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
+TEMPLATE_DIRS = (
+    os.path.join(BASE_DIR,'templates'),
+)
+
+
 STATIC_URL = '/static/'
+LOGIN_URL = '/auth/sign-in'
 
 REST_FRAMEWORK = {
     # Use hyperlinked styles by default.

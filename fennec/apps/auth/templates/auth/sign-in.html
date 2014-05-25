@@ -1,0 +1,41 @@
+{% load staticfiles %}
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <title>Sign In</title>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+    <link href='http://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="http://sscol.jebal.comuv.com/css/font.css">
+    <link href="{% static 'auth/style/main.css' %}" rel='stylesheet' type='text/css'/>
+</head>
+<body>
+<h2>Welcome to Fennec!</h2>
+
+<div class="ribbon"></div>
+<div class="login">
+    <h1>Let's get you started!</h1>
+
+    <p {% if error %} class="status-error" {% endif %}>
+    {{ state }}
+    </p>
+
+    <form action="/auth/sign-in/" method="post" autocomplete="off">
+        {% csrf_token %}
+        {% if next %}
+        <input type="hidden" name="next" value="{{ next }}"/>
+        {% endif %}
+        <div class="input">
+            <div class="blockinput">
+                <i class="icon-user"></i><input type="text" name="username" placeholder="Username">
+            </div>
+            <div class="blockinput">
+                <i class="icon-unlock"></i><input type="password" name="password" placeholder="Password">
+            </div>
+        </div>
+        <button>Sign In</button>
+    </form>
+
+
+</div>
+
+</body>
+</html>
