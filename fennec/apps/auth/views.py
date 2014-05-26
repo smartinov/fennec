@@ -3,7 +3,15 @@ from django.shortcuts import render
 from django.shortcuts import render_to_response, redirect
 from django.contrib.auth import authenticate, login
 from django.template import RequestContext
+from django.contrib import auth
 
+def sign_out(request):
+    auth.logout(request)
+    next = "/auth/sign-in"
+    if request.GET and request.GET.get("next"):
+        next = request.GET.get("next")
+
+    return redirect(next)
 
 def sign_in(request):
     state = "Please sign in below..."
