@@ -18,9 +18,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
-    def pre_save(self, obj, created=False):
-        print 'sup'
-
 
 class BranchViewSet(viewsets.ModelViewSet):
     queryset = Branch.objects.all()

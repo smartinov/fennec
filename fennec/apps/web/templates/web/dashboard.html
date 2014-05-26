@@ -1,9 +1,30 @@
 <!DOCTYPE html>
-<html>
+{% load staticfiles %}
+<html ng-app>
 <head>
     <title>Dashboard</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script>
+    <script src="{% static 'web/javascript/dashboard/controllers.js' %}"></script>
 </head>
 <body>
 <h2>Welcome to your dashboard!</h2>
+
+<div class="projects">
+    <p>Tasks:</p>
+    {% verbatim %}
+    <div ng-controller="Projects" ng-init="load()">
+        <div ng-repeat="project in projects">
+            <section>
+                <ul>
+                    <li>Name: {{ project.name }}</li>
+                    <li>Desc: {{ project.description }}</li>
+                </ul>
+
+            </section>
+        </div>
+    </div>
+    {% endverbatim %}
+</div>
 </body>
 </html>
