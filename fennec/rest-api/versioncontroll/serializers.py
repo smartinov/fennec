@@ -19,10 +19,10 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
 class ProjectSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Project
-        fields = ('url', 'id', 'name', 'description', 'created_by', 'is_deleted')
+        fields = ('url', 'id', 'name', 'description','created_by')
 
 
 class BranchSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Branch
-        fields = ('url', 'id', 'name', 'description', 'project_ref', 'created_by')
+        fields = ('url', 'id', 'name', 'description', 'project_ref')

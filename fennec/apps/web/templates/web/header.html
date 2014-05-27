@@ -1,0 +1,5 @@
+<ul>
+    <li>Hello {{ request.user.username }}!</li>
+    <li>Notifications <i class="icon-info"></i></li>
+    <li><a href="{% url 'auth.sign-out' %}">Sign Out</a> </li>
+</ul>
