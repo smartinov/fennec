@@ -1,9 +1,8 @@
+from rest_framework import viewsets
 from django.contrib.auth.models import User, Group
 from models import Project, Branch
-from rest_framework import viewsets
-from serializers import UserSerializer, GroupSerializer, ProjectSerializer, BranchSerializer
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
+from serializers import ProjectSerializer, BranchSerializer, GroupSerializer, UserSerializer
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -26,12 +25,3 @@ class ProjectViewSet(viewsets.ModelViewSet):
 class BranchViewSet(viewsets.ModelViewSet):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
-
-
-class TestViewSet(viewsets.ModelViewSet):
-    queryset = Branch.objects.all()
-    serializer_class = BranchSerializer
-
-    @api_view(['GET'])
-    def hello_world(request):
-        return Response({"message":"hello"})

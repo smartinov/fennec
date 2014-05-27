@@ -38,9 +38,13 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_swagger',
-    'fennec.apps.rest',
+    'fennec.rest-api',
     'fennec.apps.web',
     'fennec.apps.auth',
+    'fennec.rest-api.dbsymbols',
+    'fennec.rest-api.versioncontroll',
+
+
     'south'
 )
 

@@ -1,6 +1,7 @@
-from django.contrib.auth.models import User, Group
-from models import Project, Branch
 from rest_framework import serializers
+from django.contrib.auth.models import User, Group
+
+from models import Project, Branch
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
