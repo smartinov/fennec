@@ -1,3 +1,5 @@
 .idea
 *.sqlite3
 *.pyc
+fennec/apps/rest/migrations
+.dat0134.022

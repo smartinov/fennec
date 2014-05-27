@@ -1,7 +1,7 @@
+from rest_framework import viewsets
 from django.contrib.auth.models import User, Group
 from models import Project, Branch
-from rest_framework import viewsets
-from serializers import UserSerializer, GroupSerializer, ProjectSerializer, BranchSerializer
+from serializers import ProjectSerializer, BranchSerializer, GroupSerializer, UserSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -17,9 +17,6 @@ class GroupViewSet(viewsets.ModelViewSet):
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-
-    def pre_save(self, obj, created=False):
-        print 'sup'
 
 
 class BranchViewSet(viewsets.ModelViewSet):

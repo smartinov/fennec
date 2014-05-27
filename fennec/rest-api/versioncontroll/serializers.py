@@ -1,6 +1,7 @@
-from django.contrib.auth.models import User, Group
-from models import Project, Branch
 from rest_framework import serializers
+from django.contrib.auth.models import User, Group
+
+from models import Project, Branch
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -18,10 +19,10 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
 class ProjectSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Project
-        fields = ('url', 'id', 'name', 'description', 'created_by')
+        fields = ('url', 'id', 'name', 'description','created_by')
 
 
 class BranchSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Branch
-        fields = ('url', 'id', 'name', 'description', 'project_ref', 'created_by')
+        fields = ('url', 'id', 'name', 'description', 'project_ref')
