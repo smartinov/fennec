@@ -6,4 +6,4 @@ from fennec.restapi.notifications.models import Notification
 class NotificationSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Notification
-        fields = ('id', 'recipient', 'source', 'content', 'created_on', 'seen_on')
+        fields = ('id', 'recipient', 'source', 'content', 'created_on','created_by', 'seen_on')

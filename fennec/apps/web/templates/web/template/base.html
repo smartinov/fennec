@@ -14,48 +14,14 @@
 
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css" rel="stylesheet">
-    <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
-    <link href="{% static "web/css/bubble.css" %}" rel="stylesheet">
-    <style type="text/css">
-        .navmenu ul {
-            height: 40px;
-            padding: 10px;
-            list-style-type: none;
-            list-style-image: none;
-        }
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="{% static "web/css/notifications.css" %}" rel="stylesheet">
+    <link href="{% static "web/css/menu.css" %}" rel="stylesheet">
+    <link href="{% static "web/css/main.css" %}" rel="stylesheet">
 
-        .navmenu li {
-            padding-lef: 15px;
-            padding-right: 15px;
-            float: left;
-            display: inline;
-        }
-    </style>
 </head>
 <body>
-{% block menu %}
-    <div class="navmenu">
-        <ul>
-            <li>Hello {{ request.user.username }}!</li>
-            <li>
-                {% verbatim %}
-                <div ng-controller="NotificationsPopover">
-                    <button
-                            data-placement="bottom"
-                            data-animation="am-flip-x"
-                            bs-popover="popover"
-                            data-content="{{popover.content}}"
-                            data-template="template/notifications.popover"
-                            class="icon-info">
-                        Notifications
-                    </button>
-                </div>
-                {% endverbatim %}
-            </li>
-            <li><a href="{% url 'auth.sign-out' %}">Sign Out</a></li>
-        </ul>
-    </div>
-{% endblock %}
+{% include "web/template/menu.html" %}
 <p>
 
 <div class="content">

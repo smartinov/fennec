@@ -1,11 +1,23 @@
 .notification {
+    display: block;
     border-bottom: solid;
     border-bottom-width: thin;
     position: relative;
     padding: 5px;
+    position: relative;
+
+}
+
+.notification-profile {
+    position: absolute;
+    left: 5px;
+    top: 15px;
 }
 
 .notification-text {
+    position: relative;
+    top: 0px;
+    left: 24px;
     padding: 5px;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 12px;
