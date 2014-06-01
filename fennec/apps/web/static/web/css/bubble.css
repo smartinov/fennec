@@ -1,0 +1,22 @@
+.notification {
+    border-bottom: solid;
+    border-bottom-width: thin;
+    position: relative;
+    padding: 5px;
+}
+
+.notification-text {
+    padding: 5px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+
+.notification-date {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    padding: 3px;
+    font-size: 10px;
+    color: gray;
+}

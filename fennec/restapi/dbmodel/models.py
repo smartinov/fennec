@@ -10,9 +10,9 @@ class Namespace(models.Model):
     name = models.CharField(max_length=45, help_text="namespace full name")
     description = models.TextField(default="", help_text="namespace description")
     parent_ref = models.ForeignKey('Namespace', help_text="parent namespace reference")
-    project_ref = models.ForeignKey('Project', help_text="project reference")
+    project_ref = models.ForeignKey('Project', help_text="dashboard reference")
 
-    # TODO Implement: namespace.abbreviation unique within project
+    # TODO Implement: namespace.abbreviation unique within dashboard
 
 
 class Table(models.Model):

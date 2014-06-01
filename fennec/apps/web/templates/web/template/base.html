@@ -1,0 +1,67 @@
+{# TODO: Move the navigation bar in an outside element not to clog-up the base HTML #}
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html ng-app="{% block ng-app %}{% endblock %}">
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script src="{% static "web/javascript/angular-strap/angular-strap.min.js" %}"></script>
+    <script src="{% static "web/javascript/angular-strap/angular-strap.tpl.min.js" %}"></script>
+    <script src="{% static "web/javascript/base/app.js" %}"></script>
+
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+    <link href="{% static "web/css/bubble.css" %}" rel="stylesheet">
+    <style type="text/css">
+        .navmenu ul {
+            height: 40px;
+            padding: 10px;
+            list-style-type: none;
+            list-style-image: none;
+        }
+
+        .navmenu li {
+            padding-lef: 15px;
+            padding-right: 15px;
+            float: left;
+            display: inline;
+        }
+    </style>
+</head>
+<body>
+{% block menu %}
+    <div class="navmenu">
+        <ul>
+            <li>Hello {{ request.user.username }}!</li>
+            <li>
+                {% verbatim %}
+                <div ng-controller="NotificationsPopover">
+                    <button
+                            data-placement="bottom"
+                            data-animation="am-flip-x"
+                            bs-popover="popover"
+                            data-content="{{popover.content}}"
+                            data-template="template/notifications.popover"
+                            class="icon-info">
+                        Notifications
+                    </button>
+                </div>
+                {% endverbatim %}
+            </li>
+            <li><a href="{% url 'auth.sign-out' %}">Sign Out</a></li>
+        </ul>
+    </div>
+{% endblock %}
+<p>
+
+<div class="content">
+    {% block content %}{% endblock %}
+</div>
+</p>
+{% block custom-javascript %}{% endblock %}
+</body>
+</html>

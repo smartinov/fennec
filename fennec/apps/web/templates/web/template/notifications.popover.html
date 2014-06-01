@@ -1,0 +1,23 @@
+{% verbatim %}
+<div class="popover">
+    <div class="arrow">
+
+    </div>
+    <h3 class="popover-title" ng-bind="title" ng-show="title">
+
+    </h3>
+
+    <div class="popover-content">
+        <section ng-repeat="item in content">
+            <div class="notification">
+
+                <div class="notification-text"> {{ item.content }}</div>
+                <div class="notification-date">{{ item.created_on | date:'yyyy-MM-dd HH:mm:ss'}}</div>
+
+            </div>
+        </section>
+
+    </div>
+
+</div>
+{% endverbatim %}
