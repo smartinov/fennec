@@ -1,0 +1,26 @@
+{% extends "web/template/base.html" %}
+{% load staticfiles %}
+{% block ng-app %}fennec.dashboard{% endblock %}
+{% block title %}Dashboard{% endblock %}
+{% block custom-javascript %}
+    <script src="{% static "web/javascript/dashboard/controllers.js" %}" ></script>
+{% endblock %}
+
+{% block content %}
+
+    <div class="projects">
+        <p>Projects:</p>
+        {% verbatim %}
+        <div ng-controller="ProjectsController" ng-init="load()">
+            <div ng-repeat="project in projects">
+                <section>
+                    <ul>
+                        <li>Name: {{ project.name }}</li>
+                        <li>Desc: {{ project.description }}</li>
+                    </ul>
+                </section>
+            </div>
+        </div>
+        {% endverbatim %}
+    </div>
+{% endblock %}

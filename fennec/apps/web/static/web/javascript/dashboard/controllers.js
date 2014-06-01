@@ -1,10 +1,12 @@
-var projectsRoot = '/rest/projects'
+var projectsRoot = '/api/projects'
+app = angular.module('fennec.dashboard',  ['mgcrea.ngStrap'])
 
-function ProjectsController($scope,$http) {
-  $scope.projects = [];
-  $scope.load = function(){
-    $http.get(projectsRoot).success(function(data, status) {
-        $scope.projects = data;
-    });
-  }
-}
+app.controller("ProjectsController", ['$scope', '$http',
+    function ($scope, $http) {
+        $scope.projects = [];
+        $scope.load = function () {
+            $http.get(projectsRoot).success(function (data, status) {
+                $scope.projects = data;
+            });
+        }
+    }]);

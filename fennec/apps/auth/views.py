@@ -21,6 +21,8 @@ def sign_in(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         next = request.POST.get('next')
+        if next is None:
+            next = '/'
 
         user = authenticate(username=username, password=password)
         if user is not None:
