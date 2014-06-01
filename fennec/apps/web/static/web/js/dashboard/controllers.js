@@ -1,5 +1,5 @@
 var projectsRoot = '/api/projects'
-app = angular.module('fennec.dashboard',  ['mgcrea.ngStrap'])
+app = angular.module('fennec.dashboard', ['mgcrea.ngStrap'])
 
 app.controller("ProjectsController", ['$scope', '$http',
     function ($scope, $http) {

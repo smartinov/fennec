@@ -13,4 +13,3 @@ class Notification(models.Model):
     content = models.CharField(blank=False, max_length=256, help_text="content text for the notification")
     created_on = models.DateTimeField(auto_now_add=True, help_text="date and time when the notification was created")
     seen_on = models.DateTimeField(help_text="date when the notification was seen", null=True)
-

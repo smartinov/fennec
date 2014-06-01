@@ -1,5 +1,5 @@
 {% verbatim %}
-<div class="popover">
+<div class="popover" style="width: 350px">
     <div class="arrow">
 
     </div>
@@ -7,13 +7,20 @@
 
     </h3>
 
-    <div class="popover-content">
+    <div class="popover-content" >
         <section ng-repeat="item in content">
             <div class="notification">
-                <div class="notification-profile"><i class="fa fa-user fa-2x"></i></div>
+                <div class="notification-profile">
+                    <a ng-click="remove($index)">
+                        <i class="fa fa-times fa-lb"></i>
+                    </a>
+                </div>
                 <div class="notification-text"> {{ item.content }}</div>
                 <div class="notification-date">{{ item.created_on | date:'yyyy-MM-dd HH:mm:ss'}}</div>
             </div>
+        </section>
+        <section ng-hide="content.length">
+            No new notifications...
         </section>
 
     </div>

@@ -1,4 +1,5 @@
 .content {
-    position: relative;
+    position: inherit;
     padding: 50px;
+    margin-top: 30px;
 }

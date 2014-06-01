@@ -7,26 +7,28 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-    <script src="{% static "web/javascript/angular-strap/angular-strap.min.js" %}"></script>
-    <script src="{% static "web/javascript/angular-strap/angular-strap.tpl.min.js" %}"></script>
-    <script src="{% static "web/javascript/base/app.js" %}"></script>
+    <script src="{% static "web/js/angular-strap/angular-strap.min.js" %}"></script>
+    <script src="{% static "web/js/angular-strap/angular-strap.tpl.min.js" %}"></script>
+    <script src="{% static "web/js/base/app.js" %}"></script>
+    <script src="{% static "web/js/plugins/popover-extra-placements.min.js" %}"></script>
 
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css" rel="stylesheet">
     <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="{% static "web/css/notifications.css" %}" rel="stylesheet">
-    <link href="{% static "web/css/menu.css" %}" rel="stylesheet">
+    <link href="{% static "web/css/navbar.css" %}" rel="stylesheet">
     <link href="{% static "web/css/main.css" %}" rel="stylesheet">
-
 </head>
 <body>
-{% include "web/template/menu.html" %}
-<p>
-
+{% include "web/template/navbar.html" %}
 <div class="content">
     {% block content %}{% endblock %}
 </div>
-</p>
 {% block custom-javascript %}{% endblock %}
+<script type="application/javascript">
+    app.config(['$httpProvider', function ($httpProvider) {
+        $httpProvider.defaults.headers.common['X-CSRFToken'] = '{{ csrf_token|escapejs }}';
+    }]);
+</script>
 </body>
 </html>
