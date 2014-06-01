@@ -44,7 +44,6 @@ INSTALLED_APPS = (
     'fennec.restapi.dbsymbols',
     'fennec.restapi.versioncontroll',
     'fennec.restapi.notifications',
-    'crispy_forms',
     'south'
 )
 
