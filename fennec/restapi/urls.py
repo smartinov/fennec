@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, url, include
 from rest_framework import routers
-from versioncontroll.views import GroupViewSet, UserViewSet, ProjectViewSet, BranchViewSet
+from versioncontroll.views import GroupViewSet, UserViewSet, ProjectViewSet, BranchViewSet, ChangeViewSet
 from dbmodel.views import NamespaceViewSet, TableViewSet, ColumnViewSet
 from dbsymbols.views import DiagramViewSet, LayerViewSet, TableSymbolViewSet, ColumnSymbolViewSet
 
@@ -11,6 +11,7 @@ router.register(r'groups', GroupViewSet)
 router.register(r'users', UserViewSet)
 router.register(r'projects', ProjectViewSet)
 router.register(r'branches', BranchViewSet)
+router.register(r'changes', ChangeViewSet)
 #dbmodel
 router.register(r'namespaces', NamespaceViewSet)
 router.register(r'tables', TableViewSet)
