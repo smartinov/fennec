@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from models import Diagram, Layer, TableSymbol, ColumnSymbol
+from fennec.restapi.dbmodel.models import Diagram, Layer, TableSymbol, ColumnSymbol
 
 
 class DiagramSerializer(serializers.HyperlinkedModelSerializer):

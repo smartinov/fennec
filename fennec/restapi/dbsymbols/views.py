@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 
-from models import Diagram, Layer, TableSymbol, ColumnSymbol
+from fennec.restapi.dbmodel.models import Diagram, Layer, TableSymbol, ColumnSymbol
 from serializers import DiagramSerializer, LayerSerializer, TableSymbolSerializer, ColumnSymbolSerializer
 
 
