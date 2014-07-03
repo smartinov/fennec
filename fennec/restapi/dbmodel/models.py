@@ -1,8 +1,6 @@
 from django.db import models
 from django.conf import settings
 
-# Create your models here.
-
 
 class Namespace(models.Model):
     id = models.AutoField(primary_key=True)
@@ -88,11 +86,10 @@ class ColumnSymbol(models.Model):
     sandbox_ref = models.ForeignKey('Sandbox', help_text="sandbox_ref")
 
 
-
 CHANGE_TYPE = (
     (0, 'ADD'),
-    (1, 'REMOVE'),
-    (2, 'MODIFY'),
+    (1, 'MODIFY'),
+    (2, 'REMOVE'),
 )
 
 
@@ -139,7 +136,7 @@ class Change(models.Model):
     change_type = models.IntegerField(choices=CHANGE_TYPE, help_text="defines type of a change")
     is_ui_change = models.BooleanField(default=False, help_text="specifies if change is UI change of db model change")
     made_by = models.ForeignKey(settings.AUTH_USER_MODEL, help_text="change author")
-    change_set_ref = models.ForeignKey('ChangeSet', help_text="change set reference")
+    change_set_ref = models.ForeignKey('ChangeSet', null=True, help_text="change set reference")
 
 
     #def create_change(self, change):
