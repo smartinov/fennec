@@ -42,6 +42,7 @@ INSTALLED_APPS = (
     'fennec.restapi',
     'fennec.apps.web',
     'fennec.apps.auth',
+    'fennec.restapi.dbmodel',
     'fennec.restapi.dbsymbols',
     'fennec.restapi.versioncontroll',
     'fennec.restapi.notifications',

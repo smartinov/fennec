@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
 
-from models import Project, Branch
+from fennec.restapi.dbmodel.models import Project, Branch, ChangeSet, Change
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -26,3 +26,15 @@ class BranchSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Branch
         fields = ('url', 'id', 'name', 'description', 'project_ref')
+
+
+class ChangeSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Change
+        fields = ('url', 'id', 'ordinal', 'command_text', 'object_type', 'object_ref', 'change_type', 'is_ui_change', 'made_by')
+
+
+class ChangeSerializerAlt(serializers.ModelSerializer):
+    class Meta:
+        model = Change
+        fields = ('object_type', 'object_ref', 'change_type', 'made_by')
