@@ -23,9 +23,13 @@ class ChangeAddin():
         change.is_ui_change = False
         change.object_ref = obj.id
         change.object_type = obj.__class__.__name__
+
+        branch_id = self.request.DATA['branch_id']
+        change.sandbox_ref = Sandbox.obtain_sandbox(user, branch_id)
+
         key = "{0}:{1}".format(change.object_type, change.object_ref)
         changes[key] = change
-        change.save()
+        #change.save()
         print 'total changes {0}'.format(len(changes))
 
     def post_delete(self, obj):

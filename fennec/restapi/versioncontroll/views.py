@@ -1,7 +1,9 @@
+import datetime
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action, link
 from django.contrib.auth.models import User, Group
+from fennec.restapi.dbmodel.addins import changes
 from fennec.restapi.dbmodel.models import Project, Branch, Change, Sandbox
 from serializers import ProjectSerializer, BranchSerializer, GroupSerializer, UserSerializer, ChangeSerializer
 
@@ -45,6 +47,26 @@ class ChangeViewSet(viewsets.ModelViewSet):
     @action(methods=['post'])
     def post_some(self):
         return Response({'test': "test"})
+
+
+    @action(methods=['post'])
+    def persist_changes(self):
+        user = self.request.user
+        branch_id = self.request.DATA['branch_id']
+        sandbox = Sandbox.obtain_sandbox(user, branch_id)
+        changes.len()
+        #cset = ChangeSet()
+        #cset.comment = self.request.DATA['comment']
+        #cset.submitted_by = user
+        #cset.submitted_on = datetime.datetime.now()
+        ##cset.branch_revision_ref =
+        #cset.save()
+        #
+        #for change in changes:
+        #    change.change_set_ref = cset
+        #    change.ordinal = changes.index(change)
+        #    change.save()
+
 
 class TestViewSet(viewsets.ViewSet):
 
