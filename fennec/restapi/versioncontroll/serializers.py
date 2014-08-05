@@ -23,6 +23,7 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class BranchSerializer(serializers.HyperlinkedModelSerializer):
+
     class Meta:
         model = Branch
         fields = ('url', 'id', 'name', 'description', 'project_ref')

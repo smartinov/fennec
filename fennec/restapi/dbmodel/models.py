@@ -126,7 +126,7 @@ class RelationshipSymbol(models.Model):
 class Project(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=64, help_text="name of the project")
-    description = models.CharField(max_length=512, help_text="description of the project")
+    description = models.CharField(max_length=512, null=True,  help_text="description of the project")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, help_text="project author")
     is_deleted = models.BooleanField(default=False)
 
@@ -139,7 +139,7 @@ class Branch(models.Model):
     current_version = models.IntegerField(default=0)
     project_ref = models.ForeignKey('Project', help_text="project reference")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, help_text="branch author")
-    parent_branch_revision = models.ForeignKey('BranchRevision', help_text="represents a branch revision that is "
+    parent_branch_revision = models.ForeignKey('BranchRevision', null=True, help_text="represents a branch revision that is "
                                                                            "a starting point of this branch.")
     is_deleted = models.SmallIntegerField(default=0, help_text="logical deletion")
 

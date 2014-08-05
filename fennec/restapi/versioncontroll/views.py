@@ -22,10 +22,32 @@ class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
+    #def post_save(self, obj, created=False):
+    #    if created:
+    #        branch = Branch()
+    #        branch.created_by = obj.created_by
+    #        branch.current_version = 0
+    #        branch.description = "main branch of the project"
+    #        branch.name = 'main'
+    #        branch.project_ref = obj
+    #        branch.type = 'main'
+    #        branch.save()
+
 
 class BranchViewSet(viewsets.ModelViewSet):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
+
+    #def list(self, request, projects_pk=None):
+    #    queryset = self.queryset.filter(project_ref=projects_pk)
+    #    serializer = BranchSerializer(queryset)
+    #    return Response(serializer.data)
+    #
+    #def retrieve(self, request, pk=None, projects_pk=None):
+    #    queryset = self.queryset.filter(id=pk, project_ref=projects_pk)
+    #    serializer = BranchSerializer(queryset)
+    #    return Response(serializer.data)
+
 
     @action()
     def commit(self, request, pk):
