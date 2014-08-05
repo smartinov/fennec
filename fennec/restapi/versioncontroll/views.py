@@ -1,5 +1,5 @@
 import datetime
-from rest_framework import viewsets
+from rest_framework import viewsets,  generics
 from rest_framework.response import Response
 from rest_framework.decorators import action, link
 from django.contrib.auth.models import User, Group
@@ -21,7 +21,7 @@ class GroupViewSet(viewsets.ModelViewSet):
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-
+    lookup_field = 'id'
     #def post_save(self, obj, created=False):
     #    if created:
     #        branch = Branch()
@@ -37,6 +37,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 class BranchViewSet(viewsets.ModelViewSet):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
+
 
     #def list(self, request, projects_pk=None):
     #    queryset = self.queryset.filter(project_ref=projects_pk)

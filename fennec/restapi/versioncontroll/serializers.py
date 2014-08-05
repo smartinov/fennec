@@ -16,17 +16,26 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('url', 'name')
 
 
-class ProjectSerializer(serializers.HyperlinkedModelSerializer):
+class ProjectSerializer(serializers.ModelSerializer):
+
     class Meta:
+        url = serializers.HyperlinkedIdentityField(view_name='project-detail', lookup_field='id')
         model = Project
-        fields = ('url', 'id', 'name', 'description','created_by')
+        fields = ('url', 'id', 'name', 'description', 'created_by')
 
 
-class BranchSerializer(serializers.HyperlinkedModelSerializer):
+class BranchSerializer(serializers.ModelSerializer):
+
+    #def restore_object(self, attrs, instance=None):
+    #    return Branch(**attrs)
 
     class Meta:
+
+        project_ref = serializers.HyperlinkedRelatedField(source='project_ref', view_name='project-detail', queryset=Project.objects.all(), lookup_field='id', slug_url_kwarg='id')
+
         model = Branch
         fields = ('url', 'id', 'name', 'description', 'project_ref')
+        #fields = ('url', 'id', 'name', 'description', 'project_ref')
 
 
 class ChangeSerializer(serializers.HyperlinkedModelSerializer):
