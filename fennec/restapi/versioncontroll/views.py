@@ -11,6 +11,7 @@ from serializers import ProjectSerializer, BranchSerializer, GroupSerializer, Us
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    lookup_field = 'id'
 
 
 class GroupViewSet(viewsets.ModelViewSet):
@@ -22,32 +23,32 @@ class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     lookup_field = 'id'
-    #def post_save(self, obj, created=False):
-    #    if created:
-    #        branch = Branch()
-    #        branch.created_by = obj.created_by
-    #        branch.current_version = 0
-    #        branch.description = "main branch of the project"
-    #        branch.name = 'main'
-    #        branch.project_ref = obj
-    #        branch.type = 'main'
-    #        branch.save()
+
+    def post_save(self, obj, created=False):
+        if created:
+            branch = Branch()
+            branch.created_by = obj.created_by
+            branch.current_version = 0
+            branch.description = "main branch of the project"
+            branch.name = 'main'
+            branch.project_ref = obj
+            branch.type = 'main'
+            branch.save()
 
 
 class BranchViewSet(viewsets.ModelViewSet):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
+    lookup_field = 'id'
 
 
-    #def list(self, request, projects_pk=None):
-    #    queryset = self.queryset.filter(project_ref=projects_pk)
-    #    serializer = BranchSerializer(queryset)
-    #    return Response(serializer.data)
-    #
-    #def retrieve(self, request, pk=None, projects_pk=None):
-    #    queryset = self.queryset.filter(id=pk, project_ref=projects_pk)
-    #    serializer = BranchSerializer(queryset)
-    #    return Response(serializer.data)
+
+    def list(self, request, id_id=None, *args, **kwargs):
+        #id_id <- w/e it works!
+        #print project_ref
+        queryset = self.queryset.filter(project_ref=id_id)
+        serializer = BranchSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 
     @action()

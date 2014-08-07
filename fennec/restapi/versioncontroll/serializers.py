@@ -5,6 +5,8 @@ from fennec.restapi.dbmodel.models import Project, Branch, Change
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='user-detail', lookup_field='id')
+
     class Meta:
         model = User
         fields = ('url', 'username', 'email', 'first_name', 'last_name', 'password', 'groups')
@@ -17,25 +19,24 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class ProjectSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='project-detail', lookup_field='id')
 
     class Meta:
-        url = serializers.HyperlinkedIdentityField(view_name='project-detail', lookup_field='id')
         model = Project
+        created_by = serializers.HyperlinkedRelatedField(source='created_by', view_name='user-detail', queryset=User.objects.all(), lookup_field='id', slug_url_kwarg='id')
         fields = ('url', 'id', 'name', 'description', 'created_by')
 
 
 class BranchSerializer(serializers.ModelSerializer):
-
-    #def restore_object(self, attrs, instance=None):
-    #    return Branch(**attrs)
+    url = serializers.HyperlinkedIdentityField(view_name='branch-detail', lookup_field='id')
 
     class Meta:
-
+        model = Branch
+        created_by = serializers.HyperlinkedRelatedField(source='created_by', view_name='user-detail', queryset=User.objects.all(), lookup_field='id', slug_url_kwarg='id')
         project_ref = serializers.HyperlinkedRelatedField(source='project_ref', view_name='project-detail', queryset=Project.objects.all(), lookup_field='id', slug_url_kwarg='id')
 
-        model = Branch
-        fields = ('url', 'id', 'name', 'description', 'project_ref')
-        #fields = ('url', 'id', 'name', 'description', 'project_ref')
+        fields = ('id', 'name', 'type', 'description', 'current_version', 'project_ref', 'created_by')
+        #fields = ('url', 'id', 'name', 'description', 'project_ref', 'created_by')
 
 
 class ChangeSerializer(serializers.HyperlinkedModelSerializer):
