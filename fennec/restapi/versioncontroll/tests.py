@@ -1,12 +1,16 @@
+import StringIO
+from uuid import uuid4
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
-from rest_framework.authtoken.models import Token
 from rest_framework import status
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
 from rest_framework.test import APITestCase, APIClient
-
-# Create your tests here.
-from fennec.restapi.dbmodel.models import Project, Branch
-from fennec.restapi.versioncontroll.views import ProjectViewSet
+from django.test import TestCase
+from fennec.restapi.dbmodel.models import Table, Namespace
+from fennec.restapi.dbmodel.serializers import NamespaceSerializer
+from fennec.restapi.versioncontroll.models import Project, Branch, BranchRevision, Sandbox, Change
+from fennec.restapi.versioncontroll import utils
+from fennec.restapi.versioncontroll.serializers import ChangeSerializer
 
 
 class ProjectTests(APITestCase):
@@ -91,4 +95,109 @@ class ProjectTests(APITestCase):
         self.assertEqual(p2_branches_response.data[0]['id'], branch_two.id)
         self.assertEqual(p2_branches_response.data[0]['project_ref'], project_two.id)
         self.assertEqual(p2_branches_response.data[1]['id'], branch_three.id)
-        self.assertEqual(p2_branches_response.data[2]['project_ref'], project_two.id)
+        self.assertEqual(p2_branches_response.data[1]['project_ref'], project_two.id)
+
+
+class UtilsTests(TestCase):
+    #def setUp(self):
+
+    def test_obtain_sandbox_create_new(self):
+        user = User(id=1)
+        user.save()
+        project = Project(id=1, created_by=user)
+        project.save()
+        branch = Branch(id=1, project_ref=project, created_by=user)
+        branch.save()
+        branch_revision_1 = BranchRevision(id=1, branch_ref=branch, revision_number=0)
+        branch_revision_1.save()
+        branch_revision_2 = BranchRevision(id=1, branch_ref=branch, revision_number=1)
+        branch_revision_2.save()
+        branch_revision_3 = BranchRevision(id=1, branch_ref=branch, revision_number=2)
+        branch_revision_3.save()
+
+        sandbox = utils.obtain_sandbox(user, branch.id)
+        self.assertEqual(sandbox.created_by, user)
+        self.assertEqual(sandbox.bound_to_branch_ref, branch)
+        self.assertEqual(sandbox.created_from_branch_revision_ref, branch_revision_3)
+        self.assertEqual(sandbox.status, 0)
+
+    def test_obtain_sandbox_create_new(self):
+        user = User(id=1)
+        user.save()
+        project = Project(id=1, created_by=user)
+        project.save()
+        branch = Branch(id=1, project_ref=project, created_by=user)
+        branch.save()
+        branch_revision_1 = BranchRevision(id=1, branch_ref=branch, revision_number=0)
+        branch_revision_1.save()
+        branch_revision_2 = BranchRevision(id=1, branch_ref=branch, revision_number=1)
+        branch_revision_2.save()
+        branch_revision_3 = BranchRevision(id=1, branch_ref=branch, revision_number=2)
+        branch_revision_3.save()
+
+        sandbox = utils.obtain_sandbox(user, branch.id)
+        self.assertEqual(sandbox.created_by, user)
+        self.assertEqual(sandbox.bound_to_branch_ref, branch)
+        self.assertEqual(sandbox.created_from_branch_revision_ref, branch_revision_3)
+        self.assertEqual(sandbox.status, 0)
+
+
+class SandboxAPITests(APITestCase):
+
+    def setUp(self):
+        user = User.objects.create_superuser(email="test@test.com", username='test', password='test')
+        self.client = APIClient()
+        self.client.force_authenticate(user=user)
+        all_accounts = self.client.get("/api/users/")
+        self.user_url = all_accounts.data[0]['url']
+
+
+    #def  test_post_change(self):
+    #    user = User(id=1)
+    #    user.save()
+    #    project = Project(id=1, created_by=user)
+    #    project.save()
+    #    branch_one = Branch(id=1, created_by=user, project_ref=project)
+    #    branch_one.save()
+    #    branch_rev = BranchRevision(id=1, branch_ref=branch_one, revision_number=0)
+    #    branch_rev.save()
+    #
+    #    sandbox = Sandbox(id=1)
+    #    sandbox.created_by = user
+    #    sandbox.bound_to_branch_ref = branch_one
+    #    sandbox.created_from_branch_revision_ref = branch_rev
+    #    sandbox.save()
+    #
+    #    branches_url = "/api/projects/{}/branches/".format(project.id)
+    #    branches_response = self.client.get(branches_url)
+    #    self.assertEqual(branches_response.status_code, status.HTTP_200_OK)
+    #    self.assertEqual(len(branches_response.data), 1)
+    #    self.assertEqual(branches_response.data[0]['id'], branch_one.id)
+    #    self.assertEqual(branches_response.data[0]['project_ref'], project.id)
+    #
+    #    sandbox_url = "/api/projects/{}/branches/{}/sandbox/{}/test".format(project.id, branch_one.id, sandbox.id)
+    #    print 'url:'+ sandbox_url
+    #    response = self.client.post(sandbox_url)
+    #    print response.status_code
+    #    print response.data
+
+    def test_serialization_util(self):
+        t = Table()
+
+        #JSONParser().parse(stream)
+
+
+        ns = Namespace()
+        ns.id = str(uuid4())
+        ns.comment = "test"
+        ns.abbreviation = "ASD"
+        ns.name = "TEST"
+
+        serializer = NamespaceSerializer(ns)
+        json = JSONRenderer().render(serializer.data)
+        c = Change()
+        c.change_type = 'Namespace'
+        c.content = json
+        object = utils.change_to_object(c)
+
+        print object

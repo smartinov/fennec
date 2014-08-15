@@ -1,10 +1,11 @@
-import datetime
-from rest_framework import viewsets,  generics
+from rest_framework import viewsets, status, authentication, permissions
 from rest_framework.response import Response
-from rest_framework.decorators import action, link
+from rest_framework.decorators import action, link, api_view
 from django.contrib.auth.models import User, Group
-from fennec.restapi.dbmodel.addins import changes
-from fennec.restapi.dbmodel.models import Project, Branch, Change, Sandbox
+from rest_framework.views import APIView
+from fennec.restapi.versioncontroll.addins import changes
+from fennec.restapi.versioncontroll.models import Project, Branch, Change, Sandbox, BranchRevision
+from fennec.restapi.versioncontroll.serializers import BranchRevisionSerializer
 from serializers import ProjectSerializer, BranchSerializer, GroupSerializer, UserSerializer, ChangeSerializer
 
 
@@ -43,13 +44,27 @@ class BranchViewSet(viewsets.ModelViewSet):
 
 
 
-    def list(self, request, id_id=None, *args, **kwargs):
+    def list(self, request, project_id_id=None, *args, **kwargs):
         #id_id <- w/e it works!
-        #print project_ref
-        queryset = self.queryset.filter(project_ref=id_id)
+        #print kwargs
+        queryset = self.queryset.filter(project_ref=project_id_id)
         serializer = BranchSerializer(queryset, many=True)
         return Response(serializer.data)
 
+
+    def create(self, request, project_id_id=None, *args, **kwargs):
+        serializer = self.get_serializer(data=request.DATA, files=request.FILES)
+
+        if serializer.is_valid():
+            serializer.object.project_ref = Project.objects.filter(id=project_id_id).first()
+            self.pre_save(serializer.object)
+            self.object = serializer.save(force_insert=True)
+            self.post_save(self.object, created=True)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED,
+                            headers=headers)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action()
     def commit(self, request, pk):
@@ -60,9 +75,23 @@ class BranchViewSet(viewsets.ModelViewSet):
         print rez
 
 
+class BranchRevisionVeiwSet(viewsets.ModelViewSet):
+    queryset = BranchRevision.objects.all()
+    serializer_class = BranchRevisionSerializer
+    lookup_field = 'id'
+
+    def list(self, request, branch_id_id=None, *args, **kwargs):
+        #id_id <- w/e it works!
+        #print kwargs
+        queryset = self.queryset.filter(branch_ref=branch_id_id)
+        serializer = BranchRevisionSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
 class ChangeViewSet(viewsets.ModelViewSet):
     queryset = Change.objects.all()
     serializer_class = ChangeSerializer
+
 
     @link()
     def get_all(self, request, pk=None):
@@ -90,6 +119,53 @@ class ChangeViewSet(viewsets.ModelViewSet):
         #    change.change_set_ref = cset
         #    change.ordinal = changes.index(change)
         #    change.save()
+
+changes = []
+
+class SandboxView(viewsets.ViewSet):
+    #model = Sandbox
+    authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes = (permissions.AllowAny,)
+
+    def list(self, request):
+        return Response({'test': "test"})
+
+
+    def retrieve(self, request, pk=None):
+        return Response({'test': "test"})
+
+    @action(methods=['GET'])
+    def test(self, request, pk=None, format=None):
+        print pk
+        return Response({'test': "test"})
+
+    @action(methods=['POST'])
+    def change(self, request, pk=None, format=None):
+        print request.DATA
+        serializer = ChangeSerializer(data=request.DATA)
+        print serializer.is_valid()
+        print serializer.object
+        print serializer.errors
+        if serializer.is_valid():
+            change = serializer.object
+
+        return Response({'test': "test"})
+
+
+    #
+    #@action(methods=['POST'])
+    #def test(self):
+    #    return Response({'test': "test"})
+
+    #def get(self, request, project_id, branch_id, *args, **kwargs):
+    #    #retrieve user
+    #    #retrieve branch
+    #    #retrieve sandbox based on that
+    #
+    #    sbstate = SandboxState()
+    #    state = sbstate.get_state()
+    #    response = Response(state, status=status.HTTP_200_OK)
+    #    return response
 
 
 class TestViewSet(viewsets.ViewSet):

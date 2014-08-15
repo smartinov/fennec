@@ -1,6 +1,6 @@
-from fennec.restapi.dbmodel.models import Sandbox
-from fennec.restapi.dbmodel.models import Change
-from serializers import serialize
+from fennec.restapi.versioncontroll.models import Sandbox, Change
+from fennec.restapi.versioncontroll.models import Change
+#from serializers import serialize
 
 __author__ = 'Darko'
 
@@ -19,7 +19,7 @@ class ChangeAddin():
         change = Change()
         change.made_by = user
         change.change_type = 0 if created else 1
-        change.command_text = serialize(obj)
+      #  change.command_text = serialize(obj)
         change.is_ui_change = False
         change.object_ref = obj.id
         change.object_type = obj.__class__.__name__
@@ -37,7 +37,7 @@ class ChangeAddin():
         change = Change()
         change.made_by = user
         change.change_type = 2
-        change.command_text = serialize(obj)
+    #    change.command_text = serialize(obj)
         change.is_ui_change = False
         change.object_type = obj.__class__.__name__
         change.object_ref = obj.id

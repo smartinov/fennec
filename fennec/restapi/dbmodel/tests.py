@@ -1,38 +1,46 @@
-from django.test import TestCase
+from StringIO import StringIO
+from uuid import uuid4
 from django.core import serializers
-
-# Create your tests here.
-from rest_framework.serializers import ModelSerializer
-from fennec.restapi.dbmodel.models import Table, Sandbox, Namespace
-from fennec.restapi.dbmodel.serializers import TableSerializerFK
-
-
-class ExampleTestCase(TestCase):
-    #def setUp(self):
-
-    def test_table_tojson(self):
-        s = Namespace()
-        s.id = 1
-
-        t = Table()
-        t.id = 1
-        t.name = "test"
-        t.prepare_database_save = "t"
-        t.namespace_ref = s
+from django.test import TestCase
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
+from fennec.restapi.dbmodel.models import Schema
+from fennec.restapi.dbmodel.serializers import SchemaSerializer
+from serializers import NamespaceSerializer
+from models import Namespace
 
 
-        #serializer = TableSerializerFK(t)
-        #print serializer.data
-        #ses = TableSerializerFK(data=serializer.data)
+class ModelTest(TestCase):
 
-        #print ses.is_valicd()
-        #print "{0} {1}".format(t1.id, t1.description)
-        #json = serializers.serialize('json', [t, ])
-        #
-        #print json
-        #
-        #t1 = Table(serializers.deserialize('json', json))
-        #print 'obj'
-        #print t1.id
-        #print t1.name
-        #print t1.sandbox_ref
+    def test_namespace_serializer(self):
+
+
+        ns = Namespace()
+        ns.id = str(uuid4())
+        ns.comment = "test"
+        ns.abbreviation = "ASD"
+        ns.name = "TEST"
+
+        serializer = NamespaceSerializer(ns)
+        json = JSONRenderer().render(serializer.data)
+        print json
+        self.assertEqual(ns.name, serializer.data['name'])
+        self.assertEqual(ns.abbreviation, serializer.data['abbreviation'])
+        self.assertEqual(ns.id, serializer.data['id'])
+
+
+
+        sh = Schema()
+        sh.id = str(uuid4())
+        sh.collation = "test collation"
+        sh.comment = "whatever"
+        sh.database_name = "testDB"
+        sh.namespaces.append(ns)
+
+        sh_serializer = SchemaSerializer(sh)
+        #print JSONRenderer().render(sh_serializer.data)
+
+        stream = StringIO(json)
+        s = NamespaceSerializer(data=JSONParser().parse(stream))
+        print s.object
+        print s.is_valid()
