@@ -17,7 +17,9 @@ class NamespaceSerializer(serializers.Serializer):
     id = serializers.CharField()
     abbreviation = serializers.CharField()
     name = serializers.CharField()
-    comment = serializers.CharField()
+    comment = serializers.CharField(required=False)
+
+    schemaRef = serializers.CharField(source='schema_ref')
 
     def restore_object(self, attrs, instance=None):
         if instance is not None:
@@ -26,34 +28,40 @@ class NamespaceSerializer(serializers.Serializer):
             instance.name = attrs.get('name', instance.name)
             instance.comment = attrs.get('comment', instance.comment)
             return instance
+        print "attrs:" + str(attrs)
         return Namespace(**attrs)
 
 
 class ColumnSerializer(serializers.Serializer):
     id = serializers.CharField()
     name = serializers.CharField()
-    comment = serializers.CharField()
+    comment = serializers.CharField(required=False)
     column_type_ref = serializers.CharField()
     length = serializers.IntegerField()
-    precision = serializers.FloatField()
-    default = serializers.CharField()
-    collation = serializers.CharField()
+    precision = serializers.FloatField(required=False)
+    default = serializers.CharField(required=False)
+    collation = serializers.CharField(required=False)
     ordinal = serializers.IntegerField()
-    is_primary_key = serializers.BooleanField()
-    is_nullable = serializers.BooleanField()
-    is_unique = serializers.BooleanField()
-    is_auto_increment = serializers.BooleanField()
+    primary = serializers.BooleanField(source='is_primary_key')
+    nullable = serializers.BooleanField(source='is_nullable')
+    unique = serializers.BooleanField(source='is_unique')
+    autoIncrement = serializers.BooleanField(source='is_auto_increment')
     dictionary = serializers.BooleanField()
+
+    tableRef = serializers.CharField(source='table_ref')
 
     def restore_object(self, attrs, instance=None):
         return Column(**attrs)
 
+
 class IndexSerializer(serializers.Serializer):
     id = serializers.CharField()
     name = serializers.CharField()
-    comment = serializers.CharField()
-    storage_type = serializers.CharField()
+    comment = serializers.CharField(required=False)
+    storageType = serializers.CharField(source='storage_type')
     columns = ColumnSerializer(required=False)
+
+    tableRef = serializers.CharField(source='tableRef')
 
     def restore_object(self, attrs, instance=None):
         return Index(**attrs)
@@ -62,32 +70,38 @@ class IndexSerializer(serializers.Serializer):
 class ForeignKeySerializer(serializers.Serializer):
     id = serializers.CharField()
     name = serializers.CharField()
-    comment = serializers.CharField()
-    on_update_referential_action = serializers.IntegerField()
-    on_delete_referential_action = serializers.IntegerField()
-    source_columns = ColumnSerializer(required=False)
-    referenced_columns = ColumnSerializer(required=False)
+    comment = serializers.CharField(required=False)
+    onUpdate = serializers.IntegerField(source='on_update_referential_action')
+    onDelete = serializers.IntegerField(source='on_delete_referential_action')
+    sourceColumns = ColumnSerializer(required=False, source='source_columns')
+    referencedColumns = ColumnSerializer(required=False, source='referenced_columns')
+
+    tableRef = serializers.CharField(source='tableRef')
 
     def restore_object(self, attrs, instance=None):
         return ForeignKey(**attrs)
 
+
 class TableSerializer(serializers.Serializer):
     id = serializers.CharField()
     name = serializers.CharField()
-    comment= serializers.CharField()
-    collation = serializers.CharField()
-    namespace_ref = serializers.CharField()
+    comment = serializers.CharField(required=False)
+    collation = serializers.CharField(required=False)
+    namespaceRef = serializers.CharField(source='namespace_ref', required=False)
     columns = ColumnSerializer(required=False)
     indexes = IndexSerializer(required=False)
-    foreign_keys = ForeignKeySerializer(required=False)
+    foreignKeys = ForeignKeySerializer(required=False, source='foreign_keys')
+
+    schemaRef = serializers.CharField(source='schema_ref')
 
     def restore_object(self, attrs, instance=None):
         return Table(**attrs)
 
+
 class SchemaSerializer(serializers.Serializer):
     id = serializers.CharField()
     database_name = serializers.CharField()
-    comment = serializers.CharField()
+    comment = serializers.CharField(required=False)
     collation = serializers.CharField()
 
     namespaces = NamespaceSerializer(required=False)
@@ -96,17 +110,21 @@ class SchemaSerializer(serializers.Serializer):
     def restore_object(self, attrs, instance=None):
         return Schema(**attrs)
 
+
 class LayerSerializer(serializers.Serializer):
     id = serializers.CharField()
-    name = serializers.CharField()
+    name = serializers.CharField(required=False)
     backgroundColor = serializers.CharField(source='background_color')
     positionX = serializers.FloatField(source='position_x')
     positionY = serializers.FloatField(source='position_y')
     width = serializers.FloatField()
     height = serializers.FloatField()
 
+    diagramRef = serializers.CharField(source='diagram_ref')
+
     def restore_object(self, attrs, instance=None):
         return Layer(**attrs)
+
 
 class TableElementSerializer(serializers.Serializer):
     id = serializers.CharField()
@@ -115,9 +133,11 @@ class TableElementSerializer(serializers.Serializer):
     positionY = serializers.FloatField(source='position_y')
     width = serializers.FloatField()
     height = serializers.FloatField()
-    is_collapsed = serializers.BooleanField()
+    collapsed = serializers.BooleanField(source='is_collapsed')
     tableRef = serializers.CharField(source='table_ref')
     layerRef = serializers.CharField(source='layer_ref')
+
+    diagramRef = serializers.CharField(source='diagram_ref')
 
     def restore_object(self, attrs, instance=None):
         return TableElement(**attrs)
@@ -131,15 +151,20 @@ class RelationshipElementSerializer(serializers.Serializer):
     endPositionX = serializers.FloatField(source='end_position_y')
     drawStyle = serializers.IntegerField(source='draw_style')
     foreignKeyRef = serializers.CharField(source='foreign_key_ref')
-    
+
+    diagramRef = serializers.CharField(source='diagram_ref')
+
     def restore_object(self, attrs, instance=None):
         return RelationshipElement(**attrs)
 
 class DiagramSerializer(serializers.Serializer):
     id = serializers.CharField()
     name = serializers.CharField()
-    comment = serializers.FloatField(source='position_x')
+    description = serializers.CharField(required=False)
     #url = serializers.FloatField(source='position_y')
+    layers = LayerSerializer(required=False)
+    tableElements = TableElementSerializer(required=False, source='table_elements')
+    relationshipElements = RelationshipElementSerializer(required=False, source='relationship_elements')
 
     def restore_object(self, attrs, instance=None):
         return Diagram(**attrs)

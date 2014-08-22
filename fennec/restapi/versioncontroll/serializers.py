@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
 
-from fennec.restapi.versioncontroll.models import Project, Branch, Change, BranchRevision
+from fennec.restapi.versioncontroll.models import Project, Branch, Change, BranchRevision, Sandbox
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -49,14 +49,20 @@ class BranchRevisionSerializer(serializers.ModelSerializer):
         fields = ('id', 'revision_number', 'previous_revision_ref', 'branch_ref')
 
 
+class SandboxSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Sandbox
+        fields = ('id',)
+
 class ChangeSerializer(serializers.ModelSerializer):
-    id = serializers.CharField()
+    id = serializers.CharField(required=False)
     content = serializers.CharField()
     objectType = serializers.CharField(source="object_type")
     objectCode = serializers.CharField(source="object_code")
     changeType = serializers.IntegerField(source="change_type")
     isUIChange = serializers.BooleanField(source="is_ui_change")
-    #madeBy = serializers.IntegerField(source="made_by")
+    madeBy = serializers.IntegerField(source="made_by")
 
     class Meta:
         model = Change

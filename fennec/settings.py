@@ -42,7 +42,6 @@ INSTALLED_APPS = (
     'fennec.apps.web',
     'fennec.apps.auth',
     'fennec.restapi.dbmodel',
-    'fennec.restapi.dbsymbols',
     'fennec.restapi.versioncontroll',
     'rest_framework.authtoken'
 )

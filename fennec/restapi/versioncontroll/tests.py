@@ -6,11 +6,121 @@ from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.test import APITestCase, APIClient
 from django.test import TestCase
-from fennec.restapi.dbmodel.models import Table, Namespace
-from fennec.restapi.dbmodel.serializers import NamespaceSerializer
-from fennec.restapi.versioncontroll.models import Project, Branch, BranchRevision, Sandbox, Change
+from fennec.restapi.dbmodel.models import Table, Namespace, Schema, Column, Diagram
+from fennec.restapi.dbmodel.serializers import NamespaceSerializer, SchemaSerializer, TableSerializer, ColumnSerializer, DiagramSerializer
+from fennec.restapi.versioncontroll.models import Project, Branch, BranchRevision, Sandbox, Change, SandboxChange, BranchRevisionChange
 from fennec.restapi.versioncontroll import utils
 from fennec.restapi.versioncontroll.serializers import ChangeSerializer
+from fennec.restapi.versioncontroll.utils import BranchRevisionState
+
+
+class DefaultAPITests(APITestCase):
+    def setUp(self):
+        user = User.objects.create_superuser(email="test@test.com", username='test', password='test')
+        self.client = APIClient()
+        self.client.force_authenticate(user=user)
+        all_accounts = self.client.get("/api/users/")
+        self.user_url = all_accounts.data[0]['url']
+
+
+class UtilsTest(DefaultAPITests):
+    def test_retrieval_of_branch_revision_state(self):
+        user = User.objects.get(email="test@test.com")
+        project = Project(id=1, created_by=user)
+        project.save()
+        branch = Branch(id=1, project_ref=project, created_by=user)
+        branch.save()
+        branch_revision_1 = BranchRevision(id=1, branch_ref=branch, revision_number=0)
+        branch_revision_1.save()
+        branch_revision_2 = BranchRevision(id=2, branch_ref=branch, revision_number=1)
+        branch_revision_2.save()
+        branch_revision_3 = BranchRevision(id=3, branch_ref=branch, revision_number=2)
+        branch_revision_3.save()
+
+        schema = Schema()
+        schema.id = str(uuid4())
+        schema.comment = "test"
+        schema.database_name = "test db"
+        schema.collation = "utf-8"
+        serializer = SchemaSerializer(schema)
+        json = JSONRenderer().render(serializer.data)
+        c = Change()
+        c.object_type = 'Schema'
+        c.content = json
+        c.change_type = 0
+        c.object_code = schema.id
+        c.is_ui_change = False
+        c.made_by = user
+        c.save()
+
+        branch_rev_change = BranchRevisionChange()
+        branch_rev_change.branch_revision_ref = branch_revision_1
+        branch_rev_change.change_ref = c
+        branch_rev_change.ordinal = 1
+        branch_rev_change.save()
+
+        table = Table(id=str(uuid4()), name="TestTable", collation="utf-8", schema_ref=schema.id)
+        table_serializer = TableSerializer(table)
+        table_json = JSONRenderer().render(table_serializer.data)
+
+        table_c = Change()
+        table_c.object_type = 'Table'
+        table_c.content = table_json
+        table_c.change_type = 0
+        table_c.object_code = table.id
+        table_c.is_ui_change = False
+        table_c.made_by = user
+        table_c.save()
+
+        table_branch_rev_change = BranchRevisionChange()
+        table_branch_rev_change.branch_revision_ref = branch_revision_2
+        table_branch_rev_change.change_ref = table_c
+        table_branch_rev_change.ordinal = 1
+        table_branch_rev_change.save()
+
+        column = Column(id=str(uuid4()), name="PK", column_type_ref="123", length=5, ordinal=1, is_primary_key=True,
+                        table_ref=table.id)
+        column_serializer = ColumnSerializer(column)
+        column_json = JSONRenderer().render(column_serializer.data)
+
+        column_c = Change(content=column_json, object_type='Column', change_type=0, object_code=column.id,
+                          is_ui_change=False,made_by=user)
+        column_c.save()
+
+        column_branch_rev_change = BranchRevisionChange(branch_revision_ref=branch_revision_3, change_ref=column_c, ordinal=1)
+        column_branch_rev_change.save()
+
+
+
+        branch_rev_state = BranchRevisionState(3)
+
+        schemas = branch_rev_state.build_state_metadata()
+        self.assertEqual(schemas[0].id, schema.id)
+        self.assertEqual(schemas[0].comment, schema.comment)
+        self.assertEqual(schemas[0].database_name, schema.database_name)
+        self.assertEqual(schemas[0].collation, schema.collation)
+        self.assertEqual(schemas[0].tables[0].id, table.id)
+        self.assertEqual(schemas[0].tables[0].schema_ref, table.schema_ref)
+        self.assertEqual(schemas[0].tables[0].collation, table.collation)
+        self.assertEqual(schemas[0].tables[0].name, table.name)
+        self.assertEqual(schemas[0].tables[0].columns[0].id, column.id)
+        self.assertEqual(schemas[0].tables[0].columns[0].name, column.name)
+        self.assertEqual(schemas[0].tables[0].columns[0].column_type_ref, column.column_type_ref)
+        self.assertEqual(schemas[0].tables[0].columns[0].length, column.length)
+        self.assertEqual(schemas[0].tables[0].columns[0].ordinal, column.ordinal)
+        self.assertEqual(schemas[0].tables[0].columns[0].table_ref, column.table_ref)
+
+        diagram = Diagram(id=str(uuid4()), name="MainDiagram", description="test diagram")
+        diagram_serializer = DiagramSerializer(diagram)
+        diagram_json = JSONRenderer().render(diagram_serializer.data)
+        diagram_c = Change(content=diagram_json, object_type='Diagram', change_type=0, object_code=table.id,
+                           is_ui_change=True, made_by=user)
+        diagram_c.save()
+        diagram_branch_rev_change = BranchRevisionChange(branch_revision_ref=branch_revision_3, change_ref=diagram_c, ordinal=1)
+        diagram_branch_rev_change.save()
+
+        #diagrams = branch_rev_state.build_state_metadata()
+        #print diagrams
 
 
 class ProjectTests(APITestCase):
@@ -99,8 +209,6 @@ class ProjectTests(APITestCase):
 
 
 class UtilsTests(TestCase):
-    #def setUp(self):
-
     def test_obtain_sandbox_create_new(self):
         user = User(id=1)
         user.save()
@@ -143,6 +251,7 @@ class UtilsTests(TestCase):
 
 
 class SandboxAPITests(APITestCase):
+    user_url = ""
 
     def setUp(self):
         user = User.objects.create_superuser(email="test@test.com", username='test', password='test')
@@ -152,34 +261,71 @@ class SandboxAPITests(APITestCase):
         self.user_url = all_accounts.data[0]['url']
 
 
-    #def  test_post_change(self):
-    #    user = User(id=1)
-    #    user.save()
-    #    project = Project(id=1, created_by=user)
-    #    project.save()
-    #    branch_one = Branch(id=1, created_by=user, project_ref=project)
-    #    branch_one.save()
-    #    branch_rev = BranchRevision(id=1, branch_ref=branch_one, revision_number=0)
-    #    branch_rev.save()
-    #
-    #    sandbox = Sandbox(id=1)
-    #    sandbox.created_by = user
-    #    sandbox.bound_to_branch_ref = branch_one
-    #    sandbox.created_from_branch_revision_ref = branch_rev
-    #    sandbox.save()
-    #
-    #    branches_url = "/api/projects/{}/branches/".format(project.id)
-    #    branches_response = self.client.get(branches_url)
-    #    self.assertEqual(branches_response.status_code, status.HTTP_200_OK)
-    #    self.assertEqual(len(branches_response.data), 1)
-    #    self.assertEqual(branches_response.data[0]['id'], branch_one.id)
-    #    self.assertEqual(branches_response.data[0]['project_ref'], project.id)
-    #
-    #    sandbox_url = "/api/projects/{}/branches/{}/sandbox/{}/test".format(project.id, branch_one.id, sandbox.id)
-    #    print 'url:'+ sandbox_url
-    #    response = self.client.post(sandbox_url)
-    #    print response.status_code
-    #    print response.data
+    def test_post_change(self):
+        """
+        Test posting of a change on sandbox controller.
+        Verify that change and assignment table entry have been created.
+        """
+        login_res = self.client.login(username="test", password="test")
+        self.assertTrue(login_res)
+
+        user = User.objects.filter(username="test").first()
+
+        project = Project(id=1, created_by=user)
+        project.save()
+        branch_one = Branch(id=1, created_by=user, project_ref=project)
+        branch_one.save()
+        branch_rev = BranchRevision(id=1, branch_ref=branch_one, revision_number=0)
+        branch_rev.save()
+
+        sandbox = Sandbox(id=1)
+        sandbox.created_by = user
+        sandbox.bound_to_branch_ref = branch_one
+        sandbox.created_from_branch_revision_ref = branch_rev
+        sandbox.save()
+
+        branches_url = "/api/projects/{}/branches/".format(project.id)
+        branches_response = self.client.get(branches_url)
+        self.assertEqual(branches_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(branches_response.data), 1)
+        self.assertEqual(branches_response.data[0]['id'], branch_one.id)
+        self.assertEqual(branches_response.data[0]['project_ref'], project.id)
+
+        change_creating_url = "/api/sandboxes/1/change/"
+
+        object_code = str(uuid4())
+        content = {
+            "id": 1,
+            "objectCode": object_code,
+            "name": "TestTable",
+            "comment": "oh"
+        }
+        json_content = JSONRenderer().render(content)
+        #print json_content
+        data = {
+            "content": json_content,
+            "objectType": "Table",
+            "objectCode": object_code,
+            "changeType": 1,
+            "isUIChange": True
+        }
+        change_creating_res = self.client.post(change_creating_url, data)
+        self.assertEqual(change_creating_res.status_code, 200)
+
+        saved_change = Change.objects.get(object_code=object_code)
+        self.assertEqual(json_content, saved_change.content)
+        self.assertEqual("Table", saved_change.object_type)
+        self.assertEqual(1, saved_change.change_type)
+        self.assertEqual(True, saved_change.is_ui_change)
+
+        saved_assignment_entry = SandboxChange.objects.filter(sandbox_ref=sandbox, change_ref=saved_change).first()
+        self.assertEqual(saved_change, saved_assignment_entry.change_ref)
+        self.assertEqual(sandbox, saved_assignment_entry.sandbox_ref)
+
+        #sandbox_url = "/api/sandboxes/1/"
+        #sandbox_res = self.client.get(sandbox_url)
+        #self.assertEqual(sandbox_res.status_code, 200)
+
 
     def test_serialization_util(self):
         t = Table()
@@ -192,12 +338,12 @@ class SandboxAPITests(APITestCase):
         ns.comment = "test"
         ns.abbreviation = "ASD"
         ns.name = "TEST"
+        ns.schema_ref = str(uuid4())
 
         serializer = NamespaceSerializer(ns)
         json = JSONRenderer().render(serializer.data)
         c = Change()
-        c.change_type = 'Namespace'
+        c.object_type = 'Namespace'
         c.content = json
         object = utils.change_to_object(c)
 
-        print object

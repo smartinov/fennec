@@ -23,11 +23,17 @@ class ModelTest(TestCase):
 
         serializer = NamespaceSerializer(ns)
         json = JSONRenderer().render(serializer.data)
-        print json
+        #print json
         self.assertEqual(ns.name, serializer.data['name'])
         self.assertEqual(ns.abbreviation, serializer.data['abbreviation'])
         self.assertEqual(ns.id, serializer.data['id'])
 
+        stream = StringIO(json)
+        s = NamespaceSerializer(data=JSONParser().parse(stream))
+        #print s.object
+        #print s.errors
+        #print s.is_valid()
+        #self.assertEqual(ns.__dict__, s.object.__dict__)
 
 
         sh = Schema()
@@ -38,9 +44,6 @@ class ModelTest(TestCase):
         sh.namespaces.append(ns)
 
         sh_serializer = SchemaSerializer(sh)
-        #print JSONRenderer().render(sh_serializer.data)
+        sh_json = JSONRenderer().render(sh_serializer.data)
+        self.assertEqual(sh.id, sh_serializer.data['id'])
 
-        stream = StringIO(json)
-        s = NamespaceSerializer(data=JSONParser().parse(stream))
-        print s.object
-        print s.is_valid()

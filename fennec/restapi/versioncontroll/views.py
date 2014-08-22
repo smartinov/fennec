@@ -2,10 +2,10 @@ from rest_framework import viewsets, status, authentication, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action, link, api_view
 from django.contrib.auth.models import User, Group
-from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
 from fennec.restapi.versioncontroll.addins import changes
-from fennec.restapi.versioncontroll.models import Project, Branch, Change, Sandbox, BranchRevision
-from fennec.restapi.versioncontroll.serializers import BranchRevisionSerializer
+from fennec.restapi.versioncontroll.models import Project, Branch, Change, Sandbox, BranchRevision, SandboxChange
+from fennec.restapi.versioncontroll.serializers import BranchRevisionSerializer, SandboxSerializer
 from serializers import ProjectSerializer, BranchSerializer, GroupSerializer, UserSerializer, ChangeSerializer
 
 
@@ -72,7 +72,7 @@ class BranchViewSet(viewsets.ModelViewSet):
         user = request.user
         sandbox = Sandbox.obtain_sandbox(user, branch.id)
         rez = sandbox.collect_changes()
-        print rez
+        #print rez
 
 
 class BranchRevisionVeiwSet(viewsets.ModelViewSet):
@@ -123,33 +123,45 @@ class ChangeViewSet(viewsets.ModelViewSet):
 changes = []
 
 class SandboxView(viewsets.ViewSet):
-    #model = Sandbox
-    authentication_classes = (authentication.TokenAuthentication,)
-    permission_classes = (permissions.AllowAny,)
+    model = Sandbox
+    #authentication_classes = (authentication.TokenAuthentication,)
+    #permission_classes = (permissions.AllowAny,)
 
     def list(self, request):
-        return Response({'test': "test"})
-
+        queryset = Sandbox.objects.all()
+        serializer = SandboxSerializer(queryset, many=True)
+        return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        return Response({'test': "test"})
+        queryset = Sandbox.objects.all()
+        user = get_object_or_404(queryset, pk=pk)
+        serializer = SandboxSerializer(user)
+        return Response(serializer.data)
 
     @action(methods=['GET'])
     def test(self, request, pk=None, format=None):
-        print pk
+        #print pk
         return Response({'test': "test"})
 
     @action(methods=['POST'])
     def change(self, request, pk=None, format=None):
-        print request.DATA
+        #print request.DATA
         serializer = ChangeSerializer(data=request.DATA)
-        print serializer.is_valid()
-        print serializer.object
-        print serializer.errors
+        #print serializer.is_valid()
+        #print serializer.object
+        #print serializer.errors
         if serializer.is_valid():
             change = serializer.object
-
-        return Response({'test': "test"})
+            change.made_by = request.user
+            change.save()
+            sandbox_change = SandboxChange()
+            sandbox_change.change_ref = change
+            sandbox_change.ordinal = SandboxChange.objects.filter(change_ref=change).count() + 1
+            sandbox_change.sandbox_ref = Sandbox.objects.get(id=pk)
+            sandbox_change.save()
+            changes.append(change)
+            return Response(status.HTTP_200_OK)
+        return Response("error occured", status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
     #
