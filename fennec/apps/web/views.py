@@ -9,3 +9,4 @@ def dashboard(request):
 @login_required
 def template_popup_notifications(request):
     return render_to_response('web/template/notifications.popover.html', RequestContext(request))
+

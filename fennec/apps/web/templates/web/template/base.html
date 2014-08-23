@@ -1,12 +1,13 @@
 {% load staticfiles %}
 
-<!DOCTYPE html>
 <html ng-app="{% block ng-app %}{% endblock %}">
 <head>
     <title>{% block title %}{% endblock %}</title>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.9/angular-animate.min.js"></script>
+
     <script src="{% static "web/js/angular-strap/angular-strap.min.js" %}"></script>
     <script src="{% static "web/js/angular-strap/angular-strap.tpl.min.js" %}"></script>
     <script src="{% static "web/js/base/app.js" %}"></script>
@@ -15,9 +16,11 @@
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css" rel="stylesheet">
     <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
-    <link href="{% static "web/css/notifications.css" %}" rel="stylesheet">
-    <link href="{% static "web/css/navbar.css" %}" rel="stylesheet">
-    <link href="{% static "web/css/main.css" %}" rel="stylesheet">
+    <link rel="stylesheet" href="//rawgithub.com/mgcrea/angular-motion/master/dist/angular-motion.min.css">
+
+    <link href="{% static 'web/css/notifications.css' %}" rel="stylesheet">
+    <link href="{% static 'web/css/navbar.css' %}" rel="stylesheet">
+    <link href="{% static 'web/css/main.css' %}" rel="stylesheet">
 </head>
 <body>
 {% include "web/template/navbar.html" %}
