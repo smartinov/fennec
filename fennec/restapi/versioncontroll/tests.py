@@ -90,8 +90,6 @@ class UtilsTest(DefaultAPITests):
         column_branch_rev_change = BranchRevisionChange(branch_revision_ref=branch_revision_3, change_ref=column_c, ordinal=1)
         column_branch_rev_change.save()
 
-
-
         branch_rev_state = BranchRevisionState(3)
 
         schemas = branch_rev_state.build_state_metadata()
@@ -110,6 +108,24 @@ class UtilsTest(DefaultAPITests):
         self.assertEqual(schemas[0].tables[0].columns[0].ordinal, column.ordinal)
         self.assertEqual(schemas[0].tables[0].columns[0].table_ref, column.table_ref)
 
+
+        table_remove_c = Change(content=table_json, object_type='Table', change_type=2, object_code=table.id, made_by=user, is_ui_change=False)
+        table_remove_c.save()
+
+        table_remove_branch_rev_change = BranchRevisionChange()
+        table_remove_branch_rev_change.branch_revision_ref = branch_revision_3
+        table_remove_branch_rev_change.change_ref = table_remove_c
+        table_remove_branch_rev_change.ordinal = 1
+        table_remove_branch_rev_change.save()
+        schemas = branch_rev_state.build_state_metadata()
+
+        self.assertEqual(schemas[0].id, schema.id)
+        self.assertEqual(schemas[0].comment, schema.comment)
+        self.assertEqual(schemas[0].database_name, schema.database_name)
+        self.assertEqual(schemas[0].collation, schema.collation)
+        self.assertEqual(schemas[0].tables, [])
+
+
         diagram = Diagram(id=str(uuid4()), name="MainDiagram", description="test diagram")
         diagram_serializer = DiagramSerializer(diagram)
         diagram_json = JSONRenderer().render(diagram_serializer.data)
@@ -119,8 +135,14 @@ class UtilsTest(DefaultAPITests):
         diagram_branch_rev_change = BranchRevisionChange(branch_revision_ref=branch_revision_3, change_ref=diagram_c, ordinal=1)
         diagram_branch_rev_change.save()
 
-        #diagrams = branch_rev_state.build_state_metadata()
-        #print diagrams
+
+        diagrams = branch_rev_state.build_state_symbols()
+        self.assertEqual(diagrams[0].id, diagram.id)
+        self.assertEqual(diagrams[0].name, diagram.name)
+        self.assertEqual(diagrams[0].description, diagram.description)
+        
+
+        diagrams = branch_rev_state.build_state_metadata()
 
 
 class ProjectTests(APITestCase):
@@ -259,6 +281,10 @@ class SandboxAPITests(APITestCase):
         self.client.force_authenticate(user=user)
         all_accounts = self.client.get("/api/users/")
         self.user_url = all_accounts.data[0]['url']
+
+
+    def test_build_sandbox_state(self):
+        pass
 
 
     def test_post_change(self):

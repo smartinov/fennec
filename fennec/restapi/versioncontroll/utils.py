@@ -59,95 +59,83 @@ class BranchRevisionState(object):
                 change = Change.objects.get(id=branch_rev_change.change_ref.id)
 
                 if change.is_ui_change:
-                    if change.change_type == "REMOVE":
+                    if change.change_type == 2:
                         del symbol_changes[change.object_code]
                     else:
                         symbol_changes[change.object_code] = change
                 else:
-                    if change.change_type == "REMOVE":
+                    if change.change_type == 2:
                         del model_changes[change.object_code]
                     else:
                         model_changes[change.object_code] = change
         return model_changes, symbol_changes
 
-
     def build_state_metadata(self):
         model_changes, symbol_changes = self.get_revision_cumulative_changes()
 
-        model_objects = []
-
-        for model_change in model_changes.values():
-            model_objects.append(change_to_object(model_change))
-
-        print model_objects
-        schemas = [x for x in model_objects if isinstance(x, Schema)]
-        namespaces = [x for x in model_objects if isinstance(x, Namespace)]
-        tables = [x for x in model_objects if isinstance(x, Table)]
-        columns = [x for x in model_objects if isinstance(x, Column)]
-        indexes = [x for x in model_objects if isinstance(x, Index)]
-        foreign_keys = [x for x in model_objects if isinstance(x, ForeignKey)]
-        for schema in schemas:
-            schema.namespaces = []
-            schema.tables = []
-
-            schema.namespaces = [x for x in namespaces if x.schema_ref == schema.id]
-
-            schema_tables = [x for x in tables if x.schema_ref == schema.id]
-
-            for sch_table in schema_tables:
-                sch_table.columns = [x for x in columns if x.table_ref == sch_table.id]
-                sch_table.indexes = [x for x in indexes if x.table_ref == sch_table.id]
-                sch_table.foreign_keys = [x for x in foreign_keys if x.table_ref == sch_table.id]
-                schema.tables.append(sch_table)
-        return schemas
+        schemas = []
+        return build_state_metadata(schemas, model_changes.values())
 
     def build_state_symbols(self):
         model_changes, symbol_changes = self.get_revision_cumulative_changes()
-
-        symbol_objects = []
-        for symbol_change in symbol_changes:
-            print symbol_change.content
-            symbol_objects.append(change_to_object(symbol_change))
-
-        diagrams = [x for x in symbol_objects if isinstance(x, Diagram)]
-        layers = [x for x in symbol_objects if isinstance(x, Layer)]
-        table_elements = [x for x in symbol_objects if isinstance(x, TableElement)]
-        relationship_element = [x for x in symbol_objects if isinstance(x, RelationshipElement)]
-
-        for diagram in diagrams:
-            diagram.layers = []
-            diagram.table_elements = []
-            diagram.relationship_elements = []
-
-            dia_layers = [x for x in layers if x.diagram_ref == diagram.id]
-            dia_tables = [x for x in table_elements if x.diagram_ref == diagram.id]
-            dia_relationships = [x for x in relationship_element if x.diagram_ref == diagram.id]
-            diagram.layers = dia_layers
-            diagram.table_elements = dia_tables
-            diagram.relationship_elements = dia_relationships
-        return diagrams
+        diagrams = []
+        return build_state_symbols(diagrams, symbol_changes.values())
 
 
-class SandboxState(object):
-    user = ''
-    branch_id = ''
+def build_state_metadata(schemas, new_changes):
+    """
+    schemas is array of Schema 's representing current state
+    new_changes are Change objects that need to be applied to current state
+    """
+    model_objects = []
 
-    def __init__(self, user, branch_id):
-        self.branch_id = branch_id
-        self.user = user
+    for model_change in new_changes:
+        model_objects.append(change_to_object(model_change))
 
-    def get_state(self):
-        sandbox = obtain_sandbox(self.user, self.branch_id)
+    schemas = [x for x in model_objects if isinstance(x, Schema)]
+    namespaces = [x for x in model_objects if isinstance(x, Namespace)]
+    tables = [x for x in model_objects if isinstance(x, Table)]
+    columns = [x for x in model_objects if isinstance(x, Column)]
+    indexes = [x for x in model_objects if isinstance(x, Index)]
+    foreign_keys = [x for x in model_objects if isinstance(x, ForeignKey)]
+    for schema in schemas:
+        schema.namespaces = []
+        schema.tables = []
 
-        sandbox_changes = SandboxChange.objects.filter(sandbox_ref=sandbox).order_by('ordinal')
+        schema.namespaces = [x for x in namespaces if x.schema_ref == schema.id]
 
-        pass
+        schema_tables = [x for x in tables if x.schema_ref == schema.id]
+
+        for sch_table in schema_tables:
+            sch_table.columns = [x for x in columns if x.table_ref == sch_table.id]
+            sch_table.indexes = [x for x in indexes if x.table_ref == sch_table.id]
+            sch_table.foreign_keys = [x for x in foreign_keys if x.table_ref == sch_table.id]
+            schema.tables.append(sch_table)
+    return schemas
 
 
-def changes_to_objects(changes):
-    objects = []
-    for change in changes:
-        print change
+def build_state_symbols(schemas, new_changes):
+    symbol_objects = []
+    for symbol_change in new_changes:
+        symbol_objects.append(change_to_object(symbol_change))
+
+    diagrams = [x for x in symbol_objects if isinstance(x, Diagram)]
+    layers = [x for x in symbol_objects if isinstance(x, Layer)]
+    table_elements = [x for x in symbol_objects if isinstance(x, TableElement)]
+    relationship_element = [x for x in symbol_objects if isinstance(x, RelationshipElement)]
+
+    for diagram in diagrams:
+        diagram.layers = []
+        diagram.table_elements = []
+        diagram.relationship_elements = []
+
+        dia_layers = [x for x in layers if x.diagram_ref == diagram.id]
+        dia_tables = [x for x in table_elements if x.diagram_ref == diagram.id]
+        dia_relationships = [x for x in relationship_element if x.diagram_ref == diagram.id]
+        diagram.layers = dia_layers
+        diagram.table_elements = dia_tables
+        diagram.relationship_elements = dia_relationships
+    return diagrams
 
 
 def obtain_sandbox(user, branch_id):
@@ -165,3 +153,55 @@ def obtain_sandbox(user, branch_id):
         sandbox.is_deleted = False
         sandbox.save()
     return sandbox
+
+
+class SandboxState(object):
+    user = ''
+    branch_id = ''
+
+    def __init__(self, user, branch_id):
+        self.branch_id = branch_id
+        self.user = user
+
+    def get_state(self):
+        sandbox = obtain_sandbox(self.user, self.branch_id)
+
+        sandbox_changes = SandboxChange.objects.filter(sandbox_ref=sandbox).order_by('ordinal')
+
+        pass
+
+    def build_sandbox_state_metadata(self):
+        last_branch_revision = BranchRevision.objects.filter(branch_ref=self.branch_id) \
+            .order_by(-'revision_number').first()
+
+
+        sandbox = obtain_sandbox(self.user, self.branch_id)
+        #if sanadbox. is behind top branch revision throw exception for now
+        if not sandbox.created_from_branch_revision_ref.id == last_branch_revision.id:
+            raise Exception("Invalid stuff")
+
+        branch_rev_state = BranchRevisionState(last_branch_revision.id)
+        schemas = branch_rev_state.build_state_metadata()
+
+        sandbox_changes = SandboxChange.objects.filter(sandbox_ref=sandbox)
+
+        schemas = build_state_metadata(schemas, sandbox_changes)
+        return schemas
+
+    def build_sandbox_state_symbols(self):
+        last_branch_revision = BranchRevision.objects.filter(branch_ref=self.branch_id) \
+            .order_by(-'revision_number').first()
+
+
+        sandbox = obtain_sandbox(self.user, self.branch_id)
+        #if sanadbox. is behind top branch revision throw exception for now
+        if not sandbox.created_from_branch_revision_ref.id == last_branch_revision.id:
+            raise Exception("Invalid stuff")
+
+        branch_rev_state = BranchRevisionState(last_branch_revision.id)
+        diagrams = branch_rev_state.build_state_symbols()
+
+        sandbox_changes = SandboxChange.objects.filter(sandbox_ref=sandbox)
+
+        diagrams = build_state_symbols(diagrams, sandbox_changes)
+        return diagrams
