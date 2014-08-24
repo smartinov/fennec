@@ -90,7 +90,7 @@ class UtilsTest(DefaultAPITests):
         column_branch_rev_change = BranchRevisionChange(branch_revision_ref=branch_revision_3, change_ref=column_c, ordinal=1)
         column_branch_rev_change.save()
 
-        branch_rev_state = BranchRevisionState(3)
+        branch_rev_state = BranchRevisionState(branch_revision_3)
 
         schemas = branch_rev_state.build_state_metadata()
         self.assertEqual(schemas[0].id, schema.id)
