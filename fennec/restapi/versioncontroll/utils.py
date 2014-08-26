@@ -84,6 +84,56 @@ class BranchRevisionState(object):
         diagrams = []
         return build_state_symbols(diagrams, symbol_changes.values())
 
+class SandboxState(object):
+    user = None
+    sandbox = None
+    model_changes = {}
+    symbol_changes = {}
+
+    def __init__(self, user, sandbox):
+        self.user = user
+        self.sandbox = sandbox
+
+    def populate_changes(self):
+        sandbox_changes = SandboxChange.objects.filter(sandbox_ref=self.sandbox)
+
+        for sandbox_change in sandbox_changes:
+            change = Change.objects.get(id=sandbox_change.change_ref.id)
+
+            if change.is_ui_change:
+                if change.change_type == 2:
+                    del self.symbol_changes[change.object_code]
+                else:
+                    self.symbol_changes[change.object_code] = change
+            else:
+                if change.change_type == 2:
+                    del self.model_changes[change.object_code]
+                else:
+                    self.model_changes[change.object_code] = change
+
+    def build_sandbox_state_metadata(self):
+        # last_branch_revision = BranchRevision.objects.filter(branch_ref=self.branch_id) \
+        # .order_by(-'revision_number').first()
+
+        branch_rev_state = BranchRevisionState(self.sandbox.created_from_branch_revision_ref)
+        schemas = branch_rev_state.build_state_metadata()
+        self.populate_changes()
+        schemas = build_state_metadata(schemas, self.model_changes.values())
+        return schemas
+
+    def build_sandbox_state_symbols(self):
+        # last_branch_revision = BranchRevision.objects.filter(branch_ref=self.branch_id) \
+        # .order_by(-'revision_number').first()
+
+        branch_rev_state = BranchRevisionState(self.sandbox.created_from_branch_revision_ref)
+        diagrams = branch_rev_state.build_state_symbols()
+        self.populate_changes()
+        diagrams = build_state_symbols(diagrams, self.symbol_changes.values())
+        return diagrams
+
+    def commit(self):
+        #todo implement this!
+        pass
 
 def build_state_metadata(schemas, new_changes):
     """
@@ -254,10 +304,9 @@ def build_state_symbols(diagrams, new_changes):
             diagram.description = change_obj.description
         else:  # remove diagram
             diagrams.remove(diagram)
-
     layer_changes = [x for x in new_changes if x.object_type == 'Layer']
     for layer_change in layer_changes:
-        change_obj = change_to_object(layer_changes)
+        change_obj = change_to_object(layer_change)
 
         diagram_parent = [x for x in diagrams if x.id == change_obj.diagram_ref]
         diagram_parent = diagram_parent[0] if diagram_parent else None
@@ -303,7 +352,7 @@ def build_state_symbols(diagrams, new_changes):
 
     rel_el_changes = [x for x in new_changes if x.object_type == 'RelationshipElement']
     for rel_el_change in rel_el_changes:
-        change_obj = change_to_object(table_el_change)
+        change_obj = change_to_object(rel_el_change)
 
         diagram_parent = [x for x in diagrams if x.id == change_obj.diagram_ref]
         diagram_parent = diagram_parent[0] if diagram_parent else None
@@ -342,34 +391,3 @@ def obtain_sandbox(user, branch_id):
     return sandbox
 
 
-class SandboxState(object):
-    user = None
-    sandbox = None
-
-    def __init__(self, user, sandbox):
-        self.user = user
-        self.sandbox = sandbox
-
-    def build_sandbox_state_metadata(self):
-        # last_branch_revision = BranchRevision.objects.filter(branch_ref=self.branch_id) \
-        # .order_by(-'revision_number').first()
-
-        branch_rev_state = BranchRevisionState(self.sandbox.created_from_branch_revision_ref)
-        schemas = branch_rev_state.build_state_metadata()
-
-        sandbox_changes = SandboxChange.objects.filter(sandbox_ref=self.sandbox)
-
-        schemas = build_state_metadata(schemas, sandbox_changes)
-        return schemas
-
-    def build_sandbox_state_symbols(self):
-        # last_branch_revision = BranchRevision.objects.filter(branch_ref=self.branch_id) \
-        # .order_by(-'revision_number').first()
-
-        branch_rev_state = BranchRevisionState(self.sandbox.created_from_branch_revision_ref)
-        diagrams = branch_rev_state.build_state_symbols()
-
-        sandbox_changes = SandboxChange.objects.filter(sandbox_ref=self.sandbox)
-
-        diagrams = build_state_symbols(diagrams, sandbox_changes)
-        return diagrams
