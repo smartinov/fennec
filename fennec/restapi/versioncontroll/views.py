@@ -37,6 +37,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             branch.save()
 
 
+
 class BranchViewSet(viewsets.ModelViewSet):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer

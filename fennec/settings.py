@@ -8,8 +8,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.6/ref/settings/
 """
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+# Build paths inside the dashboard like this: os.path.join(BASE_DIR, ...)
 import os
+
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
@@ -42,8 +43,10 @@ INSTALLED_APPS = (
     'fennec.apps.web',
     'fennec.apps.auth',
     'fennec.restapi.dbmodel',
+    'fennec.restapi.dbsymbols',
     'fennec.restapi.versioncontroll',
-    'rest_framework.authtoken'
+    'fennec.restapi.notifications',
+    'south'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -105,13 +108,14 @@ LOGIN_URL = '/auth/sign-in'
 REST_FRAMEWORK = {
     # Use hyperlinked styles by default.
     # Only used if the `serializer_class` attribute is not set on a view.
-    'DEFAULT_MODEL_SERIALIZER_CLASS':'rest_framework.serializers.HyperlinkedModelSerializer',
+    'DEFAULT_MODEL_SERIALIZER_CLASS':
+        'rest_framework.serializers.HyperlinkedModelSerializer',
 
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ],
-    'TEST_REQUEST_DEFAULT_FORMAT': 'json'
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 
 }
