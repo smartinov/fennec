@@ -5,3 +5,4 @@ Markdown			==	2.4.1
 django-filter 		==	0.7
 South == 0.8.4
 django-rest-swagger == 0.1.14
+drf-nested-routers

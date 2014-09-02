@@ -1,6 +1,6 @@
-from fennec.restapi.dbmodel.models import Sandbox
-from fennec.restapi.dbmodel.models import Change
-from serializers import serialize
+from fennec.restapi.versioncontroll.models import Sandbox, Change
+from fennec.restapi.versioncontroll.models import Change
+#from serializers import serialize
 
 __author__ = 'Darko'
 
@@ -19,13 +19,17 @@ class ChangeAddin():
         change = Change()
         change.made_by = user
         change.change_type = 0 if created else 1
-        change.command_text = serialize(obj)
+      #  change.command_text = serialize(obj)
         change.is_ui_change = False
         change.object_ref = obj.id
         change.object_type = obj.__class__.__name__
+
+        branch_id = self.request.DATA['branch_id']
+        change.sandbox_ref = Sandbox.obtain_sandbox(user, branch_id)
+
         key = "{0}:{1}".format(change.object_type, change.object_ref)
         changes[key] = change
-        change.save()
+        #change.save()
         print 'total changes {0}'.format(len(changes))
 
     def post_delete(self, obj):
@@ -33,7 +37,7 @@ class ChangeAddin():
         change = Change()
         change.made_by = user
         change.change_type = 2
-        change.command_text = serialize(obj)
+    #    change.command_text = serialize(obj)
         change.is_ui_change = False
         change.object_type = obj.__class__.__name__
         change.object_ref = obj.id
