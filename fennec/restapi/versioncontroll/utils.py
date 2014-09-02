@@ -57,7 +57,7 @@ def branch_from_branch_revision(branch_rev, account, name, type=None,
 
 def commit_sandbox(sandbox, user):
     """
-    sandbox is Sandbox
+    @type sandbox Sandbox
     """
     if sandbox.created_by != user:
         raise 'Woops'
@@ -70,7 +70,6 @@ def commit_sandbox(sandbox, user):
 
     last_branch_revision = BranchRevision.objects.filter(branch_ref=sandbox.bound_to_branch_ref).order_by(
         -'revision_number').first()
-
 
     new_branch_revision = BranchRevision(revision_number=last_branch_revision.revision_number + 1,
                                          previous_revision_ref=last_branch_revision,
@@ -107,14 +106,25 @@ class BranchRevisionState(object):
     def __init__(self, branch_rev):
         self.branch_rev = branch_rev
 
+
+    def __get_previous_revisions_from_all_branches__(self):
+        """
+        @type last_branch_rev BranchRevision
+        """
+        previous_revisions = []
+        previous_revisions.append(self.branch_rev)
+        last_branch_rev = self.branch_rev.previous_revision_ref
+        while last_branch_rev is not None:
+            previous_revisions.append(last_branch_rev)
+            last_branch_rev = last_branch_rev.previous_revision_ref
+
+        return reversed(previous_revisions)
+
     def get_revision_cumulative_changes(self):
         model_changes = {}
         symbol_changes = {}
-
-        # get previous revision changes:
-        previous_branch_revs = BranchRevision.objects.filter(branch_ref=self.branch_rev.branch_ref,
-                                                             revision_number__lte=self.branch_rev.revision_number).order_by(
-            'revision_number').all()
+        
+        previous_branch_revs = self.__get_previous_revisions_from_all_branches__()
         for prev_rev in previous_branch_revs:
             branch_rev_changes = BranchRevisionChange.objects.filter(branch_revision_ref=prev_rev).order_by(
                 'ordinal').all()

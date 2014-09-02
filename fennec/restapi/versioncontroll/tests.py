@@ -35,11 +35,13 @@ class UtilsTest(DefaultAPITests):
         project.save()
         branch = Branch(id=1, project_ref=project, created_by=user)
         branch.save()
-        branch_revision_1 = BranchRevision(id=1, branch_ref=branch, revision_number=0)
+        branch_revision_1 = BranchRevision(id=1, branch_ref=branch, previous_revision_ref=None, revision_number=0)
         branch_revision_1.save()
-        branch_revision_2 = BranchRevision(id=2, branch_ref=branch, revision_number=1)
+        branch_revision_2 = BranchRevision(id=2, branch_ref=branch, previous_revision_ref=branch_revision_1,
+                                           revision_number=1)
         branch_revision_2.save()
-        branch_revision_3 = BranchRevision(id=3, branch_ref=branch, revision_number=2)
+        branch_revision_3 = BranchRevision(id=3, branch_ref=branch, previous_revision_ref=branch_revision_2,
+                                           revision_number=2)
         branch_revision_3.save()
 
         schema = Schema()
@@ -153,9 +155,9 @@ class UtilsTest(DefaultAPITests):
         project.save()
         branch = Branch(id=1, project_ref=project, created_by=self.user)
         branch.save()
-        branch_revision_1 = BranchRevision(id=1, branch_ref=branch, revision_number=1)
+        branch_revision_1 = BranchRevision(id=1, branch_ref=branch, previous_revision_ref=None, revision_number=1)
         branch_revision_1.save()
-        branch_revision_2 = BranchRevision(id=2, branch_ref=branch, revision_number=2)
+        branch_revision_2 = BranchRevision(id=2, branch_ref=branch, previous_revision_ref=branch_revision_1, revision_number=2)
         branch_revision_2.save()
 
         sandbox = Sandbox(created_by=self.user, bound_to_branch_ref=branch,
@@ -244,7 +246,6 @@ class UtilsTest(DefaultAPITests):
         self.assertIsNotNone(zero_revision)
         self.assertEqual(0, zero_revision.revision_number)
         self.assertEqual(new_branch, zero_revision.branch_ref)
-
 
 
 class ProjectTests(APITestCase):
