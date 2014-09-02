@@ -220,6 +220,32 @@ class UtilsTest(DefaultAPITests):
         self.assertEqual(diagrams[0].name, diagram.name)
         self.assertEqual(diagrams[0].description, diagram.description)
 
+    def test_branch_from_branch_revision(self):
+        project = Project(created_by=self.user)
+        project.save()
+        main_branch = Branch(project_ref=project, name="main", type="main", created_by=self.user)
+        main_branch.save()
+
+        main_branch_zero_revision = BranchRevision(branch_ref=main_branch)
+        main_branch_zero_revision.save()
+
+        new_branch = utils.branch_from_branch_revision(branch_rev=main_branch_zero_revision, account=self.user,
+                                                       name='login_page',
+                                                       type='feature', description="login page dev branch")
+        self.assertEqual(self.user, new_branch.created_by)
+        self.assertEqual(0, new_branch.current_version)
+        self.assertEqual(main_branch_zero_revision, new_branch.parent_branch_revision)
+        self.assertEqual(project, new_branch.project_ref)
+        self.assertEqual('login_page', new_branch.name)
+        self.assertEqual('feature', new_branch.type)
+
+        zero_revision = BranchRevision.objects.filter(branch_ref=new_branch).first()
+
+        self.assertIsNotNone(zero_revision)
+        self.assertEqual(0, zero_revision.revision_number)
+        self.assertEqual(new_branch, zero_revision.branch_ref)
+
+
 
 class ProjectTests(APITestCase):
     user_url = ""

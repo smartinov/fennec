@@ -19,14 +19,14 @@ def change_to_object(change):
     """
     stream = StringIO(change.content)
     data = JSONParser().parse(stream)
-    serializer = swithc_type(change.object_type)(data=data)
+    serializer = switch_type(change.object_type)(data=data)
     if not serializer.is_valid():
         raise Exception(serializer.errors)
 
     return serializer.object
 
 
-def swithc_type(object_type):
+def switch_type(object_type):
     return {
         'Schema': SchemaSerializer,
         'Namespace': NamespaceSerializer,
@@ -39,6 +39,66 @@ def swithc_type(object_type):
         'TableElement': TableElementSerializer,
         'RelationshipElement': RelationshipElementSerializer
     }.get(object_type, None)
+
+
+def branch_from_branch_revision(branch_rev, account, name, type=None,
+                                description=None):
+    """
+    @type branch_rev: BranchRevision
+    """
+    new_branch = Branch(name=name, type=type, description=description,
+                        project_ref=branch_rev.branch_ref.project_ref, created_by=account,
+                        parent_branch_revision=branch_rev, current_version=0)
+    new_branch.save()
+    new_branch_zero_rev = BranchRevision(revision_number=0, branch_ref=new_branch)
+    new_branch_zero_rev.save()
+    return new_branch
+
+
+def commit_sandbox(sandbox, user):
+    """
+    sandbox is Sandbox
+    """
+    if sandbox.created_by != user:
+        raise 'Woops'
+
+    if check_for_conflicts():
+        # TODO: Resolve conflicts
+        pass
+
+    original_branch_rev = sandbox.created_from_branch_revision_ref
+
+    last_branch_revision = BranchRevision.objects.filter(branch_ref=sandbox.bound_to_branch_ref).order_by(
+        -'revision_number').first()
+
+
+    new_branch_revision = BranchRevision(revision_number=last_branch_revision.revision_number + 1,
+                                         previous_revision_ref=last_branch_revision,
+                                         branch_rev=last_branch_revision.branch_rev)
+    new_branch_revision.save()
+
+    original_branch = new_branch_revision.branch_ref
+    original_branch.current_version = new_branch_revision.revision_number
+    original_branch.save()
+
+    __bind_sandbox_changes_to_branch_revision__(sandbox, new_branch_revision)
+
+    sandbox.status = SANDBOX_STATUS.CLOSED
+    sandbox.save()
+
+
+def __bind_sandbox_changes_to_branch_revision__(sandbox, branch_revision):
+    sandbox_changes = SandboxChange.objects.filter(sandbox_ref=sandbox).all()
+    for i, sandbox_change in enumerate(sandbox_changes):
+        branch_rev_change = BranchRevisionChange()
+        branch_rev_change.branch_revision_ref = branch_revision
+        branch_rev_change.change_ref = sandbox_change.change_ref
+        branch_rev_change.ordinal = sandbox_change.ordinal
+        branch_rev_change.save()
+
+
+def check_for_conflicts():
+    pass
 
 
 class BranchRevisionState(object):
@@ -83,6 +143,7 @@ class BranchRevisionState(object):
         model_changes, symbol_changes = self.get_revision_cumulative_changes()
         diagrams = []
         return build_state_symbols(diagrams, symbol_changes.values())
+
 
 class SandboxState(object):
     user = None
@@ -132,8 +193,9 @@ class SandboxState(object):
         return diagrams
 
     def commit(self):
-        #todo implement this!
+        # todo implement this!
         pass
+
 
 def build_state_metadata(schemas, new_changes):
     """
