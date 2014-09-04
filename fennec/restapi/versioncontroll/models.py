@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+
 CHANGE_TYPE = (
     (0, "ADD"),
     (1, "MODIFY"),
@@ -14,7 +15,7 @@ SANDBOX_STATUS = (
 class Project(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=64, help_text="name of the project")
-    description = models.CharField(max_length=512, null=True,  help_text="description of the project")
+    description = models.CharField(max_length=512, null=True, help_text="description of the project")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, help_text="project author")
     is_deleted = models.BooleanField(default=False)
 
@@ -27,8 +28,9 @@ class Branch(models.Model):
     current_version = models.IntegerField(default=0)
     project_ref = models.ForeignKey('Project', help_text="project reference")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, help_text="branch author")
-    parent_branch_revision = models.ForeignKey('BranchRevision', null=True, help_text="represents a branch revision that is "
-                                                                           "a starting point of this branch.")
+    parent_branch_revision = models.ForeignKey('BranchRevision', null=True,
+                                               help_text="represents a branch revision that is "
+                                                         "a starting point of this branch.")
     is_deleted = models.SmallIntegerField(default=0, help_text="logical deletion")
 
 
@@ -39,6 +41,11 @@ class BranchRevision(models.Model):
                                               help_text="references previous revision of the same branch")
     branch_ref = models.ForeignKey(Branch, null=True, help_text="references owning branch")
     is_deleted = models.SmallIntegerField(default=0, help_text="logical deletion")
+
+    @classmethod
+    def create(cls, branch_ref):
+        branch_revision = BranchRevision(revision_number=0, branch_ref=branch_ref)
+        return branch_revision
 
 
 class Change(models.Model):
@@ -72,10 +79,11 @@ class BranchRevisionChange(models.Model):
 
 class Sandbox(models.Model):
     id = models.AutoField(primary_key=True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, help_text="account who made the sandbox and is its owner of ")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                   help_text="account who made the sandbox and is its owner of ")
     bound_to_branch_ref = models.ForeignKey('Branch', help_text="references a branch for which the sandbox is used for")
     created_from_branch_revision_ref = models.ForeignKey('BranchRevision', help_text="references branch revision that "
-                                                                        "is 'parent' to the sandbox")
+                                                                                     "is 'parent' to the sandbox")
     status = models.SmallIntegerField(choices=SANDBOX_STATUS, default=0,
                                       help_text="state of sandbox, opened or closed")
     is_deleted = models.SmallIntegerField(default=0, help_text="logical deletion")

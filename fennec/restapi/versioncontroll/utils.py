@@ -123,7 +123,7 @@ class BranchRevisionState(object):
     def get_revision_cumulative_changes(self):
         model_changes = {}
         symbol_changes = {}
-        
+
         previous_branch_revs = self.__get_previous_revisions_from_all_branches__()
         for prev_rev in previous_branch_revs:
             branch_rev_changes = BranchRevisionChange.objects.filter(branch_revision_ref=prev_rev).order_by(

@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, url, include
 from django.contrib.auth.decorators import login_required
 from rest_framework_nested import routers
-from fennec.restapi.versioncontroll.views import BranchRevisionVeiwSet, SandboxView
+from fennec.restapi.versioncontroll.views import BranchRevisionViewSet, SandboxView
 from versioncontroll.views import GroupViewSet, UserViewSet, ProjectViewSet, BranchViewSet, ChangeViewSet
 
 router = routers.SimpleRouter()
@@ -13,12 +13,13 @@ projects_router.register(r'branches', BranchViewSet)
 ##vsc
 
 branches_router = routers.NestedSimpleRouter(projects_router, r'branches', lookup='branch_id')
-branches_router.register(r'revisions', BranchRevisionVeiwSet)
+branches_router.register(r'revisions', BranchRevisionViewSet)
 
 router.register(r'groups', GroupViewSet)
 router.register(r'users', UserViewSet)
-#router.register(r'projects', ProjectViewSet)
-#router.register(r'branches', BranchViewSet)
+router.register(r'projects', ProjectViewSet)
+router.register(r'branches', BranchViewSet)
+router.register(r'branch-revisions',  BranchRevisionViewSet)
 router.register(r'changes', ChangeViewSet)
 router.register(r'sandboxes', SandboxView, base_name='sandboxes')
 #dbmodel

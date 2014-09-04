@@ -16,19 +16,18 @@ from fennec.restapi.versioncontroll.serializers import ChangeSerializer
 from fennec.restapi.versioncontroll.utils import BranchRevisionState, SandboxState
 
 
-class DefaultAPITests(APITestCase):
+class DefaultAPITest(APITestCase):
     user = None
 
     def setUp(self):
         user = User.objects.create_superuser(email="test@test.com", username='test', password='test')
-        self.client = APIClient()
         self.client.force_authenticate(user=user)
         all_accounts = self.client.get("/api/users/")
         self.user_url = all_accounts.data[0]['url']
         self.user = user
 
 
-class UtilsTest(DefaultAPITests):
+class UtilsTest(DefaultAPITest):
     def test_retrieval_of_branch_revision_state(self):
         user = User.objects.get(email="test@test.com")
         project = Project(id=1, created_by=self.user)
