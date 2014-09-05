@@ -22,13 +22,13 @@ class NamespaceSerializer(serializers.Serializer):
     schemaRef = serializers.CharField(source='schema_ref')
 
     def restore_object(self, attrs, instance=None):
-        if instance is not None:
-            instance.id = attrs.get('id', instance.id)
-            instance.abbreviation = attrs.get('abbreviation', instance.abbreviation)
-            instance.name = attrs.get('name', instance.name)
-            instance.comment = attrs.get('comment', instance.comment)
-            return instance
-        print "attrs:" + str(attrs)
+        # if instance is not None:
+        #     instance.id = attrs.get('id', instance.id)
+        #     instance.abbreviation = attrs.get('abbreviation', instance.abbreviation)
+        #     instance.name = attrs.get('name', instance.name)
+        #     instance.comment = attrs.get('comment', instance.comment)
+        #     return instance
+        # print "attrs:" + str(attrs)
         return Namespace(**attrs)
 
 
@@ -100,7 +100,7 @@ class TableSerializer(serializers.Serializer):
 
 class SchemaSerializer(serializers.Serializer):
     id = serializers.CharField()
-    database_name = serializers.CharField()
+    databaseName = serializers.CharField(source='database_name')
     comment = serializers.CharField(required=False)
     collation = serializers.CharField()
 
@@ -133,9 +133,9 @@ class TableElementSerializer(serializers.Serializer):
     positionY = serializers.FloatField(source='position_y')
     width = serializers.FloatField()
     height = serializers.FloatField()
-    collapsed = serializers.BooleanField(source='is_collapsed')
+    collapsed = serializers.BooleanField(source='is_collapsed', required=False)
     tableRef = serializers.CharField(source='table_ref')
-    layerRef = serializers.CharField(source='layer_ref')
+    layerRef = serializers.CharField(source='layer_ref', required=False)
 
     diagramRef = serializers.CharField(source='diagram_ref')
 
@@ -156,6 +156,7 @@ class RelationshipElementSerializer(serializers.Serializer):
 
     def restore_object(self, attrs, instance=None):
         return RelationshipElement(**attrs)
+
 
 class DiagramSerializer(serializers.Serializer):
     id = serializers.CharField()

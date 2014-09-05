@@ -69,11 +69,11 @@ def commit_sandbox(sandbox, user):
     original_branch_rev = sandbox.created_from_branch_revision_ref
 
     last_branch_revision = BranchRevision.objects.filter(branch_ref=sandbox.bound_to_branch_ref).order_by(
-        -'revision_number').first()
+        '-revision_number').first()
 
     new_branch_revision = BranchRevision(revision_number=last_branch_revision.revision_number + 1,
                                          previous_revision_ref=last_branch_revision,
-                                         branch_rev=last_branch_revision.branch_rev)
+                                         branch_ref=last_branch_revision.branch_ref)
     new_branch_revision.save()
 
     original_branch = new_branch_revision.branch_ref
@@ -82,7 +82,7 @@ def commit_sandbox(sandbox, user):
 
     __bind_sandbox_changes_to_branch_revision__(sandbox, new_branch_revision)
 
-    sandbox.status = SANDBOX_STATUS.CLOSED
+    sandbox.status = 1  # closed
     sandbox.save()
 
 
@@ -130,7 +130,6 @@ class BranchRevisionState(object):
                 'ordinal').all()
             for branch_rev_change in branch_rev_changes:
                 change = Change.objects.get(id=branch_rev_change.change_ref.id)
-
                 if change.is_ui_change:
                     if change.change_type == 2:
                         del symbol_changes[change.object_code]
@@ -143,13 +142,12 @@ class BranchRevisionState(object):
                         model_changes[change.object_code] = change
         return model_changes, symbol_changes
 
-    def build_state_metadata(self):
+    def build_branch_state_metadata(self):
         model_changes, symbol_changes = self.get_revision_cumulative_changes()
-
         schemas = []
         return build_state_metadata(schemas, model_changes.values())
 
-    def build_state_symbols(self):
+    def build_branch_state_symbols(self):
         model_changes, symbol_changes = self.get_revision_cumulative_changes()
         diagrams = []
         return build_state_symbols(diagrams, symbol_changes.values())
@@ -160,6 +158,8 @@ class SandboxState(object):
     sandbox = None
     model_changes = {}
     symbol_changes = {}
+    schemas = []
+    diagrams = []
 
     def __init__(self, user, sandbox):
         self.user = user
@@ -187,9 +187,11 @@ class SandboxState(object):
         # .order_by(-'revision_number').first()
 
         branch_rev_state = BranchRevisionState(self.sandbox.created_from_branch_revision_ref)
-        schemas = branch_rev_state.build_state_metadata()
+        schemas = branch_rev_state.build_branch_state_metadata()
         self.populate_changes()
         schemas = build_state_metadata(schemas, self.model_changes.values())
+
+        self.schemas = schemas
         return schemas
 
     def build_sandbox_state_symbols(self):
@@ -197,14 +199,22 @@ class SandboxState(object):
         # .order_by(-'revision_number').first()
 
         branch_rev_state = BranchRevisionState(self.sandbox.created_from_branch_revision_ref)
-        diagrams = branch_rev_state.build_state_symbols()
+        diagrams = branch_rev_state.build_branch_state_symbols()
         self.populate_changes()
         diagrams = build_state_symbols(diagrams, self.symbol_changes.values())
+
+        self.diagrams = diagrams
         return diagrams
 
     def commit(self):
         # todo implement this!
         pass
+
+    def retrieve_diagram_details(self, diagram_id):
+        diagram = [x for x in self.diagrams if x.id == diagram_id]
+        if not diagram:
+            return []
+        return diagram
 
 
 def build_state_metadata(schemas, new_changes):
@@ -254,6 +264,8 @@ def build_state_metadata(schemas, new_changes):
         change_obj = change_to_object(table_change)
         schema_parent = [x for x in schemas if x.id == change_obj.schema_ref]
         schema_parent = schema_parent[0] if schema_parent else None
+        if schema_parent is None:
+            continue
         table = [x for x in schema_parent.tables if x.id == change_obj.id]
         table = table[0] if table else None
         if table_change.change_type == 0:
@@ -382,6 +394,8 @@ def build_state_symbols(diagrams, new_changes):
 
         diagram_parent = [x for x in diagrams if x.id == change_obj.diagram_ref]
         diagram_parent = diagram_parent[0] if diagram_parent else None
+        if diagram_parent is None:
+            continue
         layer = [x for x in diagram_parent.layers if x.id == change_obj.id]
 
         if layer_change.change_type == 0:
@@ -404,11 +418,11 @@ def build_state_symbols(diagrams, new_changes):
 
         diagram_parent = [x for x in diagrams if x.id == change_obj.diagram_ref]
         diagram_parent = diagram_parent[0] if diagram_parent else None
-        table = [x for x in diagram_parent.table if x.id == change_obj.id]
+        table = [x for x in diagram_parent.table_elements if x.id == change_obj.id]
         table = table[0] if table else None
 
         if table_el_change.change_type == 0:
-            diagram_parent.tables.append(change_obj)
+            diagram_parent.table_elements.append(change_obj)
         elif table_el_change.change_type == 1:
             if table is None:
                 continue
@@ -420,7 +434,7 @@ def build_state_symbols(diagrams, new_changes):
             table.is_collapsed = change_obj.is_collapsed
             table.layer_ref = change_obj.layer_ref
         else:  # remove table element
-            diagram_parent.tables.remove(table)
+            diagram_parent.table_elements.remove(table)
 
     rel_el_changes = [x for x in new_changes if x.object_type == 'RelationshipElement']
     for rel_el_change in rel_el_changes:

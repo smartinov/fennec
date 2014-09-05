@@ -1,8 +1,11 @@
+import json
+from uuid import uuid4
 from django.contrib.auth.models import User
 from django.http import response
 from rest_framework import status
 from rest_framework.test import APITestCase
 from fennec.restapi.constants import MASTER_BRANCH_NAME, MASTER_BRANCH_DESCRIPTION, MASTER_BRANCH_TYPE
+from fennec.restapi.versioncontroll.models import SandboxChange, Change, BranchRevisionChange
 
 __author__ = 'Darko'
 
@@ -21,7 +24,7 @@ class DefaultAPITest(APITestCase):
 class IntegrationTests(DefaultAPITest):
     def test_create_project(self):
         """
-        Tests creation of Project as well as its main branch, which is created automatically for each project
+        Tests creation of Project as well as its main branch (as well as its zero revision), which is created automatically for each project
         """
         projects_url = "/api/projects/"
         data = {'id': 1, 'name': 'TestProject', 'description': 'This is a test', 'created_by': self.user.id}
@@ -70,3 +73,141 @@ class IntegrationTests(DefaultAPITest):
 
         self.assertEqual(new_branch['type'], branching_request_data['type'])
         self.assertEqual(new_branch['description'], branching_request_data['description'])
+
+    def test_post_changes_on_branch_revision(self):
+        self.test_create_project()
+
+        branch_revisions_url = "/api/branch-revisions/"
+        branch_revision = self.client.get(branch_revisions_url).data[0]
+        change_posting_url = "/api/branch-revisions/{}/change/".format(branch_revision['id'])
+        example_diagram_data = {
+            "id": str(uuid4()),
+            "name": "TestDiagram",
+            "description": "this is a diagram made for test"
+        }
+        example_diagram_string = json.dumps(example_diagram_data)
+        change_data = {'content': example_diagram_string, 'objectType': 'Diagram',
+                       'objectCode': example_diagram_data['id'],
+                       'changeType': 0,
+                       'isUIChange': True, 'made_by': self.user.id, '': '', }
+
+        posting_response = self.client.post(change_posting_url, change_data)
+        self.assertEqual(posting_response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # verify that change has been saved in database
+        sandbox_changes = SandboxChange.objects.all()
+        self.assertEqual(len(sandbox_changes), 1)
+        changes = Change.objects.all()
+        self.assertEqual(len(changes), 1)
+        self.assertEqual(changes[0].content, change_data['content'])
+        self.assertEqual(changes[0].object_type, change_data['objectType'])
+        self.assertEqual(changes[0].change_type, change_data['changeType'])
+        self.assertEqual(changes[0].object_code, change_data['objectCode'])
+        self.assertEqual(changes[0].is_ui_change, change_data['isUIChange'])
+        self.assertEqual(changes[0].made_by.id, change_data['made_by'])
+        self.assertEqual(changes[0].content, change_data['content'])
+
+    def test_commit_changes_on_branch_revision(self):
+        """
+        Commit change made in a previous test that is invoked at the start of the test.
+        """
+        self.test_post_changes_on_branch_revision()
+
+        branch_rev_id = 1
+
+        commit_url = "/api/branch-revisions/{}/commit/".format(branch_rev_id)
+
+        commit_response = self.client.post(commit_url)
+        self.assertEqual(commit_response.status_code, status.HTTP_200_OK)
+
+        # verify that change has been saved as branch revision change
+        branch_changes = BranchRevisionChange.objects.all()
+        self.assertEqual(len(branch_changes), 1)
+
+        # verify that old sandbox was closed
+
+        # verify that new branch revision was created
+
+    def test_commit_changes_on_separate_branch(self):
+        self.test_create_project()
+
+        branch_revisions_repsonse = self.client.get("/api/branch-revisions/")
+        zero_revision = branch_revisions_repsonse.data[0]['id']
+
+        # add diagram to zero revision
+        diagram = {'id': str(uuid4()), 'name': 'MainDiagram'}
+        diagram_add_change = {'content': json.dumps(diagram), 'objectType': 'Diagram', 'objectCode': str(uuid4()),
+                              'changeType': 0,
+                              'isUIChange': True, 'made_by': self.user.id}
+
+        change_posting_url = "/api/branch-revisions/{}/change/".format(zero_revision)
+        diagram_creation_response = self.client.post(change_posting_url, diagram_add_change)
+        self.assertEqual(diagram_creation_response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # commit revision zero which contains only empty diagram
+
+        initial_commit_url = "/api/branch-revisions/{}/commit/".format(zero_revision)
+        initial_commit_response = self.client.post(initial_commit_url)
+        self.assertEqual(initial_commit_response.status_code, status.HTTP_200_OK)
+
+        # try to commit again zero revision and confirm it returns an error
+        initial_commit_response = self.client.post(initial_commit_url)
+        self.assertEqual(initial_commit_response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # post a table and table symbol change on revision 1
+
+        revision_two_url = "/api/branch-revisions/2/"
+
+        # add schema
+
+        schema = {'id': str(uuid4()), 'databaseName': 'default', 'collation': 'utf-8'}
+        schema_add_change = {'content': json.dumps(schema), 'objectType': 'Schema', 'objectCode': schema['id'],
+                            'changeType': 0,
+                            'isUIChange': False, 'made_by': self.user.id}
+        schema_creation_posting = self.client.post(revision_two_url + 'change/', schema_add_change)
+        self.assertEqual(schema_creation_posting.status_code, status.HTTP_204_NO_CONTENT)
+
+        # add table
+        table = {'id': str(uuid4()), 'name': 'TableOne', 'collation': 'utf-8', 'comment': 'first table yay',
+                 'schemaRef': schema['id'], }
+        table_add_change = {'content': json.dumps(table), 'objectType': 'Table', 'objectCode': table['id'],
+                            'changeType': 0,
+                            'isUIChange': False, 'made_by': self.user.id}
+
+        table_creation_posting = self.client.post(revision_two_url + 'change/', table_add_change)
+        self.assertEqual(table_creation_posting.status_code, status.HTTP_204_NO_CONTENT)
+
+        # add table symbol
+
+        table_symbol = {'id': str(uuid4()), 'positionX': 12, 'positionY': 12, 'width': 50, 'height': 50,
+                        'tableRef': table['id'], 'diagramRef': diagram['id'], 'color': '000000',  'collapsed': False}
+
+        table_symbol_add_change = {'content': json.dumps(table_symbol), 'objectType': 'TableElement',
+                                   'objectCode': table_symbol['id'],
+                                   'changeType': 0,
+                                   'isUIChange': True, 'made_by': self.user.id}
+
+        table_creation_posting = self.client.post(revision_two_url + 'change/', table_symbol_add_change)
+        self.assertEqual(table_creation_posting.status_code, status.HTTP_204_NO_CONTENT)
+
+        second_commit_response = self.client.post(revision_two_url + 'commit/')
+        self.assertEqual(second_commit_response.status_code, status.HTTP_200_OK)
+
+        # retrieval of metadata and symbol data to verify that it was really created
+
+        metadata_retrieval_result = self.client.get(revision_two_url + 'metadata/')
+        self.assertEqual(metadata_retrieval_result.status_code, status.HTTP_200_OK)
+
+        # print metadata_retrieval_result.data
+
+        # retrieval of symbol data
+
+        symbol_retrieval_result = self.client.get(revision_two_url + 'diagram/?diagramId='+diagram['id'])
+        self.assertEqual(symbol_retrieval_result.status_code, status.HTTP_200_OK)
+
+        print symbol_retrieval_result.data
+        # print "\nDEBUGGING\n"
+        # changes = Change.objects.all()
+        # for change in changes:
+        #     print '\n'
+        #     print change.content

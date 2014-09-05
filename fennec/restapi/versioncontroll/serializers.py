@@ -55,6 +55,7 @@ class SandboxSerializer(serializers.ModelSerializer):
         model = Sandbox
         fields = ('id',)
 
+
 class ChangeSerializer(serializers.ModelSerializer):
     id = serializers.CharField(required=False)
     content = serializers.CharField()

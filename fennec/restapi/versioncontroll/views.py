@@ -1,10 +1,14 @@
+import json
 from django.http import response
 from rest_framework import viewsets, status, authentication, permissions
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.decorators import action, link, api_view
 from django.contrib.auth.models import User, Group
 from django.shortcuts import get_object_or_404
 from fennec.restapi.constants import MASTER_BRANCH_NAME, MASTER_BRANCH_TYPE, MASTER_BRANCH_DESCRIPTION
+from fennec.restapi.dbmodel.serializers import SchemaSerializer, DiagramSerializer
+from fennec.restapi.versioncontroll import utils
 from fennec.restapi.versioncontroll.addins import changes
 from fennec.restapi.versioncontroll.models import Project, Branch, Change, Sandbox, BranchRevision, SandboxChange
 from fennec.restapi.versioncontroll.serializers import BranchRevisionSerializer, SandboxSerializer
@@ -47,9 +51,9 @@ class BranchViewSet(viewsets.ModelViewSet):
             revision_zero = BranchRevision(revision_number=0, branch_ref=obj)
             revision_zero.save()
 
-    #def list(self, request, project_id_id=None, *args, **kwargs):
-    #    #id_id <- w/e it works!
-    #    #print kwargs
+    # def list(self, request, project_id_id=None, *args, **kwargs):
+    # #id_id <- w/e it works!
+    # #print kwargs
     #    queryset = self.queryset.filter(project_ref=project_id_id)
     #    serializer = BranchSerializer(queryset, many=True)
     #    return Response(serializer.data)
@@ -68,18 +72,8 @@ class BranchViewSet(viewsets.ModelViewSet):
     #
     #    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action()
-    def commit(self, request, pk):
-        branch = self.get_object()
-        user = request.user
-        sandbox = Sandbox.obtain_sandbox(user, branch.id)
-        rez = sandbox.collect_changes()
-        #print rez
-
-
     @action(methods=['GET'])
     def sandbox(self, request, id=None, project_id_id=None):
-        print "id: {}  project_id: {}".format(id, project_id_id)
         result = {"test": "123"}
         sandbox_state = SandboxState
         return Response(result, status=status.HTTP_200_OK)
@@ -90,9 +84,9 @@ class BranchRevisionViewSet(viewsets.ModelViewSet):
     serializer_class = BranchRevisionSerializer
     lookup_field = 'id'
 
-    #def list(self, request, branch_id_id=None, *args, **kwargs):
-    #    #id_id <- w/e it works!
-    #    #print kwargs
+    # def list(self, request, branch_id_id=None, *args, **kwargs):
+    # #id_id <- w/e it works!
+    # #print kwargs
     #    queryset = self.queryset.filter(branch_ref=branch_id_id)
     #    serializer = BranchRevisionSerializer(queryset, many=True)
     #    return Response(serializer.data)
@@ -108,6 +102,79 @@ class BranchRevisionViewSet(viewsets.ModelViewSet):
                             project_ref=branch_rev.branch_ref.project_ref, parent_branch_revision=branch_rev)
         new_branch.save()
         return Response(status=status.HTTP_201_CREATED)
+
+    @action(methods=['POST'])
+    def change(self, request, id=None):
+        #print request.DATA
+        serializer = ChangeSerializer(data=request.DATA)
+        #print serializer.is_valid()
+        #print serializer.object
+        #print serializer.errors
+        if serializer.is_valid():
+            branch_rev = BranchRevision.objects.filter(id=id).first()
+            sandbox = utils.obtain_sandbox(request.user, branch_rev.branch_ref.id)
+            if sandbox.status != 0:
+                return Response(error="cannot commit a closed sandbox", status=status.HTTP_400_BAD_REQUEST)
+
+            change = serializer.object
+            change.made_by = request.user
+            change.save()
+            sandbox_change = SandboxChange()
+            sandbox_change.change_ref = change
+            sandbox_change.ordinal = SandboxChange.objects.filter(change_ref=change).count() + 1
+            sandbox_change.sandbox_ref = sandbox
+            sandbox_change.save()
+            changes.append(change)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            print "\nerrors occured:\n"
+            print serializer.errors
+        return Response("error occured", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action()
+    def commit(self, request, id=None):
+        branch_revision = self.get_object()
+        latest_branch_revision = BranchRevision.objects.filter(branch_ref=branch_revision.branch_ref).order_by(
+            '-revision_number').first()
+        if branch_revision.id != latest_branch_revision.id:
+            return Response("cannot commit a on branch revision that is not latest!",
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        user = request.user
+        sandbox = utils.obtain_sandbox(user, branch_revision.branch_ref.id)
+        if sandbox.status != 0:
+            return Response("cannot commit a closed sandbox", status=status.HTTP_400_BAD_REQUEST)
+        utils.commit_sandbox(sandbox, request.user)
+        return Response(status=status.HTTP_200_OK)
+
+    @link()
+    def metadata(self, request, id=None):
+        branch_revision = self.get_object()
+        user = request.user
+        sandbox = utils.obtain_sandbox(user, branch_revision.branch_ref.id)
+
+        sandbox_state = SandboxState(user, sandbox)
+        sandbox_state.build_sandbox_state_metadata()
+        schemas = sandbox_state.schemas
+        serializer = SchemaSerializer(schemas, many=True)
+        content = JSONRenderer().render(serializer.data)
+        return Response(content, status=status.HTTP_200_OK)
+
+    @link()
+    def diagram(self, request, id=None, diagramId=None):
+        branch_revision = self.get_object()
+        user = request.user
+        sandbox = utils.obtain_sandbox(user, branch_revision.branch_ref.id)
+
+        sandbox_state = SandboxState(user, sandbox)
+        sandbox_state.build_sandbox_state_symbols()
+        diagram = sandbox_state.retrieve_diagram_details(diagramId)
+
+        serializer = DiagramSerializer(diagram, many=True)
+
+        content = JSONRenderer().render(serializer.data)
+
+        return Response(content, status=status.HTTP_200_OK)
 
 
 class ChangeViewSet(viewsets.ModelViewSet):
@@ -130,9 +197,9 @@ class ChangeViewSet(viewsets.ModelViewSet):
         branch_id = self.request.DATA['branch_id']
         sandbox = Sandbox.obtain_sandbox(user, branch_id)
         changes.len()
-        #cset = ChangeSet()
-        #cset.comment = self.request.DATA['comment']
-        #cset.submitted_by = user
+        # cset = ChangeSet()
+        # cset.comment = self.request.DATA['comment']
+        # cset.submitted_by = user
         #cset.submitted_on = datetime.datetime.now()
         ##cset.branch_revision_ref =
         #cset.save()
@@ -148,8 +215,8 @@ changes = []
 
 class SandboxView(viewsets.ViewSet):
     model = Sandbox
-    #authentication_classes = (authentication.TokenAuthentication,)
-    #permission_classes = (permissions.AllowAny,)
+    # authentication_classes = (authentication.TokenAuthentication,)
+    # permission_classes = (permissions.AllowAny,)
 
     def list(self, request):
         queryset = Sandbox.objects.all()
@@ -164,28 +231,9 @@ class SandboxView(viewsets.ViewSet):
 
     @action(methods=['GET'])
     def test(self, request, pk=None, format=None):
-        #print pk
+        # print pk
         return Response({'test': "test"})
 
-    @action(methods=['POST'])
-    def change(self, request, pk=None, format=None):
-        #print request.DATA
-        serializer = ChangeSerializer(data=request.DATA)
-        #print serializer.is_valid()
-        #print serializer.object
-        #print serializer.errors
-        if serializer.is_valid():
-            change = serializer.object
-            change.made_by = request.user
-            change.save()
-            sandbox_change = SandboxChange()
-            sandbox_change.change_ref = change
-            sandbox_change.ordinal = SandboxChange.objects.filter(change_ref=change).count() + 1
-            sandbox_change.sandbox_ref = Sandbox.objects.get(id=pk)
-            sandbox_change.save()
-            changes.append(change)
-            return Response(status.HTTP_200_OK)
-        return Response("error occured", status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
         #

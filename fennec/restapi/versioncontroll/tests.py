@@ -2,17 +2,16 @@ import StringIO
 from uuid import uuid4
 from django.contrib.auth.models import User
 from rest_framework import status
-from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.test import APITestCase, APIClient
 from django.test import TestCase
-from fennec.restapi.dbmodel.models import Table, Namespace, Schema, Column, Diagram, Layer
-from fennec.restapi.dbmodel.serializers import NamespaceSerializer, SchemaSerializer, TableSerializer, ColumnSerializer, \
+from fennec.restapi import constants
+from fennec.restapi.dbmodel.models import Table, Schema, Column, Diagram, Layer
+from fennec.restapi.dbmodel.serializers import SchemaSerializer, TableSerializer, ColumnSerializer, \
     DiagramSerializer, LayerSerializer
 from fennec.restapi.versioncontroll.models import Project, Branch, BranchRevision, Sandbox, Change, SandboxChange, \
     BranchRevisionChange
 from fennec.restapi.versioncontroll import utils
-from fennec.restapi.versioncontroll.serializers import ChangeSerializer
 from fennec.restapi.versioncontroll.utils import BranchRevisionState, SandboxState
 
 
@@ -99,7 +98,7 @@ class UtilsTest(DefaultAPITest):
 
         branch_rev_state = BranchRevisionState(branch_revision_3)
 
-        schemas = branch_rev_state.build_state_metadata()
+        schemas = branch_rev_state.build_branch_state_metadata()
         self.assertEqual(schemas[0].id, schema.id)
         self.assertEqual(schemas[0].comment, schema.comment)
         self.assertEqual(schemas[0].database_name, schema.database_name)
@@ -124,7 +123,7 @@ class UtilsTest(DefaultAPITest):
         table_remove_branch_rev_change.change_ref = table_remove_c
         table_remove_branch_rev_change.ordinal = 1
         table_remove_branch_rev_change.save()
-        schemas = branch_rev_state.build_state_metadata()
+        schemas = branch_rev_state.build_branch_state_metadata()
 
         self.assertEqual(schemas[0].id, schema.id)
         self.assertEqual(schemas[0].comment, schema.comment)
@@ -142,12 +141,11 @@ class UtilsTest(DefaultAPITest):
                                                          ordinal=1)
         diagram_branch_rev_change.save()
 
-        diagrams = branch_rev_state.build_state_symbols()
+        diagrams = branch_rev_state.build_branch_state_symbols()
         self.assertEqual(diagrams[0].id, diagram.id)
         self.assertEqual(diagrams[0].name, diagram.name)
         self.assertEqual(diagrams[0].description, diagram.description)
 
-        diagrams = branch_rev_state.build_state_metadata()
 
     def test_retrival_of_sandbox_state(self):
         project = Project(id=1, created_by=self.user)
@@ -156,7 +154,8 @@ class UtilsTest(DefaultAPITest):
         branch.save()
         branch_revision_1 = BranchRevision(id=1, branch_ref=branch, previous_revision_ref=None, revision_number=1)
         branch_revision_1.save()
-        branch_revision_2 = BranchRevision(id=2, branch_ref=branch, previous_revision_ref=branch_revision_1, revision_number=2)
+        branch_revision_2 = BranchRevision(id=2, branch_ref=branch, previous_revision_ref=branch_revision_1,
+                                           revision_number=2)
         branch_revision_2.save()
 
         sandbox = Sandbox(created_by=self.user, bound_to_branch_ref=branch,
@@ -275,7 +274,7 @@ class ProjectTests(APITestCase):
         branch_response = self.client.get(branches_url)
         self.assertEqual(branch_response.status_code, status.HTTP_200_OK)
         self.assertEqual(branch_response.data[0]['id'], 1)
-        self.assertEqual(branch_response.data[0]['name'], 'main')
+        self.assertEqual(branch_response.data[0]['name'], constants.MASTER_BRANCH_NAME)
 
     def test_create_branch(self):
         # prepare data
@@ -297,39 +296,6 @@ class ProjectTests(APITestCase):
         self.assertEqual(response.data['current_version'], data['current_version'])
         self.assertEqual(response.data['project_ref'], data['project_ref'])
         self.assertEqual(response.data['created_by'], data['created_by'])
-
-    def test_retrieve_project_branches(self):
-        '''
-        Retrieval of branches via /project/{id}/branches/ should return only branches that belong to that project.
-        '''
-        user = User(id=1)
-        user.save()
-        project_one = Project(id=1, created_by=user)
-        project_one.save()
-        project_two = Project(id=2, created_by=user)
-        project_two.save()
-        branch_one = Branch(id=1, created_by=user, project_ref=project_one)
-        branch_one.save()
-        branch_two = Branch(id=2, created_by=user, project_ref=project_two)
-        branch_two.save()
-        branch_three = Branch(id=3, created_by=user, project_ref=project_two)
-        branch_three.save()
-
-        p1_branches_url = "/api/projects/{}/branches/".format(project_one.id)
-        p1_branches_response = self.client.get(p1_branches_url)
-        self.assertEqual(p1_branches_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(p1_branches_response.data), 1)
-        self.assertEqual(p1_branches_response.data[0]['id'], branch_one.id)
-        self.assertEqual(p1_branches_response.data[0]['project_ref'], project_one.id)
-
-        p2_branches_url = "/api/projects/{}/branches/".format(project_two.id)
-        p2_branches_response = self.client.get(p2_branches_url)
-        self.assertEqual(p2_branches_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(p2_branches_response.data), 2)
-        self.assertEqual(p2_branches_response.data[0]['id'], branch_two.id)
-        self.assertEqual(p2_branches_response.data[0]['project_ref'], project_two.id)
-        self.assertEqual(p2_branches_response.data[1]['id'], branch_three.id)
-        self.assertEqual(p2_branches_response.data[1]['project_ref'], project_two.id)
 
 
 class UtilsTests(TestCase):
@@ -389,89 +355,4 @@ class SandboxAPITests(APITestCase):
         pass
 
 
-    def test_post_change(self):
-        """
-        Test posting of a change on sandbox controller.
-        Verify that change and assignment table entry have been created.
-        """
-        login_res = self.client.login(username="test", password="test")
-        self.assertTrue(login_res)
-
-        user = User.objects.filter(username="test").first()
-
-        project = Project(id=1, created_by=user)
-        project.save()
-        branch_one = Branch(id=1, created_by=user, project_ref=project)
-        branch_one.save()
-        branch_rev = BranchRevision(id=1, branch_ref=branch_one, revision_number=0)
-        branch_rev.save()
-
-        sandbox = Sandbox(id=1)
-        sandbox.created_by = user
-        sandbox.bound_to_branch_ref = branch_one
-        sandbox.created_from_branch_revision_ref = branch_rev
-        sandbox.save()
-
-        branches_url = "/api/projects/{}/branches/".format(project.id)
-        branches_response = self.client.get(branches_url)
-        self.assertEqual(branches_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(branches_response.data), 1)
-        self.assertEqual(branches_response.data[0]['id'], branch_one.id)
-        self.assertEqual(branches_response.data[0]['project_ref'], project.id)
-
-        change_creating_url = "/api/sandboxes/1/change/"
-
-        object_code = str(uuid4())
-        content = {
-            "id": 1,
-            "objectCode": object_code,
-            "name": "TestTable",
-            "comment": "oh"
-        }
-        json_content = JSONRenderer().render(content)
-        # print json_content
-        data = {
-            "content": json_content,
-            "objectType": "Table",
-            "objectCode": object_code,
-            "changeType": 1,
-            "isUIChange": True
-        }
-        change_creating_res = self.client.post(change_creating_url, data)
-        self.assertEqual(change_creating_res.status_code, 200)
-
-        saved_change = Change.objects.get(object_code=object_code)
-        self.assertEqual(json_content, saved_change.content)
-        self.assertEqual("Table", saved_change.object_type)
-        self.assertEqual(1, saved_change.change_type)
-        self.assertEqual(True, saved_change.is_ui_change)
-
-        saved_assignment_entry = SandboxChange.objects.filter(sandbox_ref=sandbox, change_ref=saved_change).first()
-        self.assertEqual(saved_change, saved_assignment_entry.change_ref)
-        self.assertEqual(sandbox, saved_assignment_entry.sandbox_ref)
-
-        # sandbox_url = "/api/sandboxes/1/"
-        # sandbox_res = self.client.get(sandbox_url)
-        # self.assertEqual(sandbox_res.status_code, 200)
-
-
-    def test_serialization_util(self):
-        t = Table()
-
-        # JSONParser().parse(stream)
-
-
-        ns = Namespace()
-        ns.id = str(uuid4())
-        ns.comment = "test"
-        ns.abbreviation = "ASD"
-        ns.name = "TEST"
-        ns.schema_ref = str(uuid4())
-
-        serializer = NamespaceSerializer(ns)
-        json = JSONRenderer().render(serializer.data)
-        c = Change()
-        c.object_type = 'Namespace'
-        c.content = json
-        object = utils.change_to_object(c)
 
