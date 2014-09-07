@@ -4,7 +4,7 @@ from fennec.restapi.dbmodel.models import Index, ForeignKey, Schema, Layer, Tabl
 from models import Table, Namespace, Column
 from json import JSONEncoder
 
-#def serialize(obj):
+# def serialize(obj):
 #    if isinstance(obj, Table):
 #        return TableSerializerFK(obj).data
 #    elif isinstance(obj, Column):
@@ -64,7 +64,9 @@ class IndexSerializer(serializers.Serializer):
     tableRef = serializers.CharField(source='tableRef')
 
     def restore_object(self, attrs, instance=None):
-        return Index(**attrs)
+        index = Index(**attrs)
+        index.columns = []
+        return index
 
 
 class ForeignKeySerializer(serializers.Serializer):
@@ -79,7 +81,10 @@ class ForeignKeySerializer(serializers.Serializer):
     tableRef = serializers.CharField(source='tableRef')
 
     def restore_object(self, attrs, instance=None):
-        return ForeignKey(**attrs)
+        foreign_key = ForeignKey(**attrs)
+        foreign_key.source_columns = []
+        foreign_key.referenced_columns = []
+        return foreign_key
 
 
 class TableSerializer(serializers.Serializer):
@@ -95,7 +100,11 @@ class TableSerializer(serializers.Serializer):
     schemaRef = serializers.CharField(source='schema_ref')
 
     def restore_object(self, attrs, instance=None):
-        return Table(**attrs)
+        table = Table(**attrs)
+        table.columns = []
+        table.indexes = []
+        table.foreign_keys = []
+        return table
 
 
 class SchemaSerializer(serializers.Serializer):
@@ -104,11 +113,14 @@ class SchemaSerializer(serializers.Serializer):
     comment = serializers.CharField(required=False)
     collation = serializers.CharField()
 
-    namespaces = NamespaceSerializer(required=False)
-    tables = TableSerializer(required=False)
+    namespaces = NamespaceSerializer(required=False, many=True)
+    tables = TableSerializer(required=False, many=True)
 
     def restore_object(self, attrs, instance=None):
-        return Schema(**attrs)
+        schema = Schema(**attrs)
+        schema.namespaces = []
+        schema.tables = []
+        return schema
 
 
 class LayerSerializer(serializers.Serializer):
@@ -162,11 +174,42 @@ class DiagramSerializer(serializers.Serializer):
     id = serializers.CharField()
     name = serializers.CharField()
     description = serializers.CharField(required=False)
-    #url = serializers.FloatField(source='position_y')
     layers = LayerSerializer(required=False)
     tableElements = TableElementSerializer(required=False, source='table_elements')
     relationshipElements = RelationshipElementSerializer(required=False, source='relationship_elements')
 
     def restore_object(self, attrs, instance=None):
-        return Diagram(**attrs)
+        diagram = Diagram(**attrs)
+        diagram.layers = []
+        diagram.table_elements = []
+        diagram.relationship_elements = []
+        return diagram
+
+
+class BranchBasicInfoSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    name = serializers.CharField()
+    revision = serializers.IntegerField()
+
+
+class ProjectInfoSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    name = serializers.CharField()
+    description = serializers.CharField(required=False)
+    url = serializers.URLField()
+    branch = BranchBasicInfoSerializer()
+
+
+class DiagramBasicInfoSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    name = serializers.CharField()
+    description = serializers.CharField(required=False)
+    url = serializers.URLField()
+
+
+class SandboxBasicInfoSerializer(serializers.Serializer):
+    project = ProjectInfoSerializer(source='project_info')
+    diagrams = DiagramBasicInfoSerializer(many=True)
+    schemas = SchemaSerializer(many=True)
+
 

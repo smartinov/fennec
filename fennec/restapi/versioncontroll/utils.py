@@ -1,27 +1,21 @@
 from StringIO import StringIO
 from rest_framework.parsers import JSONParser
-from rest_framework.renderers import JSONRenderer
-from south.creator.freezer import model_dependencies
-from fennec.restapi.dbmodel.models import Table, Column, Index, RelationshipElement, TableElement, Layer, Diagram, \
-    ForeignKey, Schema, Namespace
+from fennec.restapi.dbmodel.models import ProjectBasicInfo, BranchBasicInfo, SandboxBasicInfo
 from fennec.restapi.dbmodel.serializers import SchemaSerializer, NamespaceSerializer, TableSerializer, ColumnSerializer, \
     IndexSerializer, ForeignKeySerializer, LayerSerializer, TableElementSerializer, RelationshipElementSerializer, \
     DiagramSerializer
-from fennec.restapi.versioncontroll.models import Sandbox, Branch, BranchRevision, SANDBOX_STATUS, SandboxChange, \
-    BranchRevisionChange, Change, CHANGE_TYPE
+from fennec.restapi.versioncontroll.models import Sandbox, Branch, BranchRevision, SandboxChange, \
+    BranchRevisionChange, Change
 
 __author__ = 'Darko'
 
 
 def change_to_object(change):
-    """
-    change is Change
-    """
     stream = StringIO(change.content)
     data = JSONParser().parse(stream)
     serializer = switch_type(change.object_type)(data=data)
     if not serializer.is_valid():
-        raise Exception(serializer.errors)
+        print serializer.errors
 
     return serializer.object
 
@@ -66,8 +60,6 @@ def commit_sandbox(sandbox, user):
         # TODO: Resolve conflicts
         pass
 
-    original_branch_rev = sandbox.created_from_branch_revision_ref
-
     last_branch_revision = BranchRevision.objects.filter(branch_ref=sandbox.bound_to_branch_ref).order_by(
         '-revision_number').first()
 
@@ -106,7 +98,6 @@ class BranchRevisionState(object):
     def __init__(self, branch_rev):
         self.branch_rev = branch_rev
 
-
     def __get_previous_revisions_from_all_branches__(self):
         """
         @type last_branch_rev BranchRevision
@@ -140,6 +131,7 @@ class BranchRevisionState(object):
                         del model_changes[change.object_code]
                     else:
                         model_changes[change.object_code] = change
+
         return model_changes, symbol_changes
 
     def build_branch_state_metadata(self):
@@ -164,10 +156,14 @@ class SandboxState(object):
     def __init__(self, user, sandbox):
         self.user = user
         self.sandbox = sandbox
+        self.model_changes = {}
+        self.symbol_changes = {}
+        self.schemas = []
+        self.diagrams = []
 
     def populate_changes(self):
-        sandbox_changes = SandboxChange.objects.filter(sandbox_ref=self.sandbox)
 
+        sandbox_changes = SandboxChange.objects.filter(sandbox_ref=self.sandbox)
         for sandbox_change in sandbox_changes:
             change = Change.objects.get(id=sandbox_change.change_ref.id)
 
@@ -183,20 +179,17 @@ class SandboxState(object):
                     self.model_changes[change.object_code] = change
 
     def build_sandbox_state_metadata(self):
-        # last_branch_revision = BranchRevision.objects.filter(branch_ref=self.branch_id) \
-        # .order_by(-'revision_number').first()
 
         branch_rev_state = BranchRevisionState(self.sandbox.created_from_branch_revision_ref)
         schemas = branch_rev_state.build_branch_state_metadata()
         self.populate_changes()
+
         schemas = build_state_metadata(schemas, self.model_changes.values())
 
         self.schemas = schemas
         return schemas
 
     def build_sandbox_state_symbols(self):
-        # last_branch_revision = BranchRevision.objects.filter(branch_ref=self.branch_id) \
-        # .order_by(-'revision_number').first()
 
         branch_rev_state = BranchRevisionState(self.sandbox.created_from_branch_revision_ref)
         diagrams = branch_rev_state.build_branch_state_symbols()
@@ -206,9 +199,34 @@ class SandboxState(object):
         self.diagrams = diagrams
         return diagrams
 
-    def commit(self):
-        # todo implement this!
-        pass
+    def build_project_info(self):
+
+        branch = self.sandbox.bound_to_branch_ref
+        project = branch.project_ref
+
+        project_info = ProjectBasicInfo()
+        project_info.id = project.id
+        project_info.branch = BranchBasicInfo(id=branch.id, name=branch.name, revision=branch.current_version)
+        project_info.name = project.name
+        project_info.description = project.description
+        project_info.url = project
+
+        sandbox_info = SandboxBasicInfo()
+        sandbox_info.project_info = project_info
+
+        sandbox_info.schemas = self.schemas
+        sandbox_info.diagrams = self.__retrieve_diagram_list__()
+        return sandbox_info
+
+    def __retrieve_diagram_list__(self):
+        ret_val = []
+        for diagram in self.diagrams:
+            ret_val.append({
+                'id': diagram.id,
+                'description': diagram.description,
+                'url': diagram.id
+            })
+        return ret_val
 
     def retrieve_diagram_details(self, diagram_id):
         diagram = [x for x in self.diagrams if x.id == diagram_id]
@@ -222,6 +240,8 @@ def build_state_metadata(schemas, new_changes):
     schemas is array of Schema 's representing current state
     new_changes are Change objects that need to be applied to current state
     """
+    if not new_changes:
+        return schemas
 
     if schemas is None:
         schemas = []
@@ -247,8 +267,10 @@ def build_state_metadata(schemas, new_changes):
         change_obj = change_to_object(namespace_change)
 
         schema_parent = [x for x in schemas if x.id == change_obj.schema_ref]
+
         schema_parent = schema_parent[0] if schema_parent else None
-        namespace = [x for x in schema_parent.namespaces if x.id == change_obj.id][0]
+
+        namespace = [x for x in schema_parent.namespaces if x.id == change_obj.id]
         namespace = namespace[0] if namespace else None
         if namespace_change.change_type == 0:
             schema_parent.namespaces.append(change_obj)
@@ -260,14 +282,17 @@ def build_state_metadata(schemas, new_changes):
             schema_parent.namespaces.remove(namespace)
 
     table_changes = [x for x in new_changes if x.object_type == 'Table']
+
     for table_change in table_changes:
         change_obj = change_to_object(table_change)
         schema_parent = [x for x in schemas if x.id == change_obj.schema_ref]
         schema_parent = schema_parent[0] if schema_parent else None
-        if schema_parent is None:
-            continue
+
         table = [x for x in schema_parent.tables if x.id == change_obj.id]
         table = table[0] if table else None
+        # Additional condition  x is None is safeguard. This is temporary while state json is not retrieved from nosql db
+        # if table already exists and there is a new change that it again adding it, ignore it
+
         if table_change.change_type == 0:
             schema_parent.tables.append(change_obj)
         elif table_change.change_type == 1:
@@ -277,8 +302,8 @@ def build_state_metadata(schemas, new_changes):
             table.comment = change_obj.comment
             table.collation = change_obj.collation
             table.namespace_ref = change_obj.namespace_ref
-        else:  # remove table
-            schema_parent.remove(table)
+        elif table_change.change_type == 2:  # remove table
+            schema_parent.tables.remove(table)
 
     column_changes = [x for x in new_changes if x.object_type == 'Column']
     for column_change in column_changes:
@@ -289,6 +314,7 @@ def build_state_metadata(schemas, new_changes):
             for table in schema.tables:
                 if change_obj.table_ref == table.id:
                     table_parent = table
+        #Should be removed!
         if table_parent is None:
             continue
 
@@ -314,7 +340,7 @@ def build_state_metadata(schemas, new_changes):
             column.is_auto_increment = change_obj.is_auto_increment
             column.dictionary = change_obj.dictionary
         else:  # remove column
-            table_parent.remove(column)
+            table_parent.columns.remove(column)
 
     index_changes = [x for x in new_changes if x.object_type == 'Index']
     for index_change in index_changes:
@@ -372,6 +398,9 @@ def build_state_metadata(schemas, new_changes):
 
 
 def build_state_symbols(diagrams, new_changes):
+    if not new_changes:
+        return diagrams
+
     if diagrams is None:
         diagrams = []
     diagram_changes = [x for x in new_changes if x.object_type == 'Diagram']
@@ -388,6 +417,7 @@ def build_state_symbols(diagrams, new_changes):
             diagram.description = change_obj.description
         else:  # remove diagram
             diagrams.remove(diagram)
+
     layer_changes = [x for x in new_changes if x.object_type == 'Layer']
     for layer_change in layer_changes:
         change_obj = change_to_object(layer_change)

@@ -1,19 +1,14 @@
-import json
-from django.http import response
-from rest_framework import viewsets, status, authentication, permissions
-from rest_framework.renderers import JSONRenderer
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action, link, api_view
 from django.contrib.auth.models import User, Group
-from django.shortcuts import get_object_or_404
 from fennec.restapi.constants import MASTER_BRANCH_NAME, MASTER_BRANCH_TYPE, MASTER_BRANCH_DESCRIPTION
-from fennec.restapi.dbmodel.serializers import SchemaSerializer, DiagramSerializer
+from fennec.restapi.dbmodel.serializers import SchemaSerializer, DiagramSerializer, SandboxBasicInfoSerializer
 from fennec.restapi.versioncontroll import utils
-from fennec.restapi.versioncontroll.addins import changes
-from fennec.restapi.versioncontroll.models import Project, Branch, Change, Sandbox, BranchRevision, SandboxChange
-from fennec.restapi.versioncontroll.serializers import BranchRevisionSerializer, SandboxSerializer
+from fennec.restapi.versioncontroll.models import Project, Branch, BranchRevision, SandboxChange
+from fennec.restapi.versioncontroll.serializers import BranchRevisionSerializer, ChangeSerializer
 from fennec.restapi.versioncontroll.utils import SandboxState
-from serializers import ProjectSerializer, BranchSerializer, GroupSerializer, UserSerializer, ChangeSerializer
+from serializers import ProjectSerializer, BranchSerializer, GroupSerializer, UserSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -124,7 +119,6 @@ class BranchRevisionViewSet(viewsets.ModelViewSet):
             sandbox_change.ordinal = SandboxChange.objects.filter(change_ref=change).count() + 1
             sandbox_change.sandbox_ref = sandbox
             sandbox_change.save()
-            changes.append(change)
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             print "\nerrors occured:\n"
@@ -147,6 +141,22 @@ class BranchRevisionViewSet(viewsets.ModelViewSet):
         utils.commit_sandbox(sandbox, request.user)
         return Response(status=status.HTTP_200_OK)
 
+
+    @link()
+    def project_state(self, request, id=None):
+        branch_revision = self.get_object()
+        user = request.user
+        sandbox = utils.obtain_sandbox(user, branch_revision.branch_ref.id)
+
+        sandbox_state = SandboxState(user, sandbox)
+        sandbox_state.build_sandbox_state_metadata()
+        sandbox_state.build_sandbox_state_symbols()
+
+        sandbox_info = sandbox_state.build_project_info()
+        serializer = SandboxBasicInfoSerializer(sandbox_info)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
     @link()
     def metadata(self, request, id=None):
         branch_revision = self.get_object()
@@ -157,96 +167,18 @@ class BranchRevisionViewSet(viewsets.ModelViewSet):
         sandbox_state.build_sandbox_state_metadata()
         schemas = sandbox_state.schemas
         serializer = SchemaSerializer(schemas, many=True)
-        content = JSONRenderer().render(serializer.data)
-        return Response(content, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @link()
-    def diagram(self, request, id=None, diagramId=None):
+
+    @action()
+    def diagram(self, request, id=None):
         branch_revision = self.get_object()
         user = request.user
         sandbox = utils.obtain_sandbox(user, branch_revision.branch_ref.id)
 
         sandbox_state = SandboxState(user, sandbox)
         sandbox_state.build_sandbox_state_symbols()
-        diagram = sandbox_state.retrieve_diagram_details(diagramId)
+        diagram = sandbox_state.retrieve_diagram_details(request.QUERY_PARAMS.get('diagramId', None))
 
         serializer = DiagramSerializer(diagram, many=True)
-
-        content = JSONRenderer().render(serializer.data)
-
-        return Response(content, status=status.HTTP_200_OK)
-
-
-class ChangeViewSet(viewsets.ModelViewSet):
-    queryset = Change.objects.all()
-    serializer_class = ChangeSerializer
-
-
-    @link()
-    def get_all(self, request, pk=None):
-        return Response({'test': "test"})
-
-    @action(methods=['post'])
-    def post_some(self):
-        return Response({'test': "test"})
-
-
-    @action(methods=['post'])
-    def persist_changes(self):
-        user = self.request.user
-        branch_id = self.request.DATA['branch_id']
-        sandbox = Sandbox.obtain_sandbox(user, branch_id)
-        changes.len()
-        # cset = ChangeSet()
-        # cset.comment = self.request.DATA['comment']
-        # cset.submitted_by = user
-        #cset.submitted_on = datetime.datetime.now()
-        ##cset.branch_revision_ref =
-        #cset.save()
-        #
-        #for change in changes:
-        #    change.change_set_ref = cset
-        #    change.ordinal = changes.index(change)
-        #    change.save()
-
-
-changes = []
-
-
-class SandboxView(viewsets.ViewSet):
-    model = Sandbox
-    # authentication_classes = (authentication.TokenAuthentication,)
-    # permission_classes = (permissions.AllowAny,)
-
-    def list(self, request):
-        queryset = Sandbox.objects.all()
-        serializer = SandboxSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def retrieve(self, request, pk=None):
-        queryset = Sandbox.objects.all()
-        user = get_object_or_404(queryset, pk=pk)
-        serializer = SandboxSerializer(user)
-        return Response(serializer.data)
-
-    @action(methods=['GET'])
-    def test(self, request, pk=None, format=None):
-        # print pk
-        return Response({'test': "test"})
-
-
-
-        #
-        #@action(methods=['POST'])
-        #def test(self):
-        #    return Response({'test': "test"})
-
-        #def get(self, request, project_id, branch_id, *args, **kwargs):
-        #    #retrieve user
-        #    #retrieve branch
-        #    #retrieve sandbox based on that
-        #
-        #    sbstate = SandboxState()
-        #    state = sbstate.get_state()
-        #    response = Response(state, status=status.HTTP_200_OK)
-        #    return response
+        return Response(serializer.data, status=status.HTTP_200_OK)

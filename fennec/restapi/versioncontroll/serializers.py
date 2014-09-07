@@ -36,7 +36,6 @@ class BranchSerializer(serializers.ModelSerializer):
         project_ref = serializers.HyperlinkedRelatedField(source='project_ref', view_name='project-detail', queryset=Project.objects.all(), lookup_field='id', slug_url_kwarg='project_id')
 
         fields = ('id', 'name', 'type', 'description', 'current_version', 'project_ref', 'created_by')
-        #fields = ('id', 'name', 'type', 'description', 'current_version', 'project_ref', 'created_by')
 
 
 class BranchRevisionSerializer(serializers.ModelSerializer):
@@ -68,10 +67,3 @@ class ChangeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Change
         fields = ('id', 'content', 'objectType', 'objectCode', 'changeType', 'isUIChange')
-
-
-class ChangeSerializerAlt(serializers.ModelSerializer):
-    class Meta:
-        model = Change
-        fields = ('object_type', 'object_ref', 'change_type', 'made_by')
-

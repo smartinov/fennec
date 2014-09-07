@@ -1,7 +1,6 @@
 import json
 from uuid import uuid4
 from django.contrib.auth.models import User
-from django.http import response
 from rest_framework import status
 from rest_framework.test import APITestCase
 from fennec.restapi.constants import MASTER_BRANCH_NAME, MASTER_BRANCH_DESCRIPTION, MASTER_BRANCH_TYPE
@@ -162,8 +161,8 @@ class IntegrationTests(DefaultAPITest):
 
         schema = {'id': str(uuid4()), 'databaseName': 'default', 'collation': 'utf-8'}
         schema_add_change = {'content': json.dumps(schema), 'objectType': 'Schema', 'objectCode': schema['id'],
-                            'changeType': 0,
-                            'isUIChange': False, 'made_by': self.user.id}
+                             'changeType': 0,
+                             'isUIChange': False, 'made_by': self.user.id}
         schema_creation_posting = self.client.post(revision_two_url + 'change/', schema_add_change)
         self.assertEqual(schema_creation_posting.status_code, status.HTTP_204_NO_CONTENT)
 
@@ -180,7 +179,7 @@ class IntegrationTests(DefaultAPITest):
         # add table symbol
 
         table_symbol = {'id': str(uuid4()), 'positionX': 12, 'positionY': 12, 'width': 50, 'height': 50,
-                        'tableRef': table['id'], 'diagramRef': diagram['id'], 'color': '000000',  'collapsed': False}
+                        'tableRef': table['id'], 'diagramRef': diagram['id'], 'color': '000000', 'collapsed': False}
 
         table_symbol_add_change = {'content': json.dumps(table_symbol), 'objectType': 'TableElement',
                                    'objectCode': table_symbol['id'],
@@ -189,6 +188,22 @@ class IntegrationTests(DefaultAPITest):
 
         table_creation_posting = self.client.post(revision_two_url + 'change/', table_symbol_add_change)
         self.assertEqual(table_creation_posting.status_code, status.HTTP_204_NO_CONTENT)
+
+
+        # add namespace
+
+        namespace = {'id': str(uuid4()), 'name': 'TestNamespace', 'comment': 'This is  a test namespace',
+                     'abbreviation': 'TST', 'schemaRef': schema['id']}
+
+        namespace_add_change = {'content': json.dumps(namespace), 'objectType': 'Namespace',
+                                'objectCode': namespace['id'],
+                                'changeType': 0,
+                                'isUIChange': False, 'made_by': self.user.id}
+
+        namespace_creation_postiong = self.client.post(revision_two_url + 'change/', namespace_add_change)
+        self.assertEqual(namespace_creation_postiong.status_code, status.HTTP_204_NO_CONTENT)
+
+
 
         second_commit_response = self.client.post(revision_two_url + 'commit/')
         self.assertEqual(second_commit_response.status_code, status.HTTP_200_OK)
@@ -202,12 +217,26 @@ class IntegrationTests(DefaultAPITest):
 
         # retrieval of symbol data
 
-        symbol_retrieval_result = self.client.get(revision_two_url + 'diagram/?diagramId='+diagram['id'])
+        symbol_retrieval_result = self.client.post(revision_two_url + 'diagram/?diagramId=' + diagram['id'])
         self.assertEqual(symbol_retrieval_result.status_code, status.HTTP_200_OK)
 
-        print symbol_retrieval_result.data
-        # print "\nDEBUGGING\n"
+        # verify existence of diagram elements
+
+        # print symbol_retrieval_result.data
+        # print "\nDEBUGGING\n" +  diagram['id']
         # changes = Change.objects.all()
         # for change in changes:
-        #     print '\n'
+        # print '\n'
         #     print change.content
+        #print "\n\n TESTING"
+        project_current_state_url = revision_two_url + 'project_state/'
+        #project_current_state = self.client.get(project_current_state_url)
+        #project_current_state = self.client.get(project_current_state_url)
+        #project_current_state = self.client.get(project_current_state_url)
+        project_current_state = self.client.get(project_current_state_url)
+        self.assertEqual(project_current_state.status_code, status.HTTP_200_OK)
+        #print "\n\n RE"
+        #print project_current_state.data
+        #print "\n\n CHANGES"
+        #for x in Change.objects.all():
+        #    print repr(x.content)

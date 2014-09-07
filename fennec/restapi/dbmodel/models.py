@@ -1,7 +1,3 @@
-from uuid import uuid4
-from django.db import models
-from django.conf import settings
-
 
 REFERENTIAL_ACTIONS = (
     (0, "NO ACTION"),
@@ -99,12 +95,11 @@ class ForeignKey(object):
 
 
 class Diagram(object):
-    def __init__(self, id=None, name=None, description=None, url=None, layers=[], table_elements=[],
+    def __init__(self, id=None, name=None, description=None, layers=[], table_elements=[],
                  relationship_elements=[]):
         self.id = id
         self.name = name
         self.description = description
-        self.url = url
         self.layers = layers
         self.table_elements = table_elements
         self.relationship_elements = relationship_elements
@@ -152,3 +147,34 @@ class RelationshipElement(object):
         self.foreign_key_ref = foreign_key_ref
 
         self.diagram_ref = diagram_ref
+
+
+class SandboxBasicInfo(object):
+    def __init__(self, project_info=None, diagrams=None, schemas=None):
+        self.project_info = project_info
+        self.diagrams = diagrams
+        self.schemas = schemas
+
+
+class ProjectBasicInfo(object):
+    def __init__(self, id=None, name=None, description=None, url=None, branch=None):
+        self.id = id
+        self.name = name
+        self.description = description
+        self.url = url
+        self.branch = branch
+
+
+class BranchBasicInfo(object):
+    def __init__(self, id=None, name=None, revision=None):
+        self.id = id
+        self.name = name
+        self.revision = revision
+
+
+class DiagramBasicInfo(object):
+    def __init__(self, id=None, name=None, description=None, url=None):
+        self.id = id
+        self.name = name
+        self.description = description
+        self.url = url
