@@ -200,10 +200,8 @@ class IntegrationTests(DefaultAPITest):
                                 'changeType': 0,
                                 'isUIChange': False, 'made_by': self.user.id}
 
-        namespace_creation_postiong = self.client.post(revision_two_url + 'change/', namespace_add_change)
-        self.assertEqual(namespace_creation_postiong.status_code, status.HTTP_204_NO_CONTENT)
-
-
+        namespace_creation_posting = self.client.post(revision_two_url + 'change/', namespace_add_change)
+        self.assertEqual(namespace_creation_posting.status_code, status.HTTP_204_NO_CONTENT)
 
         second_commit_response = self.client.post(revision_two_url + 'commit/')
         self.assertEqual(second_commit_response.status_code, status.HTTP_200_OK)
@@ -212,31 +210,79 @@ class IntegrationTests(DefaultAPITest):
 
         metadata_retrieval_result = self.client.get(revision_two_url + 'metadata/')
         self.assertEqual(metadata_retrieval_result.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(metadata_retrieval_result.data), 1)
+        retrieved_schema = metadata_retrieval_result.data[0]
+        self.assertEqual(retrieved_schema['id'], schema['id'])
+        self.assertEqual(retrieved_schema['databaseName'], schema['databaseName'])
+        self.assertEqual(retrieved_schema['collation'], schema['collation'])
 
-        # print metadata_retrieval_result.data
+        self.assertEqual(len(retrieved_schema['tables']), 1)
+        retrieved_table = retrieved_schema['tables'][0]
+        self.assertEqual(retrieved_table['id'], table['id'])
+        self.assertEqual(retrieved_table['name'], table['name'])
+        self.assertEqual(retrieved_table['collation'], table['collation'])
+        self.assertEqual(retrieved_table['comment'], table['comment'])
+        self.assertEqual(retrieved_table['schemaRef'], table['schemaRef'])
+
+        self.assertEqual(len(retrieved_schema['namespaces']), 1)
+        retrieved_namespace = retrieved_schema['namespaces'][0]
+        self.assertEqual(retrieved_namespace['id'], namespace['id'])
+        self.assertEqual(retrieved_namespace['name'], namespace['name'])
+        self.assertEqual(retrieved_namespace['comment'], namespace['comment'])
+        self.assertEqual(retrieved_namespace['abbreviation'], namespace['abbreviation'])
+        self.assertEqual(retrieved_namespace['schemaRef'], namespace['schemaRef'])
+
 
         # retrieval of symbol data
 
-        symbol_retrieval_result = self.client.post(revision_two_url + 'diagram/?diagramId=' + diagram['id'])
-        self.assertEqual(symbol_retrieval_result.status_code, status.HTTP_200_OK)
+        diagram_retrieval_result = self.client.post(revision_two_url + 'diagram/?diagramId=' + diagram['id'])
+        self.assertEqual(diagram_retrieval_result.status_code, status.HTTP_200_OK)
+        diagram = diagram_retrieval_result.data
+        self.assertEqual(diagram['id'], diagram['id'])
+        self.assertEqual(diagram['name'], diagram['name'])
+        self.assertEqual(diagram['description'], diagram['description'])
+        self.assertEqual(len(diagram['tableElements']), 1)
+        self.assertEqual(diagram['tableElements'][0]['id'], table_symbol['id'])
+        self.assertEqual(diagram['tableElements'][0]['positionX'], table_symbol['positionX'])
+        self.assertEqual(diagram['tableElements'][0]['positionY'], table_symbol['positionY'])
+        self.assertEqual(diagram['tableElements'][0]['width'], table_symbol['width'])
+        self.assertEqual(diagram['tableElements'][0]['height'], table_symbol['height'])
+        self.assertEqual(diagram['tableElements'][0]['tableRef'], table_symbol['tableRef'])
+        self.assertEqual(diagram['tableElements'][0]['color'], table_symbol['color'])
+        self.assertEqual(diagram['tableElements'][0]['collapsed'], table_symbol['collapsed'])
 
-        # verify existence of diagram elements
+        # retrieval of project state
 
-        # print symbol_retrieval_result.data
-        # print "\nDEBUGGING\n" +  diagram['id']
-        # changes = Change.objects.all()
-        # for change in changes:
-        # print '\n'
-        #     print change.content
-        #print "\n\n TESTING"
         project_current_state_url = revision_two_url + 'project_state/'
-        #project_current_state = self.client.get(project_current_state_url)
-        #project_current_state = self.client.get(project_current_state_url)
-        #project_current_state = self.client.get(project_current_state_url)
         project_current_state = self.client.get(project_current_state_url)
         self.assertEqual(project_current_state.status_code, status.HTTP_200_OK)
-        #print "\n\n RE"
-        #print project_current_state.data
-        #print "\n\n CHANGES"
-        #for x in Change.objects.all():
-        #    print repr(x.content)
+
+        revision_three_url = "/api/branch-revisions/3/"
+
+        altered_table = {'id': table['id'], 'name': 'TableOneTwo', 'collation': 'utf-8', 'comment': 'first table yay',
+                         'schemaRef': schema['id'], }
+        table_alter_change = {'content': json.dumps(altered_table), 'objectType': 'Table', 'objectCode': altered_table['id'],
+                              'changeType': 1,
+                              'isUIChange': False, 'made_by': self.user.id}
+        table_alternation_posting = self.client.post(revision_three_url + 'change/', table_alter_change)
+        self.assertEqual(table_alternation_posting.status_code, status.HTTP_204_NO_CONTENT)
+
+        project_current_state_url = revision_three_url + 'project_state/'
+        project_current_state = self.client.get(project_current_state_url)
+        self.assertEqual(project_current_state.status_code, status.HTTP_200_OK)
+        schemas = project_current_state.data['schemas']
+        self.assertEqual(len(schemas), 1)
+        retrieved_schema = schemas[0]
+        self.assertEqual(retrieved_schema['id'], schema['id'])
+        self.assertEqual(retrieved_schema['databaseName'], schema['databaseName'])
+        self.assertEqual(retrieved_schema['collation'], schema['collation'])
+
+        self.assertEqual(len(retrieved_schema['tables']), 1)
+        retrieved_table = retrieved_schema['tables'][0]
+        self.assertEqual(retrieved_table['id'], altered_table['id'])
+        self.assertEqual(retrieved_table['name'], altered_table['name'])
+        self.assertEqual(retrieved_table['collation'], altered_table['collation'])
+        self.assertEqual(retrieved_table['comment'], altered_table['comment'])
+        self.assertEqual(retrieved_table['schemaRef'], altered_table['schemaRef'])
+
+

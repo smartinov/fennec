@@ -180,5 +180,5 @@ class BranchRevisionViewSet(viewsets.ModelViewSet):
         sandbox_state.build_sandbox_state_symbols()
         diagram = sandbox_state.retrieve_diagram_details(request.QUERY_PARAMS.get('diagramId', None))
 
-        serializer = DiagramSerializer(diagram, many=True)
+        serializer = DiagramSerializer(diagram)
         return Response(serializer.data, status=status.HTTP_200_OK)

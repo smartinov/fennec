@@ -22,13 +22,6 @@ class NamespaceSerializer(serializers.Serializer):
     schemaRef = serializers.CharField(source='schema_ref')
 
     def restore_object(self, attrs, instance=None):
-        # if instance is not None:
-        #     instance.id = attrs.get('id', instance.id)
-        #     instance.abbreviation = attrs.get('abbreviation', instance.abbreviation)
-        #     instance.name = attrs.get('name', instance.name)
-        #     instance.comment = attrs.get('comment', instance.comment)
-        #     return instance
-        # print "attrs:" + str(attrs)
         return Namespace(**attrs)
 
 
@@ -59,7 +52,7 @@ class IndexSerializer(serializers.Serializer):
     name = serializers.CharField()
     comment = serializers.CharField(required=False)
     storageType = serializers.CharField(source='storage_type')
-    columns = ColumnSerializer(required=False)
+    columns = ColumnSerializer(required=False, many=True)
 
     tableRef = serializers.CharField(source='tableRef')
 
@@ -75,8 +68,8 @@ class ForeignKeySerializer(serializers.Serializer):
     comment = serializers.CharField(required=False)
     onUpdate = serializers.IntegerField(source='on_update_referential_action')
     onDelete = serializers.IntegerField(source='on_delete_referential_action')
-    sourceColumns = ColumnSerializer(required=False, source='source_columns')
-    referencedColumns = ColumnSerializer(required=False, source='referenced_columns')
+    sourceColumns = ColumnSerializer(required=False, source='source_columns', many=True)
+    referencedColumns = ColumnSerializer(required=False, source='referenced_columns', many=True)
 
     tableRef = serializers.CharField(source='tableRef')
 
@@ -93,9 +86,9 @@ class TableSerializer(serializers.Serializer):
     comment = serializers.CharField(required=False)
     collation = serializers.CharField(required=False)
     namespaceRef = serializers.CharField(source='namespace_ref', required=False)
-    columns = ColumnSerializer(required=False)
-    indexes = IndexSerializer(required=False)
-    foreignKeys = ForeignKeySerializer(required=False, source='foreign_keys')
+    columns = ColumnSerializer(required=False, many=True)
+    indexes = IndexSerializer(required=False, many=True)
+    foreignKeys = ForeignKeySerializer(required=False, source='foreign_keys', many=True)
 
     schemaRef = serializers.CharField(source='schema_ref')
 
@@ -174,9 +167,9 @@ class DiagramSerializer(serializers.Serializer):
     id = serializers.CharField()
     name = serializers.CharField()
     description = serializers.CharField(required=False)
-    layers = LayerSerializer(required=False)
-    tableElements = TableElementSerializer(required=False, source='table_elements')
-    relationshipElements = RelationshipElementSerializer(required=False, source='relationship_elements')
+    layers = LayerSerializer(required=False, many=True)
+    tableElements = TableElementSerializer(required=False, source='table_elements', many=True)
+    relationshipElements = RelationshipElementSerializer(required=False, source='relationship_elements', many=True)
 
     def restore_object(self, attrs, instance=None):
         diagram = Diagram(**attrs)

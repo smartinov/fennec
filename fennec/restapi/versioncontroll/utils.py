@@ -231,8 +231,8 @@ class SandboxState(object):
     def retrieve_diagram_details(self, diagram_id):
         diagram = [x for x in self.diagrams if x.id == diagram_id]
         if not diagram:
-            return []
-        return diagram
+            return None
+        return diagram[0]
 
 
 def build_state_metadata(schemas, new_changes):
