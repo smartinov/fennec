@@ -1,4 +1,5 @@
-from rest_framework import viewsets, status
+import django_filters
+from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action, link, api_view
 from django.contrib.auth.models import User, Group
@@ -26,6 +27,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     lookup_field = 'id'
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_fields = ('created_by',)
+
 
     def post_save(self, obj, created=False):
         if created:
@@ -40,32 +44,14 @@ class BranchViewSet(viewsets.ModelViewSet):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
     lookup_field = 'id'
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_fields = ('project_ref',)
+
 
     def post_save(self, obj, created=False):
         if created:
             revision_zero = BranchRevision(revision_number=0, branch_ref=obj)
             revision_zero.save()
-
-    # def list(self, request, project_id_id=None, *args, **kwargs):
-    # #id_id <- w/e it works!
-    # #print kwargs
-    #    queryset = self.queryset.filter(project_ref=project_id_id)
-    #    serializer = BranchSerializer(queryset, many=True)
-    #    return Response(serializer.data)
-    #
-    #def create(self, request, project_id_id=None, *args, **kwargs):
-    #    serializer = self.get_serializer(data=request.DATA, files=request.FILES)
-    #
-    #    if serializer.is_valid():
-    #        serializer.object.project_ref = Project.objects.filter(id=project_id_id).first()
-    #        self.pre_save(serializer.object)
-    #        self.object = serializer.save(force_insert=True)
-    #        self.post_save(self.object, created=True)
-    #        headers = self.get_success_headers(serializer.data)
-    #        return Response(serializer.data, status=status.HTTP_201_CREATED,
-    #                        headers=headers)
-    #
-    #    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(methods=['GET'])
     def sandbox(self, request, id=None, project_id_id=None):
@@ -78,14 +64,8 @@ class BranchRevisionViewSet(viewsets.ModelViewSet):
     queryset = BranchRevision.objects.all()
     serializer_class = BranchRevisionSerializer
     lookup_field = 'id'
-
-    # def list(self, request, branch_id_id=None, *args, **kwargs):
-    # #id_id <- w/e it works!
-    # #print kwargs
-    #    queryset = self.queryset.filter(branch_ref=branch_id_id)
-    #    serializer = BranchRevisionSerializer(queryset, many=True)
-    #    return Response(serializer.data)
-
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_fields = ('branch_ref',)
 
     @action()
     def branch(self, request, id=None, project_id_id=None, ):
@@ -100,11 +80,7 @@ class BranchRevisionViewSet(viewsets.ModelViewSet):
 
     @action(methods=['POST'])
     def change(self, request, id=None):
-        #print request.DATA
         serializer = ChangeSerializer(data=request.DATA)
-        #print serializer.is_valid()
-        #print serializer.object
-        #print serializer.errors
         if serializer.is_valid():
             branch_rev = BranchRevision.objects.filter(id=id).first()
             sandbox = utils.obtain_sandbox(request.user, branch_rev.branch_ref.id)
