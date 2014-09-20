@@ -30,6 +30,7 @@ class IntegrationTests(DefaultAPITest):
 
         create_project_response = self.client.post(projects_url, data)
         self.assertEqual(create_project_response.status_code, status.HTTP_201_CREATED)
+
         self.assertEqual(create_project_response.data['id'], data['id'])
         self.assertEqual(create_project_response.data['name'], data['name'])
         self.assertEqual(create_project_response.data['description'], data['description'])

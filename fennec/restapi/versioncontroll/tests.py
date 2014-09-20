@@ -269,7 +269,7 @@ class ProjectTests(APITestCase):
         self.assertEqual(response.data['description'], data['description'])
         self.assertEqual(response.data['created_by'], data['created_by'])
 
-        branches_url = "/api/projects/1/branches/"
+        branches_url = "/api/branches/"
         branch_response = self.client.get(branches_url)
         self.assertEqual(branch_response.status_code, status.HTTP_200_OK)
         self.assertEqual(branch_response.data[0]['id'], 1)
@@ -282,7 +282,7 @@ class ProjectTests(APITestCase):
         project = Project(id=1, created_by=user)
         project.save()
 
-        url = "/api/projects/1/branches/"
+        url = "/api/branches/"
         data = {'id': 1, 'name': 'test_branch', 'type': 'feature', 'description': 'a simple feature branch',
                 'current_version': 0, 'project_ref': 1, 'created_by': 1}
 
