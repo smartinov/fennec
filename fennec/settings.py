@@ -39,14 +39,12 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_swagger',
-    'fennec.restapi',
-    'fennec.apps.web',
-    'fennec.apps.auth',
-    'fennec.restapi.dbmodel',
-    'fennec.restapi.dbsymbols',
-    'fennec.restapi.versioncontroll',
-    'fennec.restapi.notifications',
-    'south'
+    'fennec.services',
+    'fennec.dashboard',
+    'fennec.authentication',
+    'fennec.services.dbmodel',
+    'fennec.services.versioncontroll',
+    'fennec.services.notifications'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -111,7 +109,7 @@ REST_FRAMEWORK = {
     'DEFAULT_MODEL_SERIALIZER_CLASS':
         'rest_framework.serializers.HyperlinkedModelSerializer',
 
-    # Use Django's standard `django.contrib.auth` permissions,
+    # Use Django's standard `django.contrib.authentication` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
