@@ -1,6 +1,9 @@
 Project Fennec
 
-Structure based on website: 	http://www.deploydjango.com/django_project_structure/
+
+
+
+Structure: http://django-skel.readthedocs.org/en/latest/
 Rest Implementation: 			http://www.django-rest-framework.org/
 Django:							https://www.djangoproject.com/
 

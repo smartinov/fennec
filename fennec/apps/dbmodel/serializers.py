@@ -1,8 +1,8 @@
-from json.encoder import JSONEncoder
 from rest_framework import serializers
-from fennec.services.dbmodel.models import Index, ForeignKey, Schema, Layer, TableElement, RelationshipElement, Diagram
-from models import Table, Namespace, Column
-from json import JSONEncoder
+
+from apps.dbmodel.models import Index, ForeignKey, Schema, Layer, TableElement, RelationshipElement, Diagram
+from apps.dbmodel.models import Table, Namespace, Column
+
 
 # def serialize(obj):
 #    if isinstance(obj, Table):
