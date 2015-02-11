@@ -3,3 +3,4 @@
 *.pyc
 fennec/apps/rest/migrations
 .dat0134.022
+default.db

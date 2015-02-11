@@ -95,22 +95,19 @@ STATIC_ROOT = normpath(join(DJANGO_ROOT, 'static'))
 STATIC_URL = '/static/'
 
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
-STATICFILES_DIRS = (
-    normpath(join(DJANGO_ROOT, 'assets')),
-)
+STATICFILES_DIRS = ()
 
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'compressor.finders.CompressorFinder',
 )
 ########## END STATIC FILE CONFIGURATION
 
 
 ########## SECRET CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
-SECRET_KEY = r"{{ secret_key }}"
+SECRET_KEY = "(_5+3ten*d&_#+@4av*q=%d^1*6i8p4dbx-0z@z5@44f^+qu60"
 ########## END SECRET CONFIGURATION
 
 
@@ -155,18 +152,20 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.gzip.GZipMiddleware',
 
     # Default Django middleware.
-    'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
+
 ########## END MIDDLEWARE CONFIGURATION
 
 
 ########## URL CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
-ROOT_URLCONF = '%s.urls' % SITE_NAME
+ROOT_URLCONF = 'fennec.urls'
 ########## END URL CONFIGURATION
 
 
@@ -195,7 +194,6 @@ LOCAL_APPS = (
     'fennec.apps.authentication',
     'fennec.apps.dbmodel',
     'fennec.apps.versioncontroll',
-    'fennec.apps.notifications'
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -233,3 +231,25 @@ LOGGING = {
     }
 }
 ########## END LOGGING CONFIGURATION
+
+LOGIN_URL = '/auth/sign-in'
+
+
+
+WSGI_APPLICATION = 'wsgi.application'
+
+
+REST_FRAMEWORK = {
+    # Use hyperlinked styles by default.
+    # Only used if the `serializer_class` attribute is not set on a view.
+    'DEFAULT_MODEL_SERIALIZER_CLASS':
+        'rest_framework.serializers.HyperlinkedModelSerializer',
+
+    # Use Django's standard `django.contrib.authentication` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ],
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
+
+}
