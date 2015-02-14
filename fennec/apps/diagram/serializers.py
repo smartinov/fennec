@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from apps.dbmodel.models import Index, ForeignKey, Schema, Layer, TableElement, RelationshipElement, Diagram
-from apps.dbmodel.models import Table, Namespace, Column
+from apps.diagram.models import Index, ForeignKey, Schema, Layer, TableElement, RelationshipElement, Diagram
+from apps.diagram.models import Table, Namespace, Column
 
 
 # def serialize(obj):

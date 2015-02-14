@@ -192,7 +192,7 @@ THIRD_PARTY_APPS = (
 LOCAL_APPS = (
     'fennec.apps.dashboard',
     'fennec.apps.authentication',
-    'fennec.apps.dbmodel',
+    'fennec.apps.diagram',
     'fennec.apps.versioncontroll',
 )
 

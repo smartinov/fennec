@@ -2,8 +2,8 @@ from StringIO import StringIO
 
 from rest_framework.parsers import JSONParser
 
-from apps.dbmodel.models import ProjectBasicInfo, BranchBasicInfo, SandboxBasicInfo
-from fennec.apps.dbmodel.serializers import SchemaSerializer, NamespaceSerializer, TableSerializer, ColumnSerializer, \
+from apps.diagram.models import ProjectBasicInfo, BranchBasicInfo, SandboxBasicInfo
+from fennec.apps.diagram.serializers import SchemaSerializer, NamespaceSerializer, TableSerializer, ColumnSerializer, \
     IndexSerializer, ForeignKeySerializer, LayerSerializer, TableElementSerializer, RelationshipElementSerializer, \
     DiagramSerializer
 from fennec.apps.versioncontroll.models import Sandbox, Branch, BranchRevision, SandboxChange, \
