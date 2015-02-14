@@ -8,7 +8,7 @@ from django.test import TestCase
 
 from apps.versioncontroll import utils
 from apps import constants
-from apps.diagram.models import Table, Schema, Column, Diagram, Layer
+from apps.diagram.utils import Table, Schema, Column, Diagram, Layer
 from fennec.services.dbmodel.serializers import SchemaSerializer, TableSerializer, ColumnSerializer, \
     DiagramSerializer, LayerSerializer
 from fennec.services.versioncontroll.models import Project, Branch, BranchRevision, Sandbox, Change, SandboxChange, \
