@@ -1,15 +1,17 @@
-import django_filters
 from rest_framework import viewsets, status, filters
+
 from rest_framework.response import Response
-from rest_framework.decorators import action, link, api_view
+from rest_framework.decorators import action, link
 from django.contrib.auth.models import User, Group
-from fennec.services.constants import MASTER_BRANCH_NAME, MASTER_BRANCH_TYPE, MASTER_BRANCH_DESCRIPTION
-from fennec.services.dbmodel.serializers import SchemaSerializer, DiagramSerializer, SandboxBasicInfoSerializer
-from fennec.services.versioncontroll import utils
-from fennec.services.versioncontroll.models import Project, Branch, BranchRevision, SandboxChange
-from fennec.services.versioncontroll.serializers import BranchRevisionSerializer, ChangeSerializer
-from fennec.services.versioncontroll.utils import SandboxState
-from serializers import ProjectSerializer, BranchSerializer, GroupSerializer, UserSerializer
+
+from fennec.apps.constants import MASTER_BRANCH_NAME, MASTER_BRANCH_TYPE, MASTER_BRANCH_DESCRIPTION
+
+from fennec.apps.diagram.serializers import SchemaSerializer, DiagramSerializer, SandboxBasicInfoSerializer
+from fennec.apps.versioncontroll import utils
+from fennec.apps.versioncontroll.models import Project, Branch, BranchRevision, SandboxChange
+from fennec.apps.versioncontroll.serializers import BranchRevisionSerializer, ChangeSerializer
+from fennec.apps.versioncontroll.utils import SandboxState
+from fennec.apps.versioncontroll.serializers import ProjectSerializer, BranchSerializer, GroupSerializer, UserSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):

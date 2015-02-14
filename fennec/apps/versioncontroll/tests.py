@@ -1,11 +1,14 @@
 from uuid import uuid4
+
 from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
 from rest_framework.test import APITestCase, APIClient
 from django.test import TestCase
-from fennec.services import constants
-from fennec.services.dbmodel.models import Table, Schema, Column, Diagram, Layer
+
+from apps.versioncontroll import utils
+from apps import constants
+from apps.diagram.utils import Table, Schema, Column, Diagram, Layer
 from fennec.services.dbmodel.serializers import SchemaSerializer, TableSerializer, ColumnSerializer, \
     DiagramSerializer, LayerSerializer
 from fennec.services.versioncontroll.models import Project, Branch, BranchRevision, Sandbox, Change, SandboxChange, \

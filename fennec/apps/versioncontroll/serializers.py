@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
 
-from fennec.services.versioncontroll.models import Project, Branch, Change, BranchRevision, Sandbox
+from fennec.apps.versioncontroll.models import Project, Branch, Change, BranchRevision, Sandbox
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
