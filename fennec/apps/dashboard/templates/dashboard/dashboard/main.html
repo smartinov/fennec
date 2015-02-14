@@ -1,0 +1,50 @@
+{% extends "dashboard/template/base.html" %}
+{% load staticfiles %}
+{% block ng-app %}fennec.dashboard{% endblock %}
+{% block title %}Dashboard{% endblock %}
+{% block custom-javascript %}
+    <script src="{% static "dashboard/js/dashboard/controllers.js" %}" ></script>
+{% endblock %}
+
+{% block content %}
+    <h3>Projects</h3>
+    <div id="alert-container" style="position: absolute; top: 70px; right: 15px" ></div>
+    <div ng-controller="ProjectsController" ng-init="reload()" >
+        <form class="css-form form-inline" role="form">
+            <div name="newProjectForm" class="form-group">
+                <label> Start new </label>
+                <input  ng-model="project_name" name="projectName" type="text"
+                        class="form-control" id="projectName" placeholder="name" required />
+                <button ng-click="create(project_name)" class="btn btn-primary"  >GO</button>
+            </div>
+        </form>
+        <br/>
+    {% verbatim %}
+        <table class="table table-striped table-hover">
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th></th>
+            </tr>
+            <tr ng-repeat="project in projects">
+                <td>{{$index + 1}}</td>
+                <td>{{ project.name }}</td>
+                <td>{{ project.description }}</td>
+                <td>
+                   <i class="fa fa-trash-o" data-toggle="modal" data-target=".bs-example-modal-sm"></i>
+                </td>
+            </table>
+        </div>
+    </div>
+    {% endverbatim %}
+
+    <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            Are you really sure you want to delete this project?
+        </div>
+      </div>
+    </div>
+
+{% endblock %}
