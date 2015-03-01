@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from apps.diagram.utils import Index, ForeignKey, Schema, Layer, TableElement, RelationshipElement, Diagram
-from apps.diagram.utils import Table, Namespace, Column
+from fennec.apps.diagram.utils import Index, ForeignKey, Schema, Layer, TableElement, RelationshipElement, Diagram
+from fennec.apps.diagram.utils import Table, Namespace, Column
 
 
 # def serialize(obj):
@@ -11,6 +11,20 @@ from apps.diagram.utils import Table, Namespace, Column
 #        return ColumnSerializerFK(obj).data
 #    elif isinstance(obj,  Namespace):
 #        return NamespaceSerializer(obj).data
+
+
+class BaseSerializer(serializers.Serializer):
+    '''
+    Added to enable easy way to avoid serialization of sub collections.
+    For example -> serialize only schema, not all tables that are a part of it
+    '''
+    def __init__(self, *args, **kwargs):
+        remove_fields = kwargs.pop('remove_fields', None)
+        super(BaseSerializer, self).__init__(*args, **kwargs)
+
+        if remove_fields:
+            for field_name in remove_fields:
+                self.fields.pop(field_name)
 
 
 class NamespaceSerializer(serializers.Serializer):
@@ -29,7 +43,7 @@ class ColumnSerializer(serializers.Serializer):
     id = serializers.CharField()
     name = serializers.CharField()
     comment = serializers.CharField(required=False)
-    column_type_ref = serializers.CharField()
+    column_type = serializers.CharField()
     length = serializers.IntegerField()
     precision = serializers.FloatField(required=False)
     default = serializers.CharField(required=False)
@@ -80,7 +94,7 @@ class ForeignKeySerializer(serializers.Serializer):
         return foreign_key
 
 
-class TableSerializer(serializers.Serializer):
+class TableSerializer(BaseSerializer):
     id = serializers.CharField()
     name = serializers.CharField()
     comment = serializers.CharField(required=False)
@@ -92,6 +106,9 @@ class TableSerializer(serializers.Serializer):
 
     schemaRef = serializers.CharField(source='schema_ref')
 
+
+
+
     def restore_object(self, attrs, instance=None):
         table = Table(**attrs)
         table.columns = []
@@ -100,7 +117,7 @@ class TableSerializer(serializers.Serializer):
         return table
 
 
-class SchemaSerializer(serializers.Serializer):
+class SchemaSerializer(BaseSerializer):
     id = serializers.CharField()
     databaseName = serializers.CharField(source='database_name')
     comment = serializers.CharField(required=False)

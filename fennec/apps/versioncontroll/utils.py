@@ -2,7 +2,7 @@ from StringIO import StringIO
 
 from rest_framework.parsers import JSONParser
 
-from apps.diagram.utils import ProjectBasicInfo, BranchBasicInfo, SandboxBasicInfo
+from fennec.apps.diagram.utils import ProjectBasicInfo, BranchBasicInfo, SandboxBasicInfo
 from fennec.apps.diagram.serializers import SchemaSerializer, NamespaceSerializer, TableSerializer, ColumnSerializer, \
     IndexSerializer, ForeignKeySerializer, LayerSerializer, TableElementSerializer, RelationshipElementSerializer, \
     DiagramSerializer
@@ -15,7 +15,13 @@ __author__ = 'Darko'
 
 def change_to_object(change):
     stream = StringIO(change.content)
-    data = JSONParser().parse(stream)
+    print change.content
+    data = {}
+    try:
+        data = JSONParser().parse(stream)
+    except Exception as e:
+        print e
+
     serializer = switch_type(change.object_type)(data=data)
     if not serializer.is_valid():
         print serializer.errors

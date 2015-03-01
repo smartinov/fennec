@@ -6,7 +6,6 @@ from xml.etree import ElementTree
 from zipfile import ZipFile
 import os
 
-# from wbutils.workbench.model import Table, Column, Index
 from fennec.apps.diagram.utils import Table, Column, Index, Schema
 
 
@@ -14,8 +13,7 @@ class WorkbenchParser():
     def __init__(self):
         pass
 
-
-    def parse_mwb_file(self, path):
+    def parse_file(self, path):
         """
         Parses the model from a file
         :type path: str
@@ -37,35 +35,51 @@ class WorkbenchParser():
         self.model = ElementTree.ElementTree(ElementTree.fromstring(model_data))
         self.user_types = self.__parse_model_user_types()
 
-        tables = []
-        for table_element in self.model.findall('.//value[@type="object"][@struct-name="db.mysql.Table"]'):
-            table = self.__get_table(table_element)
-            tables.append(table)
-            col_ordinal = 0
+        schemas = []
+        for schema_element in self.model.findall('.//value[@type="object"][@struct-name="db.mysql.Schema"]'):
+            schema = self.__get_schema__(schema_element)
+            schemas.append(schema)
 
-            query = '.value[@key="columns"]/value[@struct-name="db.mysql.Column"]'
-            for column_element in table_element.findall(query):
-                column = self.__get_column(column_element, col_ordinal)
-                column.table_ref = table.id
-                table.columns.append(column)
-                col_ordinal += 1
+            schema.tables = []
+            for table_element in self.model.findall('.//value[@type="object"][@struct-name="db.mysql.Table"]'):
+                table = self.__get_table(table_element)
+                schema.tables.append(table)
+                col_ordinal = 0
 
-            query = '.value[@key="foreignKeys"]/value[@struct-name="db.mysql.ForeignKey"]'
-            for fk_element in table_element.findall(query):
-                pass
+                query = '.value[@key="columns"]/value[@struct-name="db.mysql.Column"]'
+                for column_element in table_element.findall(query):
+                    column = self.__get_column(column_element, col_ordinal)
+                    column.table_ref = table.id
+                    table.columns.append(column)
+                    col_ordinal += 1
 
-            query = '.value[@key="indices"]/value[@struct-name="db.mysql.Index"]'
-            for index_element in table_element.findall(query):
-                index = self.__get_index(index_element)
-                index.table_ref = table.id
-                table.indexes.append(index)
+                query = '.value[@key="foreignKeys"]/value[@struct-name="db.mysql.ForeignKey"]'
+                for fk_element in table_element.findall(query):
+                    pass
 
-        return tables
+                query = '.value[@key="indices"]/value[@struct-name="db.mysql.Index"]'
+                for index_element in table_element.findall(query):
+                    index = self.__get_index(index_element)
+                    index.table_ref = table.id
+                    table.indexes.append(index)
+
+        return schemas
+
+
+    @staticmethod
+    def __get_schema__(schema_element):
+        schema_id = schema_element.get('id').strip('{}')
+        name = schema_element.find('.value[@key="name"]').text.encode('utf8')
+        comment = schema_element.find('.value[@key="comment"]').text
+        if comment:
+            comment = comment.encode('utf8')
+
+        return Schema(id=schema_id, database_name=name, comment=comment)
 
 
     @staticmethod
     def __get_table(table_element):
-        table_id = table_element.get('id')
+        table_id = table_element.get('id').strip('{}')
         name = table_element.find('.value[@key="name"]').text.encode('utf8')
         comment = table_element.find('.value[@key="comment"]').text
         if comment:
@@ -75,7 +89,7 @@ class WorkbenchParser():
 
     @staticmethod
     def __get_index(index_element):
-        index_id = index_element.get('id')
+        index_id = index_element.get('id').strip('{}')
         name = index_element.find('.value[@key="name"]').text
         index_type = index_element.find('.value[@key="indexType"]').text
         column_elements = index_element.findall('.value[@key="columns"]/value[@struct-name="db.mysql.IndexColumn"]')
@@ -84,7 +98,7 @@ class WorkbenchParser():
 
 
     def __get_column(self, column_element, ordinal=sys.maxint):
-        column_id = column_element.get('id')
+        column_id = column_element.get('id').strip('{}')
         name = column_element.find('.value[@key="name"]').text
         nullable = int(column_element.find('.value[@key="isNotNull"]').text) is 0
         auto_increment = int(column_element.find('.value[@key="autoIncrement"]').text) is 0
