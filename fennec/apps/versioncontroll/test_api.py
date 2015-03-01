@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from fennec.apps.constants import MASTER_BRANCH_NAME, MASTER_BRANCH_DESCRIPTION, MASTER_BRANCH_TYPE
-from fennec.versioncontroll.models import SandboxChange, Change, BranchRevisionChange
+from fennec.apps.versioncontroll.models import SandboxChange, Change, BranchRevisionChange
 
 
 __author__ = 'Darko'
