@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from apps.diagram.utils import Index, ForeignKey, Schema, Layer, TableElement, RelationshipElement, Diagram
-from apps.diagram.utils import Table, Namespace, Column
+from fennec.apps.diagram.utils import Index, ForeignKey, Schema, Layer, TableElement, RelationshipElement, Diagram
+from fennec.apps.diagram.utils import Table, Namespace, Column
 
 
 # def serialize(obj):

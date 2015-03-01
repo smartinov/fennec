@@ -23,7 +23,7 @@ def sign_in(request):
     if request.POST:
         username = request.POST.get('username')
         password = request.POST.get('password')
-        next = request.POST.get('next')
+        next = request.POST.get('nexr')
         if next is None:
             next = '/'
 

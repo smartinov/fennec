@@ -6,15 +6,14 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.test import APITestCase, APIClient
 from django.test import TestCase
 
-from apps.versioncontroll import utils
-from apps import constants
-from apps.diagram.utils import Table, Schema, Column, Diagram, Layer
-from fennec.services.dbmodel.serializers import SchemaSerializer, TableSerializer, ColumnSerializer, \
+from fennec.apps import constants
+from fennec.apps.diagram.utils import Table, Schema, Column, Diagram, Layer
+from fennec.apps.diagram.serializers import SchemaSerializer, TableSerializer, ColumnSerializer, \
     DiagramSerializer, LayerSerializer
-from fennec.services.versioncontroll.models import Project, Branch, BranchRevision, Sandbox, Change, SandboxChange, \
+from fennec.apps.versioncontroll.models import Project, Branch, BranchRevision, Sandbox, Change, SandboxChange, \
     BranchRevisionChange
-from fennec.services.versioncontroll import utils
-from fennec.services.versioncontroll.utils import BranchRevisionState, SandboxState
+from fennec.apps.versioncontroll import utils
+from fennec.apps.versioncontroll.utils import BranchRevisionState, SandboxState
 
 
 class DefaultAPITest(APITestCase):
