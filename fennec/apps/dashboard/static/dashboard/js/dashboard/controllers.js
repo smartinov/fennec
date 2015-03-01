@@ -17,6 +17,8 @@ app.config(function ($alertProvider) {
 });
 app.controller("ProjectsController",
     function ($scope, $http, $alert, Projects) {
+        $scope.UserFullName = 'Nikola Latinovic';
+        $scope.criteria = {parameter:'All'};
         $scope.projects = [];
         $scope.reload = function () {
             $scope.projects = Projects.query();
@@ -39,4 +41,41 @@ app.controller("ProjectsController",
 
                 });
         }
+
+        $scope.toggleSidebar = function(item){
+            if($scope.selectedProject != undefined){
+                if(item != $scope.selectedProject){
+                    $scope.selectedProject = item;
+                }else{
+                    $("#sidebar-wrapper-rigth").toggleClass("toggled");
+                }
+            }else{
+                $scope.selectedProject = item;
+                $("#sidebar-wrapper-rigth").toggleClass("toggled");
+            }
+            //Reset Selected project if there is no sidebar
+            if(!$("#sidebar-wrapper-rigth").hasClass('toggled'))
+                $scope.selectedProject = undefined;
+        };
+
+        $scope.criteriaMatch = function( criteria ) {
+    	    return function( item ) {
+    		    switch (criteria.parameter){
+    			    case 'All':
+    				    return true;
+    			    case 'Mine':
+    				    return item.owner == $scope.UserFullName;
+    			    case 'Shared':
+    				    return item.members.length > 0;
+    			    case 'InProgress':
+    				    return item.percentage_complete != 100;
+    			    case 'Completed':
+    				    return item.percentage_complete == 100;
+    			    case 'Archived':
+    				    return item.isArchived == 'true';
+    		    }
+    	    };
+  	    };
+
+
     });
