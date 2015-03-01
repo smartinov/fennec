@@ -40,7 +40,7 @@ app.controller("ProjectsController",
                 }).error(function (data, status) {
 
                 });
-        }
+        };
 
         $scope.toggleSidebar = function(item){
             if($scope.selectedProject != undefined){
@@ -76,6 +76,10 @@ app.controller("ProjectsController",
     		    }
     	    };
   	    };
+
+        $scope.filterBy = function(filter_parameter){
+    	    $scope.criteria = {parameter: filter_parameter};
+        };
 
 
     });
