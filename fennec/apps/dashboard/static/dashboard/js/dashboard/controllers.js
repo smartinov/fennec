@@ -79,7 +79,7 @@ app.controller("ProjectsController",
     			    case 'Shared':
     				    return item.members.length > 0;
     			    case 'InProgress':
-    				    return item.percentage_complete != 100;
+     				    return item.percentage_complete != 100;
     			    case 'Completed':
     				    return item.percentage_complete == 100;
     			    case 'Archived':

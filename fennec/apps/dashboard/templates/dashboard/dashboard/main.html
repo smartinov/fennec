@@ -26,18 +26,18 @@
     					<option value="updated">Updated</option>
 					</select>
         		</li>
-            	<li> <a href="" ng-click="filterBy('All');" onclick="" class="selected">All projects<span class="custom-badge">{{projects.length}}</span></a>
+            	<li> <a href="" ng-click="filterBy('All');"  ng-class={selected:'All'==criteria.parameter}>All projects<span class="custom-badge">{{projects.length}}</span></a>
             	</li>
-            	<li> <a href="" ng-click="filterBy('Mine');" onclick="">Mine <span class="custom-badge">0</span>
+            	<li> <a href="" ng-click="filterBy('Mine');"  ng-class={selected:'Mine'==criteria.parameter}>Mine <span class="custom-badge">0</span>
             	</a>
             	</li>
-            	<li> <a href="" ng-click="filterBy('Shared');" onclick="">Shared <span class="custom-badge">0</span></a>
+            	<li> <a href="" ng-click="filterBy('Shared');"ng-class={selected:'Shared'==criteria.parameter}>Shared <span class="custom-badge">0</span></a>
             	</li>
-            	<li> <a href="" ng-click="filterBy('InProgress');" onclick="">In progress <span class="custom-badge">0</span></a>
+            	<li> <a href="" ng-click="filterBy('InProgress');" ng-class={selected:'InProgress'==criteria.parameter}>In progress <span class="custom-badge">0</span></a>
             	</li>
-            	<li> <a href="" ng-click="filterBy('Completed');" onclick="">Completed <span class="custom-badge">0</span></a>
+            	<li> <a href="" ng-click="filterBy('Completed');" ng-class={selected:'Completed'==criteria.parameter}>Completed <span class="custom-badge">0</span></a>
             	</li>
-            	<li> <a href="" ng-click="filterBy('Archived');" onclick="">Archived <span class="custom-badge">0</span></a>
+            	<li> <a href="" ng-click="filterBy('Archived');" ng-class={selected:'Archived'==criteria.parameter}>Archived <span class="custom-badge">0</span></a>
             	</li>
 				</br></br>
             	<li>
@@ -78,7 +78,7 @@
             </ul>
             <div ng-show="add_new">
                <h3 style="margin-left: 10%;color:#2a6496; ">Add project</h3>
-               <div class="form-group has-error has-feedback">
+               <div class="form-group">
                 <input type="text" class="form-control" placeholder="Name" ng-model="AddProject.Name"
                        style="width: 50%; margin-left: 10%; margin-top: 10%; margin-bottom: 5%;">
                 <textarea class="form-control" rows="3" placeholder="Description"  ng-model="AddProject.Description"
