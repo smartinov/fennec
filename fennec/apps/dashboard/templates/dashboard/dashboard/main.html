@@ -5,7 +5,7 @@
 {% block custom-javascript %}
     <script src="{% static "dashboard/js/dashboard/controllers.js" %}" ></script>
 {% endblock %}
-
+{% block  ng-controller %}ProjectsController{% endblock %}
 {% block content %}
         <div id="wrapper">
     	<!-- Sidebar -->
@@ -41,7 +41,7 @@
             	</li>
 				</br></br>
             	<li>
-					<a id="addProject" href="" ng-click="toggleSidebar('add')">Add project</a>
+					<a id="addProject" href="" ng-click="toogle_add_project('true')">Add project</a>
 				</li>
 
         	</ul>
@@ -54,11 +54,11 @@
                 	<div class="col-lg-12" ng-repeat="currentProject in projects | filter:query | filter:criteriaMatch(criteria)  | orderBy: sortorder ">
                 		<div id="projectItemTemplate" class="main-row-item">
 							<div class="main-row-item-content">
-								<span id='{{currentProject.project_id}}' style="cursor: pointer; font-weight:bold;" ng-click="toggleSidebar(currentProject)">{{currentProject.name}}</span></br>
-								<span>Project owner: {{currentProject.owner}}</span><br>
-								<span>Last Updated: {{currentProject.updated}}</span><br><br>
+								<span id='{{currentProject.id}}' style="cursor: pointer; font-weight:bold;" ng-click="toggleSidebar(currentProject)">{{currentProject.name}}</span></br>
+								<span>Project owner: {{currentProject.created_by}}</span><br>
+								<span>Last Updated: {{currentProject.modification_timestamp}}</span><br><br>
 								<span>
-									<a id="project-members" style="cursor:pointer;">Members: {{currentProject.members.length}}</a> </br>
+									<a id="project-members" style="cursor:pointer;">Members:0</a> </br>
 								</span>
 							</div>
 							<div id="project_thumbnail" class="project-thumbnail">
@@ -70,12 +70,30 @@
             </div>
         </div>
         <div id="sidebar-wrapper-rigth">
-       	<ul>
-        	<li><h2>{{selectedProject.name}}</h2></li>
-        	<div class="btn-group">
+       	    <ul ng-show="!add_new">
+        	    <li><h2>{{selectedProject.name}}</h2></li>
+        	    <div class="btn-group">
 
-			</div>
-        </ul>
+			    </div>
+            </ul>
+            <div ng-show="add_new">
+               <h3 style="margin-left: 10%;color:#2a6496; ">Add project</h3>
+               <div class="form-group has-error has-feedback">
+                <input type="text" class="form-control" placeholder="Name" ng-model="AddProject.Name"
+                       style="width: 50%; margin-left: 10%; margin-top: 10%; margin-bottom: 5%;">
+                <textarea class="form-control" rows="3" placeholder="Description"  ng-model="AddProject.Description"
+                          style="width: 75%;margin-bottom: 5%;margin-left: 10%;"></textarea>
+                <div style="margin-left:10%;">
+  				    <button class="btn btn btn-danger" ng-click="toogle_add_project('false')">
+                        <span class="glyphicon glyphicon-remove"></span>
+  				    </button>
+  				    <button class="btn btn-primary" ng-show="AddProject.Name!=='' && AddProject.Name!=undefined" ng-click="add_new_project()">
+                         <span class="glyphicon glyphicon-plus"></span>
+  				    </button>
+			    </div>
+               </div>
+            </div>
+
         </div>
     </div>
     <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
@@ -85,5 +103,4 @@
         </div>
       </div>
     </div>
-
 {% endblock %}
