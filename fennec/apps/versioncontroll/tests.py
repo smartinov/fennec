@@ -5,13 +5,14 @@ from rest_framework import status
 from rest_framework.renderers import JSONRenderer
 from rest_framework.test import APITestCase, APIClient
 from django.test import TestCase
-from fennec.apps.diagram.serializers import SchemaSerializer, TableSerializer, ColumnSerializer, DiagramSerializer, \
-    LayerSerializer
 
-from fennec.apps.versioncontroll import utils
 from fennec.apps import constants
 from fennec.apps.diagram.utils import Table, Schema, Column, Diagram, Layer
-from fennec.apps.versioncontroll.models import Project, Branch, BranchRevision, BranchRevisionChange, Change, Sandbox, SandboxChange
+from fennec.apps.diagram.serializers import SchemaSerializer, TableSerializer, ColumnSerializer, \
+    DiagramSerializer, LayerSerializer
+from fennec.apps.versioncontroll.models import Project, Branch, BranchRevision, Sandbox, Change, SandboxChange, \
+    BranchRevisionChange
+from fennec.apps.versioncontroll import utils
 from fennec.apps.versioncontroll.utils import BranchRevisionState, SandboxState
 
 
