@@ -43,7 +43,7 @@ class WorkbenchParser():
             schema.tables = []
             for table_element in self.model.findall('.//value[@type="object"][@struct-name="db.mysql.Table"]'):
                 table = self.__get_table(table_element)
-                table.schema_ref = schema
+                table.schema_ref = schema.id
                 schema.tables.append(table)
                 col_ordinal = 0
 
@@ -72,10 +72,12 @@ class WorkbenchParser():
         schema_id = schema_element.get('id').strip('{}')
         name = schema_element.find('.value[@key="name"]').text.encode('utf8')
         comment = schema_element.find('.value[@key="comment"]').text
+        collation = schema_element.find('.value[@key="defaultCollationName"]').text
+
         if comment:
             comment = comment.encode('utf8')
 
-        return Schema(id=schema_id, database_name=name, comment=comment)
+        return Schema(id=schema_id, database_name=name, comment=comment, collation=collation)
 
 
     @staticmethod

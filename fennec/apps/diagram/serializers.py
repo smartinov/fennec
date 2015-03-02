@@ -4,29 +4,6 @@ from fennec.apps.diagram.utils import Index, ForeignKey, Schema, Layer, TableEle
 from fennec.apps.diagram.utils import Table, Namespace, Column
 
 
-# def serialize(obj):
-#    if isinstance(obj, Table):
-#        return TableSerializerFK(obj).data
-#    elif isinstance(obj, Column):
-#        return ColumnSerializerFK(obj).data
-#    elif isinstance(obj,  Namespace):
-#        return NamespaceSerializer(obj).data
-
-
-class BaseSerializer(serializers.Serializer):
-    '''
-    Added to enable easy way to avoid serialization of sub collections.
-    For example -> serialize only schema, not all tables that are a part of it
-    '''
-    def __init__(self, *args, **kwargs):
-        remove_fields = kwargs.pop('remove_fields', None)
-        super(BaseSerializer, self).__init__(*args, **kwargs)
-
-        if remove_fields:
-            for field_name in remove_fields:
-                self.fields.pop(field_name)
-
-
 class NamespaceSerializer(serializers.Serializer):
     id = serializers.CharField()
     abbreviation = serializers.CharField()
@@ -94,7 +71,7 @@ class ForeignKeySerializer(serializers.Serializer):
         return foreign_key
 
 
-class TableSerializer(BaseSerializer):
+class TableSerializer(serializers.Serializer):
     id = serializers.CharField()
     name = serializers.CharField()
     comment = serializers.CharField(required=False)
@@ -106,9 +83,6 @@ class TableSerializer(BaseSerializer):
 
     schemaRef = serializers.CharField(source='schema_ref')
 
-
-
-
     def restore_object(self, attrs, instance=None):
         table = Table(**attrs)
         table.columns = []
@@ -117,7 +91,16 @@ class TableSerializer(BaseSerializer):
         return table
 
 
-class SchemaSerializer(BaseSerializer):
+class BasicTableSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    name = serializers.CharField()
+    comment = serializers.CharField(required=False)
+    collation = serializers.CharField(required=False)
+    namespaceRef = serializers.CharField(source='namespace_ref', required=False)
+    schemaRef = serializers.CharField(source='schema_ref')
+
+
+class SchemaSerializer(serializers.Serializer):
     id = serializers.CharField()
     databaseName = serializers.CharField(source='database_name')
     comment = serializers.CharField(required=False)
@@ -131,6 +114,13 @@ class SchemaSerializer(BaseSerializer):
         schema.namespaces = []
         schema.tables = []
         return schema
+
+
+class BasicSchemaSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    databaseName = serializers.CharField(source='database_name')
+    comment = serializers.CharField(required=False)
+    collation = serializers.CharField()
 
 
 class LayerSerializer(serializers.Serializer):

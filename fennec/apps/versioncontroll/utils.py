@@ -15,15 +15,17 @@ __author__ = 'Darko'
 
 def change_to_object(change):
     stream = StringIO(change.content)
-    print change.content
+    # print "Change content:"  + str(change.content)
     data = {}
     try:
         data = JSONParser().parse(stream)
     except Exception as e:
-        print e
+        pass
+        # print e
 
     serializer = switch_type(change.object_type)(data=data)
     if not serializer.is_valid():
+        print change
         print serializer.errors
 
     return serializer.object

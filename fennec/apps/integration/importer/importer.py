@@ -1,4 +1,8 @@
-from fennec.apps.diagram.serializers import TableSerializer, ColumnSerializer, IndexSerializer, SchemaSerializer
+from uuid import uuid4
+from rest_framework.renderers import JSONRenderer
+from fennec.apps.diagram.serializers import TableSerializer, ColumnSerializer, IndexSerializer, SchemaSerializer, \
+    BasicSchemaSerializer, BasicTableSerializer
+from fennec.apps.diagram.utils import Schema
 from fennec.apps.versioncontroll.models import Change, CHANGE_TYPE, BranchRevisionChange
 
 __author__ = 'Darko'
@@ -22,19 +26,23 @@ class FennecImporter():
                 #     self.__save_index_change__(index)
 
     def __save_schema_change__(self, schema):
+        serializer = BasicSchemaSerializer(schema)
+        json = JSONRenderer().render(serializer.data)
+
         change = Change()
         change.change_type = 0
         change.is_ui_change = False
         change.made_by = self.user
         change.object_type = 'Schema'
         change.object_code = schema.id
-
-        serializer = SchemaSerializer(schema, remove_fields=['namespaces', 'tables'])
-        change.content = serializer.data
+        change.content = json
         change.save()
         self.__save_branch_revision_change__(change)
 
     def __save_table_change__(self, table):
+        serializer = BasicTableSerializer(table)
+        json = JSONRenderer().render(serializer.data)
+
         change = Change()
         change.change_type = 0
         change.is_ui_change = False
@@ -42,32 +50,35 @@ class FennecImporter():
         change.object_type = 'Table'
         change.object_code = table.id
 
-        serializer = TableSerializer(table, remove_fields=['columns', 'indexes', 'foreignKeys'])
-        change.content = serializer.data
+        change.content = json
         change.save()
         self.__save_branch_revision_change__(change)
 
     def __save_column_change__(self, column):
+        serializer = ColumnSerializer(column)
+        json = JSONRenderer().render(serializer.data)
+
         change = Change()
         change.change_type = 0
         change.is_ui_change = False
         change.made_by = self.user
         change.object_type = 'Column'
         change.object_code = column.id
-        serializer = ColumnSerializer(column)
-        change.content = serializer.data
+        change.content = json
         change.save()
         self.__save_branch_revision_change__(change)
 
     def __save_index_change__(self, index):
+        serializer = IndexSerializer(index)
+        json = JSONRenderer().render(serializer.data)
+
         change = Change()
         change.change_type = 0
         change.is_ui_change = False
         change.made_by = self.user
         change.object_type = 'Index'
         change.object_code = index.id
-        serializer = IndexSerializer()
-        change.content = serializer.data
+        change.content = json
         change.save()
         self.__save_branch_revision_change__(change)
 
