@@ -53,6 +53,14 @@ class IndexSerializer(serializers.Serializer):
         return index
 
 
+class BasicIndexSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    name = serializers.CharField()
+    comment = serializers.CharField(required=False)
+    storageType = serializers.CharField(source='storage_type')
+    tableRef = serializers.CharField(source='tableRef')
+
+
 class ForeignKeySerializer(serializers.Serializer):
     id = serializers.CharField()
     name = serializers.CharField()

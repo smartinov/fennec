@@ -1,7 +1,7 @@
 from uuid import uuid4
 from rest_framework.renderers import JSONRenderer
 from fennec.apps.diagram.serializers import TableSerializer, ColumnSerializer, IndexSerializer, SchemaSerializer, \
-    BasicSchemaSerializer, BasicTableSerializer
+    BasicSchemaSerializer, BasicTableSerializer, BasicIndexSerializer
 from fennec.apps.diagram.utils import Schema
 from fennec.apps.versioncontroll.models import Change, CHANGE_TYPE, BranchRevisionChange
 
@@ -22,8 +22,8 @@ class FennecImporter():
                 self.__save_table_change__(table)
                 for column in table.columns:
                     self.__save_column_change__(column)
-                # for index in table.indexes:
-                #     self.__save_index_change__(index)
+                for index in table.indexes:
+                    self.__save_index_change__(index)
 
     def __save_schema_change__(self, schema):
         serializer = BasicSchemaSerializer(schema)
@@ -69,7 +69,8 @@ class FennecImporter():
         self.__save_branch_revision_change__(change)
 
     def __save_index_change__(self, index):
-        serializer = IndexSerializer(index)
+        serializer = BasicIndexSerializer(index)
+        print serializer.errors
         json = JSONRenderer().render(serializer.data)
 
         change = Change()

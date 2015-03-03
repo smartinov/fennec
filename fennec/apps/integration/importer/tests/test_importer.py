@@ -35,7 +35,7 @@ class FennecImporterTest(TestCase):
         start_of_parsing = int(round(time.time() * 1000))
 
 
-        path = self.get_path('simplemodel.mwb')
+        path = self.get_path('samplemodel.mwb')
         parser = WorkbenchParser()
         model = parser.parse_file(path)
 
@@ -45,12 +45,6 @@ class FennecImporterTest(TestCase):
         importer.import_model()
 
         end_of_import = int(round(time.time() * 1000))
-
-        #
-        # changes = Change.objects.all()
-        # for c in changes:
-        #     print str(c.content)
-
 
         state_builder = BranchRevisionState(branch_rev=zero_rev)
         metadata = state_builder.build_branch_state_metadata()
