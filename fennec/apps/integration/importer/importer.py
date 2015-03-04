@@ -25,7 +25,7 @@ class FennecImporter():
                 for index in table.indexes:
                     self.__save_index_change__(index)
 
-    def __save_schema_change__(self, schema):
+    def __save_schema_change(self, schema):
         serializer = BasicSchemaSerializer(schema)
         json = JSONRenderer().render(serializer.data)
 
@@ -39,7 +39,7 @@ class FennecImporter():
         change.save()
         self.__save_branch_revision_change__(change)
 
-    def __save_table_change__(self, table):
+    def __save_table_change(self, table):
         serializer = BasicTableSerializer(table)
         json = JSONRenderer().render(serializer.data)
 
@@ -54,7 +54,7 @@ class FennecImporter():
         change.save()
         self.__save_branch_revision_change__(change)
 
-    def __save_column_change__(self, column):
+    def __save_column_change(self, column):
         serializer = ColumnSerializer(column)
         json = JSONRenderer().render(serializer.data)
 
@@ -68,7 +68,7 @@ class FennecImporter():
         change.save()
         self.__save_branch_revision_change__(change)
 
-    def __save_index_change__(self, index):
+    def __save_index_change(self, index):
         serializer = BasicIndexSerializer(index)
         if not serializer.is_valid():
             print serializer.errors
@@ -84,7 +84,7 @@ class FennecImporter():
         change.save()
         self.__save_branch_revision_change__(change)
 
-    def __save_branch_revision_change__(self, change):
+    def __save_branch_revision_change(self, change):
         br_change = BranchRevisionChange()
         br_change.branch_revision_ref = self.branch_rev
         br_change.change_ref = change

@@ -68,7 +68,7 @@ class WorkbenchParser():
 
 
     @staticmethod
-    def __get_schema__(schema_element):
+    def __get_schema(schema_element):
         schema_id = schema_element.get('id').strip('{}')
         name = schema_element.find('.value[@key="name"]').text.encode('utf8')
         comment = schema_element.find('.value[@key="comment"]').text
