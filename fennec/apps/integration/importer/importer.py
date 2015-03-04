@@ -70,7 +70,8 @@ class FennecImporter():
 
     def __save_index_change__(self, index):
         serializer = BasicIndexSerializer(index)
-        print serializer.errors
+        if not serializer.is_valid():
+            print serializer.errors
         json = JSONRenderer().render(serializer.data)
 
         change = Change()

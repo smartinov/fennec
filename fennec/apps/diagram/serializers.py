@@ -45,7 +45,7 @@ class IndexSerializer(serializers.Serializer):
     storageType = serializers.CharField(source='storage_type')
     columns = ColumnSerializer(required=False, many=True)
 
-    tableRef = serializers.CharField(source='tableRef')
+    tableRef = serializers.CharField(source='table_ref')
 
     def restore_object(self, attrs, instance=None):
         index = Index(**attrs)
@@ -58,7 +58,7 @@ class BasicIndexSerializer(serializers.Serializer):
     name = serializers.CharField()
     comment = serializers.CharField(required=False)
     storageType = serializers.CharField(source='storage_type')
-    tableRef = serializers.CharField(source='tableRef')
+    tableRef = serializers.CharField(source='table_ref')
 
 
 class ForeignKeySerializer(serializers.Serializer):

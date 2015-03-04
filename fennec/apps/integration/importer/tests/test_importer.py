@@ -51,7 +51,20 @@ class FennecImporterTest(TestCase):
 
         end_of_build= int(round(time.time() * 1000))
         print "Schema:" + metadata[0].database_name
-        print "number of tables: " + str(len(metadata[0].tables))
+        print "Number of tables: " + str(len(metadata[0].tables))
+        num_of_columns = 0
+        num_of_indexes = 0
+        num_of_fks = 0
+        for table in metadata[0].tables:
+            for column in table.columns:
+                num_of_columns += 1
+            for index in table.indexes:
+                num_of_indexes += 1
+            for fk in table.foreign_keys:
+                num_of_fks += 1
+        print "Number of columns: " + str(num_of_columns)
+        print "Number of indexes: " + str(num_of_indexes)
+        print "Number of foreign keys: " + str(num_of_fks)
         print "Parsing time:" + str(end_of_parsing - start_of_parsing)
         print "Importing time:" + str(end_of_import - end_of_parsing)
         print "State build time:" + str(end_of_build - end_of_import)

@@ -99,7 +99,6 @@ class WorkbenchParser():
         columns = [el.find('.link[@key="referencedColumn"]').text for el in column_elements]
         return Index(name=name, storage_type=index_type, columns=columns, id=index_id)
 
-
     def __get_column(self, column_element, ordinal=sys.maxint):
         column_id = column_element.get('id').strip('{}')
         name = column_element.find('.value[@key="name"]').text
@@ -128,7 +127,6 @@ class WorkbenchParser():
                       default=default_value, column_type=sql_type,
                       length=length, precision=precision, is_auto_increment=auto_increment,
                       comment=comment, ordinal=ordinal, id=column_id)
-
 
     @staticmethod
     def __parse_simple_type(column_element):
