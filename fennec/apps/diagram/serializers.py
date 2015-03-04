@@ -70,7 +70,7 @@ class ForeignKeySerializer(serializers.Serializer):
     sourceColumns = ColumnSerializer(required=False, source='source_columns', many=True)
     referencedColumns = ColumnSerializer(required=False, source='referenced_columns', many=True)
 
-    tableRef = serializers.CharField(source='tableRef')
+    tableRef = serializers.CharField(source='table_ref')
 
     def restore_object(self, attrs, instance=None):
         foreign_key = ForeignKey(**attrs)
@@ -78,6 +78,14 @@ class ForeignKeySerializer(serializers.Serializer):
         foreign_key.referenced_columns = []
         return foreign_key
 
+
+class ForeignKeyBasicSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    name = serializers.CharField()
+    comment = serializers.CharField(required=False)
+    onUpdate = serializers.IntegerField(source='on_update_referential_action')
+    onDelete = serializers.IntegerField(source='on_delete_referential_action')
+    tableRef = serializers.CharField(source='table_ref')
 
 class TableSerializer(serializers.Serializer):
     id = serializers.CharField()

@@ -25,7 +25,6 @@ def change_to_object(change):
 
     serializer = switch_type(change.object_type)(data=data)
     if not serializer.is_valid():
-        print change
         print serializer.errors
 
     return serializer.object

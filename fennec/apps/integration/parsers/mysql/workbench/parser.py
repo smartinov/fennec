@@ -6,7 +6,7 @@ from xml.etree import ElementTree
 from zipfile import ZipFile
 import os
 
-from fennec.apps.diagram.utils import Table, Column, Index, Schema
+from fennec.apps.diagram.utils import Table, Column, Index, Schema, ForeignKey, REFERENTIAL_ACTIONS
 
 
 class WorkbenchParser():
@@ -37,7 +37,7 @@ class WorkbenchParser():
 
         schemas = []
         for schema_element in self.model.findall('.//value[@type="object"][@struct-name="db.mysql.Schema"]'):
-            schema = self.__get_schema__(schema_element)
+            schema = self.__get_schema(schema_element)
             schemas.append(schema)
 
             schema.tables = []
@@ -56,7 +56,9 @@ class WorkbenchParser():
 
                 query = '.value[@key="foreignKeys"]/value[@struct-name="db.mysql.ForeignKey"]'
                 for fk_element in table_element.findall(query):
-                    pass
+                    fk = self.__get_foreign_key(fk_element)
+                    fk.table_ref = table.id
+                    table.foreign_keys.append(fk)
 
                 query = '.value[@key="indices"]/value[@struct-name="db.mysql.Index"]'
                 for index_element in table_element.findall(query):
@@ -69,7 +71,7 @@ class WorkbenchParser():
 
     @staticmethod
     def __get_schema(schema_element):
-        schema_id = schema_element.get('id').strip('{}')
+        schema_id = schema_element.get('id').strip('{}').lower()
         name = schema_element.find('.value[@key="name"]').text.encode('utf8')
         comment = schema_element.find('.value[@key="comment"]').text
         collation = schema_element.find('.value[@key="defaultCollationName"]').text
@@ -82,7 +84,7 @@ class WorkbenchParser():
 
     @staticmethod
     def __get_table(table_element):
-        table_id = table_element.get('id').strip('{}')
+        table_id = table_element.get('id').strip('{}').lower()
         name = table_element.find('.value[@key="name"]').text.encode('utf8')
         comment = table_element.find('.value[@key="comment"]').text
         if comment:
@@ -92,7 +94,7 @@ class WorkbenchParser():
 
     @staticmethod
     def __get_index(index_element):
-        index_id = index_element.get('id').strip('{}')
+        index_id = index_element.get('id').strip('{}').lower()
         name = index_element.find('.value[@key="name"]').text
         index_type = index_element.find('.value[@key="indexType"]').text
         column_elements = index_element.findall('.value[@key="columns"]/value[@struct-name="db.mysql.IndexColumn"]')
@@ -100,7 +102,7 @@ class WorkbenchParser():
         return Index(name=name, storage_type=index_type, columns=columns, id=index_id)
 
     def __get_column(self, column_element, ordinal=sys.maxint):
-        column_id = column_element.get('id').strip('{}')
+        column_id = column_element.get('id').strip('{}').lower()
         name = column_element.find('.value[@key="name"]').text
         nullable = int(column_element.find('.value[@key="isNotNull"]').text) is 0
         auto_increment = int(column_element.find('.value[@key="autoIncrement"]').text) is 0
@@ -121,12 +123,27 @@ class WorkbenchParser():
         else:
             sql_type = self.__parse_simple_type(column_element)
 
-        #todo type set sql_type for now. later change it to internal type maybe
+        # todo type set sql_type for now. later change it to internal type maybe
 
         return Column(name=name, is_nullable=nullable,
                       default=default_value, column_type=sql_type,
                       length=length, precision=precision, is_auto_increment=auto_increment,
                       comment=comment, ordinal=ordinal, id=column_id)
+
+    def __get_foreign_key(self, fk_element):
+        fk_id = fk_element.get('id').strip('{}').lower()
+        name = fk_element.find('.value[@key="name"]').text
+        comment = fk_element.find('.value[@key="comment"]').text
+        delete_rule = self.__parse_fk_rule(fk_element.find('.value[@key="deleteRule"]').text)
+        update_rule = self.__parse_fk_rule(fk_element.find('.value[@key="updateRule"]').text)
+        column_elements = fk_element.findall('.value[@key="columns"]/value[@struct-name="db.Column"]')
+        columns = [el.find('.link').text for el in column_elements]
+        ref_column_elements = fk_element.findall('.value[@key="columns"]/value[@struct-name="db.Column"]')
+        ref_columns = [el.find('.link').text for el in ref_column_elements]
+
+        return ForeignKey(name=name, id=fk_id, comment=comment,
+                          on_delete_referential_action=delete_rule, on_update_referential_action=update_rule,
+                          source_columns=columns, referenced_columns=ref_columns)
 
     @staticmethod
     def __parse_simple_type(column_element):
@@ -141,7 +158,6 @@ class WorkbenchParser():
             sql_data_type = sql_data_type + "({0})".format(",".join(option_list))
         return sql_data_type
 
-
     def __parse_model_user_types(self):
         elements = self.model.findall('.//value[@key="userDatatypes"]/value')
         user_types = {}
@@ -155,7 +171,12 @@ class WorkbenchParser():
 
         return user_types
 
+    def __parse_fk_rule(self, rule):
+        select = [x for x in REFERENTIAL_ACTIONS if x[1] == rule][0]
+        return select[0]
+
     @staticmethod
     def __unpack_model(path):
         zip_file = ZipFile(path)
         return zip_file.read("document.mwb.xml")
+
