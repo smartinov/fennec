@@ -6,15 +6,14 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.test import APITestCase, APIClient
 from django.test import TestCase
 
-from apps.versioncontroll import utils
-from apps import constants
-from apps.diagram.utils import Table, Schema, Column, Diagram, Layer
-from fennec.services.dbmodel.serializers import SchemaSerializer, TableSerializer, ColumnSerializer, \
+from fennec.apps import constants
+from fennec.apps.diagram.utils import Table, Schema, Column, Diagram, Layer
+from fennec.apps.diagram.serializers import SchemaSerializer, TableSerializer, ColumnSerializer, \
     DiagramSerializer, LayerSerializer
-from fennec.services.versioncontroll.models import Project, Branch, BranchRevision, Sandbox, Change, SandboxChange, \
+from fennec.apps.versioncontroll.models import Project, Branch, BranchRevision, Sandbox, Change, SandboxChange, \
     BranchRevisionChange
-from fennec.services.versioncontroll import utils
-from fennec.services.versioncontroll.utils import BranchRevisionState, SandboxState
+from fennec.apps.versioncontroll import utils
+from fennec.apps.versioncontroll.utils import BranchRevisionState, SandboxState
 
 
 class DefaultAPITest(APITestCase):
@@ -85,7 +84,7 @@ class UtilsTest(DefaultAPITest):
         table_branch_rev_change.ordinal = 1
         table_branch_rev_change.save()
 
-        column = Column(id=str(uuid4()), name="PK", column_type_ref="123", length=5, ordinal=1, is_primary_key=True,
+        column = Column(id=str(uuid4()), name="PK", column_type="123", length=5, ordinal=1, is_primary_key=True,
                         table_ref=table.id)
         column_serializer = ColumnSerializer(column)
         column_json = JSONRenderer().render(column_serializer.data)
@@ -111,7 +110,7 @@ class UtilsTest(DefaultAPITest):
         self.assertEqual(schemas[0].tables[0].name, table.name)
         self.assertEqual(schemas[0].tables[0].columns[0].id, column.id)
         self.assertEqual(schemas[0].tables[0].columns[0].name, column.name)
-        self.assertEqual(schemas[0].tables[0].columns[0].column_type_ref, column.column_type_ref)
+        self.assertEqual(schemas[0].tables[0].columns[0].column_type, column.column_type)
         self.assertEqual(schemas[0].tables[0].columns[0].length, column.length)
         self.assertEqual(schemas[0].tables[0].columns[0].ordinal, column.ordinal)
         self.assertEqual(schemas[0].tables[0].columns[0].table_ref, column.table_ref)

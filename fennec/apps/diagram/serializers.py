@@ -1,16 +1,7 @@
 from rest_framework import serializers
 
-from apps.diagram.utils import Index, ForeignKey, Schema, Layer, TableElement, RelationshipElement, Diagram
-from apps.diagram.utils import Table, Namespace, Column
-
-
-# def serialize(obj):
-#    if isinstance(obj, Table):
-#        return TableSerializerFK(obj).data
-#    elif isinstance(obj, Column):
-#        return ColumnSerializerFK(obj).data
-#    elif isinstance(obj,  Namespace):
-#        return NamespaceSerializer(obj).data
+from fennec.apps.diagram.utils import Index, ForeignKey, Schema, Layer, TableElement, RelationshipElement, Diagram
+from fennec.apps.diagram.utils import Table, Namespace, Column
 
 
 class NamespaceSerializer(serializers.Serializer):
@@ -29,7 +20,7 @@ class ColumnSerializer(serializers.Serializer):
     id = serializers.CharField()
     name = serializers.CharField()
     comment = serializers.CharField(required=False)
-    column_type_ref = serializers.CharField()
+    column_type = serializers.CharField()
     length = serializers.IntegerField()
     precision = serializers.FloatField(required=False)
     default = serializers.CharField(required=False)
@@ -54,12 +45,20 @@ class IndexSerializer(serializers.Serializer):
     storageType = serializers.CharField(source='storage_type')
     columns = ColumnSerializer(required=False, many=True)
 
-    tableRef = serializers.CharField(source='tableRef')
+    tableRef = serializers.CharField(source='table_ref')
 
     def restore_object(self, attrs, instance=None):
         index = Index(**attrs)
         index.columns = []
         return index
+
+
+class BasicIndexSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    name = serializers.CharField()
+    comment = serializers.CharField(required=False)
+    storageType = serializers.CharField(source='storage_type')
+    tableRef = serializers.CharField(source='table_ref')
 
 
 class ForeignKeySerializer(serializers.Serializer):
@@ -71,7 +70,7 @@ class ForeignKeySerializer(serializers.Serializer):
     sourceColumns = ColumnSerializer(required=False, source='source_columns', many=True)
     referencedColumns = ColumnSerializer(required=False, source='referenced_columns', many=True)
 
-    tableRef = serializers.CharField(source='tableRef')
+    tableRef = serializers.CharField(source='table_ref')
 
     def restore_object(self, attrs, instance=None):
         foreign_key = ForeignKey(**attrs)
@@ -79,6 +78,14 @@ class ForeignKeySerializer(serializers.Serializer):
         foreign_key.referenced_columns = []
         return foreign_key
 
+
+class ForeignKeyBasicSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    name = serializers.CharField()
+    comment = serializers.CharField(required=False)
+    onUpdate = serializers.IntegerField(source='on_update_referential_action')
+    onDelete = serializers.IntegerField(source='on_delete_referential_action')
+    tableRef = serializers.CharField(source='table_ref')
 
 class TableSerializer(serializers.Serializer):
     id = serializers.CharField()
@@ -100,6 +107,15 @@ class TableSerializer(serializers.Serializer):
         return table
 
 
+class BasicTableSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    name = serializers.CharField()
+    comment = serializers.CharField(required=False)
+    collation = serializers.CharField(required=False)
+    namespaceRef = serializers.CharField(source='namespace_ref', required=False)
+    schemaRef = serializers.CharField(source='schema_ref')
+
+
 class SchemaSerializer(serializers.Serializer):
     id = serializers.CharField()
     databaseName = serializers.CharField(source='database_name')
@@ -114,6 +130,13 @@ class SchemaSerializer(serializers.Serializer):
         schema.namespaces = []
         schema.tables = []
         return schema
+
+
+class BasicSchemaSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    databaseName = serializers.CharField(source='database_name')
+    comment = serializers.CharField(required=False)
+    collation = serializers.CharField()
 
 
 class LayerSerializer(serializers.Serializer):

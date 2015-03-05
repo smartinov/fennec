@@ -13,8 +13,8 @@ class Schema(object):
         self.database_name = database_name
         self.comment = comment
         self.collation = collation
-        self.namespaces = namespaces
-        self.tables = tables
+        self.namespaces = namespaces if namespaces else []
+        self.tables = tables if tables else []
 
 
 class Namespace(object):
@@ -29,29 +29,31 @@ class Namespace(object):
 
 
 class Table(object):
-    def __init__(self, id=None, name=None, comment=None, collation=None, namespace_ref=None, columns=[], indexes=[],
-                 foreign_keys=[], schema_ref=None):
+    def __init__(self, id=None, name=None, comment=None, collation=None, namespace_ref=None, columns=None, indexes=None,
+                 foreign_keys=None, schema_ref=None):
+        if columns is None:
+            columns = []
         self.id = id
         self.name = name
         self.comment = comment
         self.collation = collation
         self.namespace_ref = namespace_ref
-        self.columns = columns
-        self.indexes = indexes
-        self.foreign_keys = foreign_keys
+        self.columns = columns if columns else []
+        self.indexes = indexes if indexes else []
+        self.foreign_keys = foreign_keys if foreign_keys else []
 
         self.schema_ref = schema_ref
         # TODO Implement: table.name unique within same namespace
 
 
 class Column(object):
-    def __init__(self, id=None, name=None, comment=None, column_type_ref=None, length=None, precision=None,
+    def __init__(self, id=None, name=None, comment=None, column_type=None, length=None, precision=None,
                  default=None, collation=None, ordinal=None, is_primary_key=False, is_nullable=True, is_unique=False,
                  is_auto_increment=False, dictionary=False, table_ref=None):
         self.id = id
         self.name = name
         self.comment = comment
-        self.column_type_ref = column_type_ref
+        self.column_type = column_type
         self.length = length
         self.precision = precision
         self.default = default
@@ -74,7 +76,7 @@ class Index(object):
         self.name = name
         self.storage_type = storage_type
         self.comment = comment
-        self.columns = columns
+        self.columns = columns if columns else []
 
         self.table_ref = table_ref
 
@@ -88,8 +90,8 @@ class ForeignKey(object):
         self.comment = comment
         self.on_update_referential_action = on_update_referential_action
         self.on_delete_referential_action = on_delete_referential_action
-        self.source_columns = source_columns
-        self.referenced_columns = referenced_columns
+        self.source_columns = source_columns if source_columns else []
+        self.referenced_columns = referenced_columns if referenced_columns else []
 
         self.table_ref = table_ref
 
@@ -100,9 +102,9 @@ class Diagram(object):
         self.id = id
         self.name = name
         self.description = description
-        self.layers = layers
-        self.table_elements = table_elements
-        self.relationship_elements = relationship_elements
+        self.layers = layers if layers else []
+        self.table_elements = table_elements if table_elements else []
+        self.relationship_elements = relationship_elements if relationship_elements else []
 
 
 class Layer(object):
@@ -120,7 +122,7 @@ class Layer(object):
 
 
 class TableElement(object):
-    def __init__(self, id=None, name=None, position_x=None, position_y=None, width=None, height=None, color=None,
+    def __init__(self, id=None, position_x=None, position_y=None, width=None, height=None, color=None,
                  is_collapsed=False, table_ref=None, layer_ref=None, diagram_ref=None):
         self.id = id
         self.position_x = position_x
