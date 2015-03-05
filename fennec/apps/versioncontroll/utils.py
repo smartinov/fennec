@@ -15,7 +15,14 @@ __author__ = 'Darko'
 
 def change_to_object(change):
     stream = StringIO(change.content)
-    data = JSONParser().parse(stream)
+    # print "Change content:"  + str(change.content)
+    data = {}
+    try:
+        data = JSONParser().parse(stream)
+    except Exception as e:
+        pass
+        # print e
+
     serializer = switch_type(change.object_type)(data=data)
     if not serializer.is_valid():
         print serializer.errors
@@ -358,7 +365,7 @@ def build_state_metadata(schemas, new_changes):
             continue
         index = [x for x in table_parent.indexes if x.id == change_obj.id]
         index = index[0] if index else None
-        if index_change.change_tpye == 0:
+        if index_change.change_type == 0:
             table_parent.indexes.append(change_obj)
         elif index_change.change_tpye == 1:
             if index is None:
