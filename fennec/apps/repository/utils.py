@@ -1,48 +1,12 @@
-from StringIO import StringIO
+from fennec.apps.metamodel.services import convert_change_to_object
 
-from rest_framework.parsers import JSONParser
-
-from fennec.apps.diagram.utils import ProjectBasicInfo, BranchBasicInfo, SandboxBasicInfo
-from fennec.apps.diagram.serializers import SchemaSerializer, NamespaceSerializer, TableSerializer, ColumnSerializer, \
-    IndexSerializer, ForeignKeySerializer, LayerSerializer, TableElementSerializer, RelationshipElementSerializer, \
-    DiagramSerializer
-from fennec.apps.versioncontroll.models import Sandbox, Branch, BranchRevision, SandboxChange, \
-    BranchRevisionChange, Change
+from fennec.apps.repository.models import Sandbox, Branch, BranchRevision, SandboxChange, \
+    BranchRevisionChange
+from fennec.apps.metamodel.models import Change
 
 
 __author__ = 'Darko'
 
-
-def change_to_object(change):
-    stream = StringIO(change.content)
-    # print "Change content:"  + str(change.content)
-    data = {}
-    try:
-        data = JSONParser().parse(stream)
-    except Exception as e:
-        pass
-        # print e
-
-    serializer = switch_type(change.object_type)(data=data)
-    if not serializer.is_valid():
-        print serializer.errors
-
-    return serializer.object
-
-
-def switch_type(object_type):
-    return {
-        'Schema': SchemaSerializer,
-        'Namespace': NamespaceSerializer,
-        'Table': TableSerializer,
-        'Column': ColumnSerializer,
-        'Index': IndexSerializer,
-        'ForeignKey': ForeignKeySerializer,
-        'Diagram': DiagramSerializer,
-        'Layer': LayerSerializer,
-        'TableElement': TableElementSerializer,
-        'RelationshipElement': RelationshipElementSerializer
-    }.get(object_type, None)
 
 
 def branch_from_branch_revision(branch_rev, account, name, type=None,
@@ -258,7 +222,7 @@ def build_state_metadata(schemas, new_changes):
 
     schema_changes = [x for x in new_changes if x.object_type == 'Schema']
     for schema_change in schema_changes:
-        change_obj = change_to_object(schema_change)
+        change_obj = convert_change_to_object(schema_change)
         schema = [x for x in schemas if x.id == change_obj.id]
         schema = schema[0] if schema else None
         if schema_change.change_type == 0:
@@ -274,7 +238,7 @@ def build_state_metadata(schemas, new_changes):
 
     namespace_changes = [x for x in new_changes if x.object_type == 'Namespace']
     for namespace_change in namespace_changes:
-        change_obj = change_to_object(namespace_change)
+        change_obj = convert_change_to_object(namespace_change)
 
         schema_parent = [x for x in schemas if x.id == change_obj.schema_ref]
 
@@ -294,7 +258,7 @@ def build_state_metadata(schemas, new_changes):
     table_changes = [x for x in new_changes if x.object_type == 'Table']
 
     for table_change in table_changes:
-        change_obj = change_to_object(table_change)
+        change_obj = convert_change_to_object(table_change)
         schema_parent = [x for x in schemas if x.id == change_obj.schema_ref]
         schema_parent = schema_parent[0] if schema_parent else None
 
@@ -317,7 +281,7 @@ def build_state_metadata(schemas, new_changes):
 
     column_changes = [x for x in new_changes if x.object_type == 'Column']
     for column_change in column_changes:
-        change_obj = change_to_object(column_change)
+        change_obj = convert_change_to_object(column_change)
 
         table_parent = None
         for schema in schemas:
@@ -354,7 +318,7 @@ def build_state_metadata(schemas, new_changes):
 
     index_changes = [x for x in new_changes if x.object_type == 'Index']
     for index_change in index_changes:
-        change_obj = change_to_object(index_change)
+        change_obj = convert_change_to_object(index_change)
 
         table_parent = None
         for schema in schemas:
@@ -379,7 +343,7 @@ def build_state_metadata(schemas, new_changes):
 
     fk_changes = [x for x in new_changes if x.object_type == 'ForeignKey']
     for fk_change in fk_changes:
-        change_obj = change_to_object(fk_change)
+        change_obj = convert_change_to_object(fk_change)
 
         table_parent = None
         for schema in schemas:
@@ -415,7 +379,7 @@ def build_state_symbols(diagrams, new_changes):
         diagrams = []
     diagram_changes = [x for x in new_changes if x.object_type == 'Diagram']
     for diagram_change in diagram_changes:
-        change_obj = change_to_object(diagram_change)
+        change_obj = convert_change_to_object(diagram_change)
         diagram = [x for x in diagrams if x.id == change_obj.id]
         diagram = diagram[0] if diagram else None
         if diagram_change.change_type == 0:
@@ -425,12 +389,12 @@ def build_state_symbols(diagrams, new_changes):
                 continue
             diagram.name = change_obj.name
             diagram.description = change_obj.description
-        else:  # remove diagram
+        else:  # remove metamodel
             diagrams.remove(diagram)
 
     layer_changes = [x for x in new_changes if x.object_type == 'Layer']
     for layer_change in layer_changes:
-        change_obj = change_to_object(layer_change)
+        change_obj = convert_change_to_object(layer_change)
 
         diagram_parent = [x for x in diagrams if x.id == change_obj.diagram_ref]
         diagram_parent = diagram_parent[0] if diagram_parent else None
@@ -454,7 +418,7 @@ def build_state_symbols(diagrams, new_changes):
 
     table_el_changes = [x for x in new_changes if x.object_type == 'TableElement']
     for table_el_change in table_el_changes:
-        change_obj = change_to_object(table_el_change)
+        change_obj = convert_change_to_object(table_el_change)
 
         diagram_parent = [x for x in diagrams if x.id == change_obj.diagram_ref]
         diagram_parent = diagram_parent[0] if diagram_parent else None
@@ -478,7 +442,7 @@ def build_state_symbols(diagrams, new_changes):
 
     rel_el_changes = [x for x in new_changes if x.object_type == 'RelationshipElement']
     for rel_el_change in rel_el_changes:
-        change_obj = change_to_object(rel_el_change)
+        change_obj = convert_change_to_object(rel_el_change)
 
         diagram_parent = [x for x in diagrams if x.id == change_obj.diagram_ref]
         diagram_parent = diagram_parent[0] if diagram_parent else None
@@ -517,3 +481,32 @@ def obtain_sandbox(user, branch_id):
     return sandbox
 
 
+class DiagramBasicInfo(object):
+    def __init__(self, id=None, name=None, description=None, url=None):
+        self.id = id
+        self.name = name
+        self.description = description
+        self.url = url
+
+
+class BranchBasicInfo(object):
+    def __init__(self, id=None, name=None, revision=None):
+        self.id = id
+        self.name = name
+        self.revision = revision
+
+
+class ProjectBasicInfo(object):
+    def __init__(self, id=None, name=None, description=None, url=None, branch=None):
+        self.id = id
+        self.name = name
+        self.description = description
+        self.url = url
+        self.branch = branch
+
+
+class SandboxBasicInfo(object):
+    def __init__(self, project_info=None, diagrams=None, schemas=None):
+        self.project_info = project_info
+        self.diagrams = diagrams
+        self.schemas = schemas

@@ -1,4 +1,3 @@
-
 REFERENTIAL_ACTIONS = (
     (0, "NO ACTION"),
     (1, "RESTRICT "),
@@ -8,13 +7,17 @@ REFERENTIAL_ACTIONS = (
 
 
 class Schema(object):
-    def __init__(self, id=None, database_name=None, comment=None, collation=None, namespaces=[], tables=[]):
-        self.id = id
-        self.database_name = database_name
-        self.comment = comment
-        self.collation = collation
-        self.namespaces = namespaces if namespaces else []
-        self.tables = tables if tables else []
+    def __init__(self, **kwargs):
+        """
+        :type id: int
+        :return:
+        """
+        self.id = kwargs.get('id')
+        self.database_name = kwargs.get('database_name')
+        self.comment = kwargs.get('comment')
+        self.collation = kwargs.get('collation')
+        self.namespaces = kwargs.get('namespaces', [])
+        self.tables = kwargs.get('tables', [])
 
 
 class Namespace(object):
@@ -77,8 +80,8 @@ class Index(object):
         self.storage_type = storage_type
         self.comment = comment
         self.columns = columns if columns else []
-
         self.table_ref = table_ref
+
 
 
 class ForeignKey(object):
@@ -151,32 +154,3 @@ class RelationshipElement(object):
         self.diagram_ref = diagram_ref
 
 
-class SandboxBasicInfo(object):
-    def __init__(self, project_info=None, diagrams=None, schemas=None):
-        self.project_info = project_info
-        self.diagrams = diagrams
-        self.schemas = schemas
-
-
-class ProjectBasicInfo(object):
-    def __init__(self, id=None, name=None, description=None, url=None, branch=None):
-        self.id = id
-        self.name = name
-        self.description = description
-        self.url = url
-        self.branch = branch
-
-
-class BranchBasicInfo(object):
-    def __init__(self, id=None, name=None, revision=None):
-        self.id = id
-        self.name = name
-        self.revision = revision
-
-
-class DiagramBasicInfo(object):
-    def __init__(self, id=None, name=None, description=None, url=None):
-        self.id = id
-        self.name = name
-        self.description = description
-        self.url = url

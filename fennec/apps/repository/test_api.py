@@ -6,7 +6,8 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from fennec.apps.constants import MASTER_BRANCH_NAME, MASTER_BRANCH_DESCRIPTION, MASTER_BRANCH_TYPE
-from fennec.apps.versioncontroll.models import SandboxChange, Change, BranchRevisionChange
+from fennec.apps.repository.models import SandboxChange, BranchRevisionChange
+from fennec.apps.metamodel.models import Change
 
 
 __author__ = 'Darko'
@@ -86,7 +87,7 @@ class IntegrationTests(DefaultAPITest):
         example_diagram_data = {
             "id": str(uuid4()),
             "name": "TestDiagram",
-            "description": "this is a diagram made for test"
+            "description": "this is a metamodel made for test"
         }
         example_diagram_string = json.dumps(example_diagram_data)
         change_data = {'content': example_diagram_string, 'objectType': 'Diagram',
@@ -137,7 +138,7 @@ class IntegrationTests(DefaultAPITest):
         branch_revisions_repsonse = self.client.get("/api/branch-revisions/")
         zero_revision = branch_revisions_repsonse.data[0]['id']
 
-        # add diagram to zero revision
+        # add metamodel to zero revision
         diagram = {'id': str(uuid4()), 'name': 'MainDiagram'}
         diagram_add_change = {'content': json.dumps(diagram), 'objectType': 'Diagram', 'objectCode': str(uuid4()),
                               'changeType': 0,
@@ -147,7 +148,7 @@ class IntegrationTests(DefaultAPITest):
         diagram_creation_response = self.client.post(change_posting_url, diagram_add_change)
         self.assertEqual(diagram_creation_response.status_code, status.HTTP_204_NO_CONTENT)
 
-        # commit revision zero which contains only empty diagram
+        # commit revision zero which contains only empty metamodel
 
         initial_commit_url = "/api/branch-revisions/{}/commit/".format(zero_revision)
         initial_commit_response = self.client.post(initial_commit_url)
@@ -265,7 +266,8 @@ class IntegrationTests(DefaultAPITest):
 
         altered_table = {'id': table['id'], 'name': 'TableOneTwo', 'collation': 'utf-8', 'comment': 'first table yay',
                          'schemaRef': schema['id'], }
-        table_alter_change = {'content': json.dumps(altered_table), 'objectType': 'Table', 'objectCode': altered_table['id'],
+        table_alter_change = {'content': json.dumps(altered_table), 'objectType': 'Table',
+                              'objectCode': altered_table['id'],
                               'changeType': 1,
                               'isUIChange': False, 'made_by': self.user.id}
         table_alternation_posting = self.client.post(revision_three_url + 'change/', table_alter_change)

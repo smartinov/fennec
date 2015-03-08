@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
 
-from fennec.apps.versioncontroll.models import Project, Branch, Change, BranchRevision, Sandbox
+from fennec.apps.repository.models import Project, Branch,  BranchRevision, Sandbox
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -25,7 +25,6 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Project
         created_by = serializers.HyperlinkedRelatedField(source='created_by', view_name='user-detail', queryset=User.objects.all(), lookup_field='id', slug_url_kwarg='id')
         fields = ('url', 'id', 'name', 'description', 'created_by')
-
 
 class BranchSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='branch-detail', lookup_field='id')
@@ -53,17 +52,3 @@ class SandboxSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sandbox
         fields = ('id',)
-
-
-class ChangeSerializer(serializers.ModelSerializer):
-    id = serializers.CharField(required=False)
-    content = serializers.CharField()
-    objectType = serializers.CharField(source="object_type")
-    objectCode = serializers.CharField(source="object_code")
-    changeType = serializers.IntegerField(source="change_type")
-    isUIChange = serializers.BooleanField(source="is_ui_change")
-    madeBy = serializers.IntegerField(source="made_by")
-
-    class Meta:
-        model = Change
-        fields = ('id', 'content', 'objectType', 'objectCode', 'changeType', 'isUIChange')

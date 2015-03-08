@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, url, include
 from rest_framework import routers
 
-from fennec.apps.versioncontroll.views import BranchRevisionViewSet, GroupViewSet, UserViewSet, ProjectViewSet, \
+from fennec.apps.repository.views import BranchRevisionViewSet, GroupViewSet, UserViewSet, ProjectViewSet, \
     BranchViewSet
 
 

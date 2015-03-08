@@ -24,7 +24,7 @@ app.controller("ProjectsController",
         $scope.add_new = false;
         $scope.reload = function () {
             $scope.projects = Projects.query();
-        }
+        };
 
         $scope.add_new_project = function () {
             project = {
@@ -34,7 +34,6 @@ app.controller("ProjectsController",
                 "percentage_complete":"0",
                 "image_url":""
             }
-
             data = angular.toJson(project);
             $http.post(projectsRoot, data)
                 .success(function (data, status) {
