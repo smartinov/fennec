@@ -27,7 +27,7 @@
 </head>
 <body>
 {% include "dashboard/template/navbar.html" %}
-<div class="content">
+<div class="content"  ng-controller="{% block  ng-controller %}{% endblock %}">
     {% block content %}{% endblock %}
 </div>
 {% block custom-javascript %}{% endblock %}

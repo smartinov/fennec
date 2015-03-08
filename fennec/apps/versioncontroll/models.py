@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.db import models
 from django.conf import settings
 
@@ -18,6 +19,9 @@ class Project(models.Model):
     description = models.CharField(max_length=512, null=True, help_text="description of the project")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, help_text="project author")
     is_deleted = models.BooleanField(default=False)
+    percentage_complete = models.FloatField(help_text="project complete percentage", default=0)
+    image_url = models.CharField(max_length=64, help_text="project logo url", null=True)
+    modification_timestamp = models.DateTimeField(auto_now=True, default=datetime.now())
 
 
 class Branch(models.Model):
