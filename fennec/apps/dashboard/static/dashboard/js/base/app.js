@@ -1,7 +1,7 @@
 /**
  * Created by smartinov on 6/1/14.
  */
-var notifications_base = '/api/notifications/'
+var notifications_base = '/api/notifications/';
 
 var NotificationsPopover = function ($scope, $http) {
     $http.get(notifications_base+'?seen=false').success(function (data, status) {

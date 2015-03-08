@@ -20,14 +20,14 @@ app.controller("ProjectsController",
         $scope.projects = [];
         $scope.reload = function () {
             $scope.projects = Projects.query();
-        }
+        };
 
         $scope.create = function (name) {
             project = {
                 "name": name,
                 "description": "No description provided",
                 "created_by": "http://127.0.0.1:8000/api/users/1/"
-            }
+            };
 
             data = angular.toJson(project);
             $http.post(projectsRoot, data)
