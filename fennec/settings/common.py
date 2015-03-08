@@ -253,3 +253,5 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 
 }
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+
