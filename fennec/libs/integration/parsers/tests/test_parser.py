@@ -1,6 +1,7 @@
 import os
 from unittest.case import TestCase
-from fennec.apps.integration.parsers.mysql.workbench.parser import WorkbenchParser
+
+from fennec.libs.integration.parsers.mysql.workbench.parser import WorkbenchParser
 
 
 __author__ = 'Darko'
