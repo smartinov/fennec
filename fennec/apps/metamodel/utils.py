@@ -81,7 +81,6 @@ class Index(object):
         self.comment = comment
         self.columns = columns if columns else []
 
-        self.table_ref = table_ref
 
 
 class ForeignKey(object):

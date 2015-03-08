@@ -20,13 +20,14 @@ serializer_mappings = {
     'RelationshipElement': RelationshipElementSerializer
 }
 
-
+#TODO: Add comments how to use this function
 def convert_change_to_object(change):
     """
     Converts the passed change to an object, to be later parsed
     :type change: fennec.apps.metamodel.models.Change
     :param change: Required Change
     :return:
+    :rtype:
     """
     data = json.loads(change.content)
 
