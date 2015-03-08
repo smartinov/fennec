@@ -2,12 +2,13 @@ from StringIO import StringIO
 
 from rest_framework.parsers import JSONParser
 
-from fennec.apps.diagram.utils import ProjectBasicInfo, BranchBasicInfo, SandboxBasicInfo
-from fennec.apps.diagram.serializers import SchemaSerializer, NamespaceSerializer, TableSerializer, ColumnSerializer, \
+from fennec.apps.metamodel.utils import ProjectBasicInfo, BranchBasicInfo, SandboxBasicInfo
+from fennec.apps.metamodel.serializers import SchemaSerializer, NamespaceSerializer, TableSerializer, ColumnSerializer, \
     IndexSerializer, ForeignKeySerializer, LayerSerializer, TableElementSerializer, RelationshipElementSerializer, \
     DiagramSerializer
-from fennec.apps.versioncontroll.models import Sandbox, Branch, BranchRevision, SandboxChange, \
-    BranchRevisionChange, Change
+from fennec.apps.repository.models import Sandbox, Branch, BranchRevision, SandboxChange, \
+    BranchRevisionChange
+from fennec.apps.metamodel.models import Change
 
 
 __author__ = 'Darko'
@@ -425,7 +426,7 @@ def build_state_symbols(diagrams, new_changes):
                 continue
             diagram.name = change_obj.name
             diagram.description = change_obj.description
-        else:  # remove diagram
+        else:  # remove metamodel
             diagrams.remove(diagram)
 
     layer_changes = [x for x in new_changes if x.object_type == 'Layer']

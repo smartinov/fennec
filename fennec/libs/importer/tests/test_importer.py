@@ -6,8 +6,8 @@ from django.contrib.auth.models import User
 
 from fennec.libs.integration.parsers.mysql.workbench.parser import WorkbenchParser
 from fennec.libs.importer.importer import FennecImporter
-from fennec.apps.versioncontroll.models import Project, Branch, BranchRevision
-from fennec.apps.versioncontroll.utils import BranchRevisionState
+from fennec.apps.repository.models import Project, Branch, BranchRevision
+from fennec.apps.repository.utils import BranchRevisionState
 
 
 __author__ = 'Darko'

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from fennec.apps.diagram.utils import Index, ForeignKey, Schema, Layer, TableElement, RelationshipElement, Diagram
-from fennec.apps.diagram.utils import Table, Namespace, Column
+from fennec.apps.metamodel.utils import Index, ForeignKey, Schema, Layer, TableElement, RelationshipElement, Diagram
+from fennec.apps.metamodel.utils import Table, Namespace, Column
 
 
 class NamespaceSerializer(serializers.Serializer):

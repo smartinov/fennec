@@ -6,12 +6,12 @@ from django.contrib.auth.models import User, Group
 
 from fennec.apps.constants import MASTER_BRANCH_NAME, MASTER_BRANCH_TYPE, MASTER_BRANCH_DESCRIPTION
 
-from fennec.apps.diagram.serializers import SchemaSerializer, DiagramSerializer, SandboxBasicInfoSerializer
-from fennec.apps.versioncontroll import utils
-from fennec.apps.versioncontroll.models import Project, Branch, BranchRevision, SandboxChange
-from fennec.apps.versioncontroll.serializers import BranchRevisionSerializer, ChangeSerializer
-from fennec.apps.versioncontroll.utils import SandboxState
-from fennec.apps.versioncontroll.serializers import ProjectSerializer, BranchSerializer, GroupSerializer, UserSerializer
+from fennec.apps.metamodel.serializers import SchemaSerializer, DiagramSerializer, SandboxBasicInfoSerializer
+from fennec.apps.repository import utils
+from fennec.apps.repository.models import Project, Branch, BranchRevision, SandboxChange
+from fennec.apps.repository.serializers import BranchRevisionSerializer, ChangeSerializer
+from fennec.apps.repository.utils import SandboxState
+from fennec.apps.repository.serializers import ProjectSerializer, BranchSerializer, GroupSerializer, UserSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):

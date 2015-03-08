@@ -1,16 +1,16 @@
-from uuid import uuid4
 from rest_framework.renderers import JSONRenderer
-from fennec.apps.diagram.serializers import TableSerializer, ColumnSerializer, IndexSerializer, SchemaSerializer, \
-    BasicSchemaSerializer, BasicTableSerializer, BasicIndexSerializer, ForeignKeySerializer, ForeignKeyBasicSerializer
-from fennec.apps.diagram.utils import Schema
-from fennec.apps.versioncontroll.models import Change, CHANGE_TYPE, BranchRevisionChange
+
+from fennec.apps.metamodel.serializers import ColumnSerializer, BasicSchemaSerializer, BasicTableSerializer, BasicIndexSerializer, \
+    ForeignKeyBasicSerializer
+from fennec.apps.repository.models import BranchRevisionChange
+from fennec.apps.metamodel.models import Change
+
 
 __author__ = 'Darko'
 
 
 class FennecImporter():
-
-    def __init__(self, model =None, user=None, branch_rev=None):
+    def __init__(self, model=None, user=None, branch_rev=None):
         self.model = model if model else []
         self.user = user
         self.branch_rev = branch_rev
