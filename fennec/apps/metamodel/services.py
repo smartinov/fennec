@@ -7,7 +7,13 @@ from fennec.apps.metamodel.serializers import SchemaSerializer, NamespaceSeriali
 __author__ = 'stefan.martinov@gmail.com'
 
 
-def change_to_object(change):
+def convert_change_to_object(change):
+    """
+    Converts the passed change to an object, to be later parsed
+    :type change: fennec.apps.metamodel.models.Change
+    :param change: Required Change
+    :return:
+    """
     stream = StringIO(change.content)
     # print "Change content:"  + str(change.content)
     data = {}
@@ -15,7 +21,6 @@ def change_to_object(change):
         data = JSONParser().parse(stream)
     except Exception as e:
         pass
-        # print e
 
     serializer = switch_type(change.object_type)(data=data)
     if not serializer.is_valid():

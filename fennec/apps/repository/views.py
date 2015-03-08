@@ -1,16 +1,14 @@
 from rest_framework import viewsets, status, filters
-
 from rest_framework.response import Response
 from rest_framework.decorators import action, link
 from django.contrib.auth.models import User, Group
 
 from fennec.apps.constants import MASTER_BRANCH_NAME, MASTER_BRANCH_TYPE, MASTER_BRANCH_DESCRIPTION
-
 from fennec.apps.metamodel.serializers import SchemaSerializer, DiagramSerializer, SandboxBasicInfoSerializer, \
     ChangeSerializer
 from fennec.apps.repository import utils
 from fennec.apps.repository.models import Project, Branch, BranchRevision, SandboxChange
-from fennec.apps.repository.serializers import BranchRevisionSerializer, ChangeSerializer
+from fennec.apps.repository.serializers import BranchRevisionSerializer
 from fennec.apps.repository.utils import SandboxState
 from fennec.apps.repository.serializers import ProjectSerializer, BranchSerializer, GroupSerializer, UserSerializer
 

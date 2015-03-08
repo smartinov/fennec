@@ -26,7 +26,6 @@ class ProjectSerializer(serializers.ModelSerializer):
         created_by = serializers.HyperlinkedRelatedField(source='created_by', view_name='user-detail', queryset=User.objects.all(), lookup_field='id', slug_url_kwarg='id')
         fields = ('url', 'id', 'name', 'description', 'created_by')
 
-
 class BranchSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='branch-detail', lookup_field='id')
 
