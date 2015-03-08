@@ -17,7 +17,7 @@ class Project(models.Model):
     is_deleted = models.BooleanField(default=False)
     percentage_complete = models.FloatField(help_text="project complete percentage", default=0)
     image_url = models.CharField(max_length=64, help_text="project logo url", null=True)
-    modification_timestamp = models.DateTimeField(auto_now=True, default=datetime.now())
+    modification_timestamp = models.DateTimeField(auto_now=True, null=True)
 
 
 class Branch(models.Model):

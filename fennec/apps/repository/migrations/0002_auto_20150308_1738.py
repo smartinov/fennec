@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='project',
             name='modification_timestamp',
-            field=models.DateTimeField(default=datetime.datetime(2015, 3, 8, 17, 38, 34, 729000), auto_now=True),
+            field=models.DateTimeField(default=None, auto_now=True),
             preserve_default=True,
         ),
         migrations.AddField(

@@ -80,6 +80,7 @@ class Index(object):
         self.storage_type = storage_type
         self.comment = comment
         self.columns = columns if columns else []
+        self.table_ref = table_ref
 
 
 
