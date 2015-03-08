@@ -1,6 +1,5 @@
 from fennec.apps.metamodel.services import convert_change_to_object
 
-from fennec.apps.metamodel.utils import ProjectBasicInfo, BranchBasicInfo, SandboxBasicInfo
 from fennec.apps.repository.models import Sandbox, Branch, BranchRevision, SandboxChange, \
     BranchRevisionChange
 from fennec.apps.metamodel.models import Change
@@ -482,3 +481,32 @@ def obtain_sandbox(user, branch_id):
     return sandbox
 
 
+class DiagramBasicInfo(object):
+    def __init__(self, id=None, name=None, description=None, url=None):
+        self.id = id
+        self.name = name
+        self.description = description
+        self.url = url
+
+
+class BranchBasicInfo(object):
+    def __init__(self, id=None, name=None, revision=None):
+        self.id = id
+        self.name = name
+        self.revision = revision
+
+
+class ProjectBasicInfo(object):
+    def __init__(self, id=None, name=None, description=None, url=None, branch=None):
+        self.id = id
+        self.name = name
+        self.description = description
+        self.url = url
+        self.branch = branch
+
+
+class SandboxBasicInfo(object):
+    def __init__(self, project_info=None, diagrams=None, schemas=None):
+        self.project_info = project_info
+        self.diagrams = diagrams
+        self.schemas = schemas
