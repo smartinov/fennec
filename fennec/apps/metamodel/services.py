@@ -1,6 +1,4 @@
-from StringIO import StringIO
-
-from rest_framework.parsers import JSONParser
+import json
 
 from fennec.apps.metamodel.serializers import SchemaSerializer, NamespaceSerializer, TableSerializer, ColumnSerializer, \
     IndexSerializer, ForeignKeySerializer, DiagramSerializer, LayerSerializer, TableElementSerializer, \
@@ -30,13 +28,7 @@ def convert_change_to_object(change):
     :param change: Required Change
     :return:
     """
-    stream = StringIO(change.content)
-    # print "Change content:"  + str(change.content)
-    data = {}
-    try:
-        data = JSONParser().parse(stream)
-    except Exception as e:
-        pass
+    data = json.loads(change.content)
 
     serializer_type = serializer_mappings[change.object_type]
     serializer = serializer_type(data=data)
