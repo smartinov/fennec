@@ -12,6 +12,8 @@ __author__ = 'Darko'
 def branch_from_branch_revision(branch_rev, account, name, type=None,
                                 description=None):
     """
+    Branches from given source brnach @branch_rev.
+    Creates zero branch revision for new branch.
     @type branch_rev: BranchRevision
     """
     new_branch = Branch(name=name, type=type, description=description,
@@ -25,6 +27,9 @@ def branch_from_branch_revision(branch_rev, account, name, type=None,
 
 def commit_sandbox(sandbox, user):
     """
+    Commits sandbox changes.
+    Creates new branch revision for branch that sandbox is tied to.
+    Binds all sandbox changes to newly created branch revision.
     @type sandbox Sandbox
     """
     if sandbox.created_by != user:
@@ -53,6 +58,9 @@ def commit_sandbox(sandbox, user):
 
 
 def __bind_sandbox_changes_to_branch_revision__(sandbox, branch_revision):
+    """
+    Binds sandbox changes to branch revision.
+    """
     sandbox_changes = SandboxChange.objects.filter(sandbox_ref=sandbox).all()
     for i, sandbox_change in enumerate(sandbox_changes):
         branch_rev_change = BranchRevisionChange()
@@ -86,6 +94,10 @@ class BranchRevisionState(object):
         return reversed(previous_revisions)
 
     def get_revision_cumulative_changes(self):
+        """
+        Returns changes (model and symbol changes as a array tuple) created for this branch revision
+        and all previous branch revisions.
+        """
         model_changes = {}
         symbol_changes = {}
 
@@ -109,11 +121,17 @@ class BranchRevisionState(object):
         return model_changes, symbol_changes
 
     def build_branch_state_metadata(self):
+        """
+        Builds branch revision metadata state.
+        """
         model_changes, symbol_changes = self.get_revision_cumulative_changes()
         schemas = []
         return build_state_metadata(schemas, model_changes.values())
 
     def build_branch_state_symbols(self):
+        """
+        Builds branch revision symbol (diagrams) state.
+        """
         model_changes, symbol_changes = self.get_revision_cumulative_changes()
         diagrams = []
         return build_state_symbols(diagrams, symbol_changes.values())
@@ -136,7 +154,9 @@ class SandboxState(object):
         self.diagrams = []
 
     def populate_changes(self):
-
+        """
+        Loads changes from database.
+        """
         sandbox_changes = SandboxChange.objects.filter(sandbox_ref=self.sandbox)
         for sandbox_change in sandbox_changes:
             change = Change.objects.get(id=sandbox_change.change_ref.id)
@@ -153,7 +173,9 @@ class SandboxState(object):
                     self.model_changes[change.object_code] = change
 
     def build_sandbox_state_metadata(self):
-
+        """
+        Builds sandbox metadata state.
+        """
         branch_rev_state = BranchRevisionState(self.sandbox.created_from_branch_revision_ref)
         schemas = branch_rev_state.build_branch_state_metadata()
         self.populate_changes()
@@ -164,7 +186,9 @@ class SandboxState(object):
         return schemas
 
     def build_sandbox_state_symbols(self):
-
+        """
+        Builds sandbox symbols state.
+        """
         branch_rev_state = BranchRevisionState(self.sandbox.created_from_branch_revision_ref)
         diagrams = branch_rev_state.build_branch_state_symbols()
         self.populate_changes()
@@ -174,7 +198,9 @@ class SandboxState(object):
         return diagrams
 
     def build_project_info(self):
-
+        """
+        Builds project info data
+        """
         branch = self.sandbox.bound_to_branch_ref
         project = branch.project_ref
 
@@ -213,6 +239,7 @@ def build_state_metadata(schemas, new_changes):
     """
     schemas is array of Schema 's representing current state
     new_changes are Change objects that need to be applied to current state
+    - applies new changes to given schemas
     """
     if not new_changes:
         return schemas
@@ -372,6 +399,9 @@ def build_state_metadata(schemas, new_changes):
 
 
 def build_state_symbols(diagrams, new_changes):
+    """
+    Applies new changes to given diagrams
+    """
     if not new_changes:
         return diagrams
 
@@ -465,6 +495,9 @@ def build_state_symbols(diagrams, new_changes):
 
 
 def obtain_sandbox(user, branch_id):
+    """
+    Finds sandbox for given @user and @branch_id.
+    """
     branch = Branch.objects.get(pk=int(branch_id))
     sandbox = Sandbox.objects.filter(bound_to_branch_ref=branch, created_by__id=user.id, status=0,
                                      is_deleted=False).first()

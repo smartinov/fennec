@@ -205,12 +205,18 @@ class DiagramSerializer(serializers.Serializer):
 
 
 class BranchBasicInfoSerializer(serializers.Serializer):
+    """
+    Serializer ignores sub-collections.
+    """
     id = serializers.CharField()
     name = serializers.CharField()
     revision = serializers.IntegerField()
 
 
 class ProjectInfoSerializer(serializers.Serializer):
+    """
+    Serializer ignores sub-collections.
+    """
     id = serializers.CharField()
     name = serializers.CharField()
     description = serializers.CharField(required=False)
@@ -219,6 +225,9 @@ class ProjectInfoSerializer(serializers.Serializer):
 
 
 class DiagramBasicInfoSerializer(serializers.Serializer):
+    """
+    Serializer ignores sub-collections.
+    """
     id = serializers.CharField()
     name = serializers.CharField()
     description = serializers.CharField(required=False)
@@ -226,6 +235,9 @@ class DiagramBasicInfoSerializer(serializers.Serializer):
 
 
 class SandboxBasicInfoSerializer(serializers.Serializer):
+    """
+    Serializer ignores sub-collections.
+    """
     project = ProjectInfoSerializer(source='project_info')
     diagrams = DiagramBasicInfoSerializer(many=True)
     schemas = SchemaSerializer(many=True)
