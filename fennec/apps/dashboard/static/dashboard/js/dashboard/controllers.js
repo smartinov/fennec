@@ -1,17 +1,16 @@
 var projectsRoot = '/api/projects/';
-var app = angular.module('fennec.dashboard', ['mgcrea.ngStrap', 'ngAnimate', 'ngResource', 'ngCookies']);
+var app = angular.module('fennec.dashboard', ['mgcrea.ngStrap', 'ngAnimate', 'ngResource']);
 
 
 app.factory('Projects', ['$resource', function($resource){
     return $resource("/api/projects/", {'id': '@id'});
 }]);
 
-app.config(['$httpProvider', '$interpolateProvider', '$resourceProvider', function ($httpProvider, $interpolateProvider, $resourceProvider) {
+app.config(['$httpProvider', '$interpolateProvider', function ($httpProvider, $interpolateProvider) {
      /* for compatibility with django teplate engine */
     $httpProvider.defaults.xsrfCookieName = 'csrftoken';
     $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
-    //** django urls loves trailling slashes which angularjs removes by default.
-    //$resourceProvider.defaults.stripTrailingSlashes = false;
+    //** django urls loves trailling slashes which angularjs removes by default
     $interpolateProvider.startSymbol('{$');
     $interpolateProvider.endSymbol('$}');
 
