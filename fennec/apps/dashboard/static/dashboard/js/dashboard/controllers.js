@@ -1,11 +1,12 @@
 var projectsRoot = '/api/projects/';
-var app = angular.module('fennec.dashboard', ['mgcrea.ngStrap', 'ngAnimate', 'ngResource']);
+var app = angular.module('fennec.dashboard', ['mgcrea.ngStrap','ngAnimate', 'ngResource']);
 
 app.factory('Projects', function ($resource) {
     return $resource('/api/projects/:id'); // Note the full endpoint address
 });
 app.config(['$httpProvider', function ($httpProvider) {
-    $httpProvider.defaults.headers.common['X-CSRFToken'] = '{{ csrf_token|escapejs }}';
+    $httpProvider.defaults.xsrfCookieName = 'csrftoken';
+    $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
 }]);
 app.config(function ($alertProvider) {
     angular.extend($alertProvider.defaults, {
