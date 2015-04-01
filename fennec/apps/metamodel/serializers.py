@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
-from fennec.apps.diagram.utils import Index, ForeignKey, Schema, Layer, TableElement, RelationshipElement, Diagram
-from fennec.apps.diagram.utils import Table, Namespace, Column
+from fennec.apps.metamodel.models import Change
+from fennec.apps.metamodel.utils import Index, ForeignKey, Schema, Layer, TableElement, RelationshipElement, Diagram
+from fennec.apps.metamodel.utils import Table, Namespace, Column
 
 
 class NamespaceSerializer(serializers.Serializer):
@@ -86,6 +87,7 @@ class ForeignKeyBasicSerializer(serializers.Serializer):
     onUpdate = serializers.IntegerField(source='on_update_referential_action')
     onDelete = serializers.IntegerField(source='on_delete_referential_action')
     tableRef = serializers.CharField(source='table_ref')
+
 
 class TableSerializer(serializers.Serializer):
     id = serializers.CharField()
@@ -203,12 +205,18 @@ class DiagramSerializer(serializers.Serializer):
 
 
 class BranchBasicInfoSerializer(serializers.Serializer):
+    """
+    Serializer ignores sub-collections.
+    """
     id = serializers.CharField()
     name = serializers.CharField()
     revision = serializers.IntegerField()
 
 
 class ProjectInfoSerializer(serializers.Serializer):
+    """
+    Serializer ignores sub-collections.
+    """
     id = serializers.CharField()
     name = serializers.CharField()
     description = serializers.CharField(required=False)
@@ -217,6 +225,9 @@ class ProjectInfoSerializer(serializers.Serializer):
 
 
 class DiagramBasicInfoSerializer(serializers.Serializer):
+    """
+    Serializer ignores sub-collections.
+    """
     id = serializers.CharField()
     name = serializers.CharField()
     description = serializers.CharField(required=False)
@@ -224,8 +235,23 @@ class DiagramBasicInfoSerializer(serializers.Serializer):
 
 
 class SandboxBasicInfoSerializer(serializers.Serializer):
+    """
+    Serializer ignores sub-collections.
+    """
     project = ProjectInfoSerializer(source='project_info')
     diagrams = DiagramBasicInfoSerializer(many=True)
     schemas = SchemaSerializer(many=True)
 
 
+class ChangeSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(required=False)
+    content = serializers.CharField()
+    objectType = serializers.CharField(source="object_type")
+    objectCode = serializers.CharField(source="object_code")
+    changeType = serializers.IntegerField(source="change_type")
+    isUIChange = serializers.BooleanField(source="is_ui_change")
+    madeBy = serializers.IntegerField(source="made_by")
+
+    class Meta:
+        model = Change
+        fields = ('id', 'content', 'objectType', 'objectCode', 'changeType', 'isUIChange')

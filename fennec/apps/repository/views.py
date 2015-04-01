@@ -1,17 +1,16 @@
 from rest_framework import viewsets, status, filters
-
 from rest_framework.response import Response
 from rest_framework.decorators import action, link
 from django.contrib.auth.models import User, Group
 
 from fennec.apps.constants import MASTER_BRANCH_NAME, MASTER_BRANCH_TYPE, MASTER_BRANCH_DESCRIPTION
-
-from fennec.apps.diagram.serializers import SchemaSerializer, DiagramSerializer, SandboxBasicInfoSerializer
-from fennec.apps.versioncontroll import utils
-from fennec.apps.versioncontroll.models import Project, Branch, BranchRevision, SandboxChange
-from fennec.apps.versioncontroll.serializers import BranchRevisionSerializer, ChangeSerializer
-from fennec.apps.versioncontroll.utils import SandboxState
-from fennec.apps.versioncontroll.serializers import ProjectSerializer, BranchSerializer, GroupSerializer, UserSerializer
+from fennec.apps.metamodel.serializers import SchemaSerializer, DiagramSerializer, SandboxBasicInfoSerializer, \
+    ChangeSerializer
+from fennec.apps.repository import utils
+from fennec.apps.repository.models import Project, Branch, BranchRevision, SandboxChange
+from fennec.apps.repository.serializers import BranchRevisionSerializer
+from fennec.apps.repository.utils import SandboxState
+from fennec.apps.repository.serializers import ProjectSerializer, BranchSerializer, GroupSerializer, UserSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -34,6 +33,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
 
     def post_save(self, obj, created=False):
+        """
+        After saving of new project create new 'master' branch and its zero revision.
+        """
         if created:
             branch = Branch(created_by=obj.created_by, current_version=0, description=MASTER_BRANCH_DESCRIPTION,
                             name=MASTER_BRANCH_NAME, project_ref=obj, type=MASTER_BRANCH_TYPE)
@@ -51,6 +53,9 @@ class BranchViewSet(viewsets.ModelViewSet):
 
 
     def post_save(self, obj, created=False):
+        """
+        After saving of new branch create zero revision for it.
+        """
         if created:
             revision_zero = BranchRevision(revision_number=0, branch_ref=obj)
             revision_zero.save()
@@ -71,6 +76,9 @@ class BranchRevisionViewSet(viewsets.ModelViewSet):
 
     @action()
     def branch(self, request, id=None, project_id_id=None, ):
+        """
+        Branch from current branch.
+        """
         branch_rev = BranchRevision.objects.filter(id=id).first()
         name = request.DATA['name']
         type = request.DATA['type']
@@ -82,6 +90,10 @@ class BranchRevisionViewSet(viewsets.ModelViewSet):
 
     @action(methods=['POST'])
     def change(self, request, id=None):
+        """
+        Persists a change for given branch revision.
+        Change is persisted as sandbox change.
+        """
         serializer = ChangeSerializer(data=request.DATA)
         if serializer.is_valid():
             branch_rev = BranchRevision.objects.filter(id=id).first()
@@ -105,6 +117,9 @@ class BranchRevisionViewSet(viewsets.ModelViewSet):
 
     @action()
     def commit(self, request, id=None):
+        """
+        Commits current sandbox changes. See 'utils.commit_sandbox'
+        """
         branch_revision = self.get_object()
         latest_branch_revision = BranchRevision.objects.filter(branch_ref=branch_revision.branch_ref).order_by(
             '-revision_number').first()
@@ -122,6 +137,9 @@ class BranchRevisionViewSet(viewsets.ModelViewSet):
 
     @link()
     def project_state(self, request, id=None):
+        """
+        Builds and returns full sandbox state. Contains both metadata and symbols (diagrams)
+        """
         branch_revision = self.get_object()
         user = request.user
         sandbox = utils.obtain_sandbox(user, branch_revision.branch_ref.id)
@@ -137,6 +155,9 @@ class BranchRevisionViewSet(viewsets.ModelViewSet):
 
     @link()
     def metadata(self, request, id=None):
+        """
+        Builds and returns sandbox metadata.
+        """
         branch_revision = self.get_object()
         user = request.user
         sandbox = utils.obtain_sandbox(user, branch_revision.branch_ref.id)
@@ -150,6 +171,9 @@ class BranchRevisionViewSet(viewsets.ModelViewSet):
 
     @action()
     def diagram(self, request, id=None):
+        """
+        Builds and returns single diagram.
+        """
         branch_revision = self.get_object()
         user = request.user
         sandbox = utils.obtain_sandbox(user, branch_revision.branch_ref.id)

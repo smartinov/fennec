@@ -7,13 +7,14 @@ from rest_framework.test import APITestCase, APIClient
 from django.test import TestCase
 
 from fennec.apps import constants
-from fennec.apps.diagram.utils import Table, Schema, Column, Diagram, Layer
-from fennec.apps.diagram.serializers import SchemaSerializer, TableSerializer, ColumnSerializer, \
+from fennec.apps.metamodel.utils import Table, Schema, Column, Diagram, Layer
+from fennec.apps.metamodel.serializers import SchemaSerializer, TableSerializer, ColumnSerializer, \
     DiagramSerializer, LayerSerializer
-from fennec.apps.versioncontroll.models import Project, Branch, BranchRevision, Sandbox, Change, SandboxChange, \
+from fennec.apps.repository.models import Project, Branch, BranchRevision, Sandbox, SandboxChange, \
     BranchRevisionChange
-from fennec.apps.versioncontroll import utils
-from fennec.apps.versioncontroll.utils import BranchRevisionState, SandboxState
+from fennec.apps.repository import utils
+from fennec.apps.repository.utils import BranchRevisionState, SandboxState
+from fennec.apps.metamodel.models import Change
 
 
 class DefaultAPITest(APITestCase):
@@ -132,7 +133,7 @@ class UtilsTest(DefaultAPITest):
         self.assertEqual(schemas[0].collation, schema.collation)
         self.assertEqual(schemas[0].tables, [])
 
-        diagram = Diagram(id=str(uuid4()), name="MainDiagram", description="test diagram")
+        diagram = Diagram(id=str(uuid4()), name="MainDiagram", description="test metamodel")
         diagram_serializer = DiagramSerializer(diagram)
         diagram_json = JSONRenderer().render(diagram_serializer.data)
         diagram_c = Change(content=diagram_json, object_type='Diagram', change_type=0, object_code=table.id,
@@ -185,7 +186,7 @@ class UtilsTest(DefaultAPITest):
         util = SandboxState(self.user, sandbox)
         schemas = util.build_sandbox_state_metadata()
 
-        diagram = Diagram(id=str(uuid4()), name="MainDiagram", description="test diagram")
+        diagram = Diagram(id=str(uuid4()), name="MainDiagram", description="test metamodel")
         diagram_serializer = DiagramSerializer(diagram)
         diagram_json = JSONRenderer().render(diagram_serializer.data)
         diagram_c = Change(content=diagram_json, object_type='Diagram', change_type=0, object_code=table.id,

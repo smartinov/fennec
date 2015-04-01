@@ -6,7 +6,7 @@ from xml.etree import ElementTree
 from zipfile import ZipFile
 import os
 
-from fennec.apps.diagram.utils import Table, Column, Index, Schema, ForeignKey, REFERENTIAL_ACTIONS
+from fennec.apps.metamodel.utils import Table, Column, Index, Schema, ForeignKey, REFERENTIAL_ACTIONS
 
 
 class WorkbenchParser():

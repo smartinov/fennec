@@ -192,8 +192,8 @@ THIRD_PARTY_APPS = (
 LOCAL_APPS = (
     'fennec.apps.dashboard',
     'fennec.apps.authentication',
-    'fennec.apps.diagram',
-    'fennec.apps.versioncontroll',
+    'fennec.apps.metamodel',
+    'fennec.apps.repository',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -254,4 +254,3 @@ REST_FRAMEWORK = {
 
 }
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
-

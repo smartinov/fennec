@@ -1,0 +1,1 @@
+Change, is a JSON formatted change, which enables to save changes to a database.

@@ -33,8 +33,8 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(serialize=False, primary_key=True)),
                 ('revision_number', models.IntegerField(default=0, help_text=b'ordinal number of revision')),
                 ('is_deleted', models.SmallIntegerField(default=0, help_text=b'logical deletion')),
-                ('branch_ref', models.ForeignKey(to='versioncontroll.Branch', help_text=b'references owning branch', null=True)),
-                ('previous_revision_ref', models.ForeignKey(to='versioncontroll.BranchRevision', help_text=b'references previous revision of the same branch', null=True)),
+                ('branch_ref', models.ForeignKey(to='repository.Branch', help_text=b'references owning branch', null=True)),
+                ('previous_revision_ref', models.ForeignKey(to='repository.BranchRevision', help_text=b'references previous revision of the same branch', null=True)),
             ],
             options={
             },
@@ -45,7 +45,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(serialize=False, primary_key=True)),
                 ('ordinal', models.IntegerField(default=0, help_text=b'ordinal number of change in change set')),
-                ('branch_revision_ref', models.ForeignKey(help_text=b'sandbox reference', to='versioncontroll.BranchRevision')),
+                ('branch_revision_ref', models.ForeignKey(help_text=b'sandbox reference', to='repository.BranchRevision')),
             ],
             options={
             },
@@ -86,9 +86,9 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(serialize=False, primary_key=True)),
                 ('status', models.SmallIntegerField(default=0, help_text=b'state of sandbox, opened or closed', choices=[(0, b'OPEN'), (1, b'CLOSED')])),
                 ('is_deleted', models.SmallIntegerField(default=0, help_text=b'logical deletion')),
-                ('bound_to_branch_ref', models.ForeignKey(help_text=b'references a branch for which the sandbox is used for', to='versioncontroll.Branch')),
+                ('bound_to_branch_ref', models.ForeignKey(help_text=b'references a branch for which the sandbox is used for', to='repository.Branch')),
                 ('created_by', models.ForeignKey(help_text=b'account who made the sandbox and is its owner of ', to=settings.AUTH_USER_MODEL)),
-                ('created_from_branch_revision_ref', models.ForeignKey(help_text=b"references branch revision that is 'parent' to the sandbox", to='versioncontroll.BranchRevision')),
+                ('created_from_branch_revision_ref', models.ForeignKey(help_text=b"references branch revision that is 'parent' to the sandbox", to='repository.BranchRevision')),
             ],
             options={
             },
@@ -99,8 +99,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(serialize=False, primary_key=True)),
                 ('ordinal', models.IntegerField(default=0, help_text=b'ordinal number of change in change set')),
-                ('change_ref', models.ForeignKey(help_text=b'change reference', to='versioncontroll.Change')),
-                ('sandbox_ref', models.ForeignKey(help_text=b'sandbox reference', to='versioncontroll.Sandbox')),
+                ('change_ref', models.ForeignKey(help_text=b'change reference', to='repository.Change')),
+                ('sandbox_ref', models.ForeignKey(help_text=b'sandbox reference', to='repository.Sandbox')),
             ],
             options={
             },
@@ -109,19 +109,19 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='branchrevisionchange',
             name='change_ref',
-            field=models.ForeignKey(help_text=b'change reference', to='versioncontroll.Change'),
+            field=models.ForeignKey(help_text=b'change reference', to='repository.Change'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='branch',
             name='parent_branch_revision',
-            field=models.ForeignKey(to='versioncontroll.BranchRevision', help_text=b'represents a branch revision that is a starting point of this branch.', null=True),
+            field=models.ForeignKey(to='repository.BranchRevision', help_text=b'represents a branch revision that is a starting point of this branch.', null=True),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='branch',
             name='project_ref',
-            field=models.ForeignKey(help_text=b'project reference', to='versioncontroll.Project'),
+            field=models.ForeignKey(help_text=b'project reference', to='repository.Project'),
             preserve_default=True,
         ),
     ]
