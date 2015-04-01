@@ -1,11 +1,20 @@
 var projectsRoot = '/api/projects/';
-var app = angular.module('fennec.dashboard', ['mgcrea.ngStrap', 'ngAnimate', 'ngResource']);
+var app = angular.module('fennec.dashboard', ['mgcrea.ngStrap', 'ngAnimate', 'ngResource', 'ngCookies']);
 
-app.factory('Projects', function ($resource) {
-    return $resource('/api/projects/:id'); // Note the full endpoint address
-});
-app.config(['$httpProvider', function ($httpProvider) {
-    $httpProvider.defaults.headers.common['X-CSRFToken'] = '{{ csrf_token|escapejs }}';
+
+app.factory('Projects', ['$resource', function($resource){
+    return $resource("/api/projects/", {'id': '@id'});
+}]);
+
+app.config(['$httpProvider', '$interpolateProvider', '$resourceProvider', function ($httpProvider, $interpolateProvider, $resourceProvider) {
+     /* for compatibility with django teplate engine */
+    $httpProvider.defaults.xsrfCookieName = 'csrftoken';
+    $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
+    //** django urls loves trailling slashes which angularjs removes by default.
+    //$resourceProvider.defaults.stripTrailingSlashes = false;
+    $interpolateProvider.startSymbol('{$');
+    $interpolateProvider.endSymbol('$}');
+
 }]);
 app.config(function ($alertProvider) {
     angular.extend($alertProvider.defaults, {
@@ -15,31 +24,25 @@ app.config(function ($alertProvider) {
         container: '#alert-container'
     });
 });
+
 app.controller("ProjectsController",
     function ($scope, $http, $alert, Projects) {
         $scope.UserFullName = 'Nikola Latinovic';
         $scope.criteria = {parameter:'All'};
-        $scope.projects = [];
+        $scope.projects = Projects.query();
         $scope.AddProject = {};
         $scope.add_new = false;
-        $scope.reload = function () {
-            $scope.projects = Projects.query();
-        };
 
         $scope.add_new_project = function () {
-            project = {
+            var project = {
                 "name": $scope.AddProject.Name,
-                "description": $scope.AddProject.Description,
-                "created_by": "http://127.0.0.1:8000/api/users/1/",
-                "percentage_complete":"0",
-                "image_url":""
+                "created_by":"http://127.0.0.1:8000/api/users/1/"
             }
-            data = angular.toJson(project);
+            var data = angular.toJson(project);
             $http.post(projectsRoot, data)
                 .success(function (data, status) {
                     $scope.AddProject = {};
-                    $scope.reload();
-                    var myAlert = $alert({title: 'Success!', content: 'Project creation successful!   ', type: 'info', show: true});
+                    $scope.projects = Projects.query();
                 }).error(function (data, status) {
 
                 });
@@ -74,15 +77,13 @@ app.controller("ProjectsController",
     			    case 'All':
     				    return true;
     			    case 'Mine':
-    				    return item.owner == $scope.UserFullName;
+    				    return item.created_by == 1;
     			    case 'Shared':
     				    return item.members.length > 0;
     			    case 'InProgress':
      				    return item.percentage_complete != 100;
     			    case 'Completed':
     				    return item.percentage_complete == 100;
-    			    case 'Archived':
-    				    return item.isArchived == 'true';
     		    }
     	    };
   	    };
@@ -90,4 +91,19 @@ app.controller("ProjectsController",
         $scope.filterBy = function(filter_parameter){
     	    $scope.criteria = {parameter: filter_parameter};
         };
+
+        $scope.criteriaMatchLength = function(criteria){
+            switch (criteria){
+    			    case 'Mine':
+                        return $.grep($scope.projects, function(item){return item.created_by == 1}).length;
+    			    case 'Shared':
+                        //return $.grep($scope.projects, function(item){return item.members.length > 0}).length;
+                    return 0;
+    			    case 'InProgress':
+                        return $.grep($scope.projects, function(item){return item.percentage_complete != 100}).length;
+    			    case 'Completed':
+    				    return $.grep($scope.projects, function(item){return item.percentage_complete == 100}).length;
+    		}
+        }
     });
+

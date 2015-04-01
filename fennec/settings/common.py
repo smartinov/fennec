@@ -254,4 +254,3 @@ REST_FRAMEWORK = {
 
 }
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
-
