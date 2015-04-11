@@ -26,19 +26,18 @@
     					<option value="updated">Updated</option>
 					</select>
         		</li>
-            	<li> <a href="" ng-click="filterBy('All');"  ng-class={selected:'All'==criteria.parameter}>All projects<span class="custom-badge">{{projects.length}}</span></a>
+            	<li> <a href="" ng-click="filterBy('All');"  ng-class={selected:'All'==criteria.parameter}>All projects<span class="custom-badge">{$projects.length$}</span></a>
             	</li>
-            	<li> <a href="" ng-click="filterBy('Mine');"  ng-class={selected:'Mine'==criteria.parameter}>Mine <span class="custom-badge">0</span>
+            	<li> <a href="" ng-click="filterBy('Mine');"  ng-class={selected:'Mine'==criteria.parameter}>Mine <span class="custom-badge">{$criteriaMatchLength('Mine')$}</span>
             	</a>
             	</li>
-            	<li> <a href="" ng-click="filterBy('Shared');"ng-class={selected:'Shared'==criteria.parameter}>Shared <span class="custom-badge">0</span></a>
+            	<li> <a href="" ng-click="filterBy('Shared');"ng-class={selected:'Shared'==criteria.parameter}>Shared <span class="custom-badge">{$criteriaMatchLength('Shared')$}</span></a>
             	</li>
-            	<li> <a href="" ng-click="filterBy('InProgress');" ng-class={selected:'InProgress'==criteria.parameter}>In progress <span class="custom-badge">0</span></a>
+            	<li> <a href="" ng-click="filterBy('InProgress');" ng-class={selected:'InProgress'==criteria.parameter}>In progress <span class="custom-badge">{$criteriaMatchLength('InProgress')$}</span></a>
             	</li>
-            	<li> <a href="" ng-click="filterBy('Completed');" ng-class={selected:'Completed'==criteria.parameter}>Completed <span class="custom-badge">0</span></a>
+            	<li> <a href="" ng-click="filterBy('Completed');" ng-class={selected:'Completed'==criteria.parameter}>Completed <span class="custom-badge">{$criteriaMatchLength('Completed')$}</span></a>
             	</li>
-            	<li> <a href="" ng-click="filterBy('Archived');" ng-class={selected:'Archived'==criteria.parameter}>Archived <span class="custom-badge">0</span></a>
-            	</li>
+
 				</br></br>
             	<li>
 					<a id="addProject" href="" ng-click="toogle_add_project('true')">Add project</a>
@@ -54,15 +53,15 @@
                 	<div class="col-lg-12" ng-repeat="currentProject in projects | filter:query | filter:criteriaMatch(criteria)  | orderBy: sortorder ">
                 		<div id="projectItemTemplate" class="main-row-item">
 							<div class="main-row-item-content">
-								<span id='{{currentProject.id}}' style="cursor: pointer; font-weight:bold;" ng-click="toggleSidebar(currentProject)">{{currentProject.name}}</span></br>
-								<span>Project owner: {{currentProject.created_by}}</span><br>
-								<span>Last Updated: {{currentProject.modification_timestamp}}</span><br><br>
+								<span id='{$ currentProject.id $}' style="cursor: pointer; font-weight:bold;" ng-click="toggleSidebar(currentProject)">{$ currentProject.name $}</span></br>
+								<span>Project owner: {$ currentProject.created_by $}</span><br>
+								<span>Last Updated: {$ currentProject.modification_timestamp $}</span><br><br>
 								<span>
 									<a id="project-members" style="cursor:pointer;">Members:0</a> </br>
 								</span>
 							</div>
 							<div id="project_thumbnail" class="project-thumbnail">
-								<img src='{{currentProject.image_url}}' alt="..." class="img-thumbnail" ng-click="toggleSidebar(currentProject)"/>
+								<img  src="{% static "dashboard/images/empty_project_logo.jpg" %}" alt="..." class="img-thumbnail" ng-click="toggleSidebar(currentProject)"/>
 							</div>
 						</div>
                 	</div>
@@ -77,12 +76,10 @@
 			    </div>
             </ul>
             <div ng-show="add_new">
-               <h3 style="margin-left: 10%;color:#2a6496; ">Add project</h3>
+               <h3 style="margin-left: 10%;color:#999999; ">Add project</h3>
                <div class="form-group">
-                <input type="text" class="form-control" placeholder="Name" ng-model="AddProject.Name"
-                       style="width: 50%; margin-left: 10%; margin-top: 10%; margin-bottom: 5%;">
-                <textarea class="form-control" rows="3" placeholder="Description"  ng-model="AddProject.Description"
-                          style="width: 75%;margin-bottom: 5%;margin-left: 10%;"></textarea>
+                <input type="text" class="form-control" placeholder="Name..." ng-model="AddProject.Name"
+                       style="width: 70%; margin-left: 10%; margin-top: 5%; margin-bottom: 5%;">
                 <div style="margin-left:10%;">
   				    <button class="btn btn btn-danger" ng-click="toogle_add_project('false')">
                         <span class="glyphicon glyphicon-remove"></span>
