@@ -41,7 +41,7 @@ class WorkbenchParser():
             schemas.append(schema)
 
             schema.tables = []
-            for table_element in self.model.findall('.//value[@type="object"][@struct-name="db.mysql.Table"]'):
+            for table_element in schema_element.findall('.//value[@type="object"][@struct-name="db.mysql.Table"]'):
                 table = self.__get_table(table_element)
                 table.schema_ref = schema.id
                 schema.tables.append(table)
