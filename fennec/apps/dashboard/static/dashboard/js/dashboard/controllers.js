@@ -7,8 +7,7 @@ var app = angular.module('fennec.dashboard', ['mgcrea.ngStrap', 'ngAnimate','ui-
 app.factory('Project', function($resource){
     return $resource('/api/projects/:id', {'id':'@id'},
         {
-            'update':{method:'PUT'},
-            'save':{url:'/api/projects', method:'POST', isArray:false}
+            'update':{method:'PUT'}
         }
     );
 });
