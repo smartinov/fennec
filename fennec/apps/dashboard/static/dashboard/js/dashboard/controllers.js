@@ -6,9 +6,11 @@ var app = angular.module('fennec.dashboard', ['mgcrea.ngStrap', 'ngAnimate','ui-
 
 app.factory('Project', function($resource){
     return $resource('/api/projects/:id', {'id':'@id'},
-    {
-        'update':{method:'PUT'}
-    });
+        {
+            'update':{method:'PUT'},
+            'save':{url:'/api/projects', method:'POST', isArray:false}
+        }
+    );
 });
 
 
@@ -17,8 +19,7 @@ app.config(['$httpProvider', '$interpolateProvider', function ($httpProvider, $i
      /* for compatibility with django teplate engine */
     $httpProvider.defaults.xsrfCookieName = 'csrftoken';
     $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
-    //** django urls loves trailling slashes which angularjs removes by default
-    //$resourceProvider.defaults.stripTrailingSlashes = false;
+    //Interpolate angular start and end symbols
     $interpolateProvider.startSymbol('[[');
     $interpolateProvider.endSymbol(']]');
 
@@ -30,27 +31,46 @@ app.controller("ProjectsController",
         $scope.criteria = {parameter:'All'};
         $scope.add_project = {};
         $scope.add_new = false;
+
+        //Projects manipulation operations//////////////////////////////////////////////////
+        //Method will be called on ng-init of controller
         $scope.load_projects = function(){
-            $scope.projects = Project.query({'created_by':'1'}, function(){},
-            //function called if there is an error retrieveing projects.
-            function(){
-                 $scope.projects = [];
-                 Notification.error('We have a temporary issue with retrieving projects. Please try again.');
-            });
-        }
+            $scope.projects = Project.query({'created_by':'1'},
+                function(){},
 
-        $scope.load_projects();
+                function(){
+                    //function called if there is an error retrieveing projects.
+                     $scope.projects = [];
+                    Notification.error('We have a temporary issue with retrieving projects. Please try again.');
+                });
+        };
 
-        $scope.add_new_project = function () {
-            Project.save({name:$scope.add_project.name, created_by:'1'}, function(){
+         $scope.add_new_project = function () {
+            $http.post(projectsRoot, {name:$scope.add_project.name, created_by:'1'}).
+            success(function(){
                 $scope.load_projects();
                 Notification.success('Project added successfully.');
-            }, function(){
+            }).error(function(){
                 Notification.error('We have a temporary issue with saving project. Please try again.');
             });
             $scope.cancel_add_project();
-        }
+        };
 
+        $scope.remove_project = function(){
+            Project.remove({'id':$scope.selectedProject.id},
+                function(){
+                    $scope.load_projects();
+                    $scope.selectedProject = undefined;
+                    $("#sidebar-wrapper-rigth").toggleClass("toggled");
+                    Notification.success('Project removed successfully.');
+                },
+                function(){
+                    Notification.error('We have a temporary issue. Please try again.');
+                });
+        };
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+        // UI relevant update methods
         $scope.cancel_add_project = function(){
             $scope.add_new = false;
             $scope.add_project = {};
@@ -60,17 +80,6 @@ app.controller("ProjectsController",
             $scope.add_new = true;
             $scope.add_project = {};
         }
-
-        $scope.remove_project = function(){
-            Project.remove({'id':$scope.selectedProject.id}, function(){
-                 $scope.load_projects();
-                 $scope.selectedProject = undefined;
-                 $("#sidebar-wrapper-rigth").toggleClass("toggled");
-                 Notification.success('Project removed successfully.');
-            }, function(){
-                 Notification.error('We have a temporary issue. Please try again.');
-            });
-        };
 
         $scope.toggleSidebar = function(item){
             $scope.add_new = false;
@@ -88,6 +97,8 @@ app.controller("ProjectsController",
             if(!$("#sidebar-wrapper-rigth").hasClass('toggled'))
                 $scope.selectedProject = undefined;
         };
+        ///////////////////////////////////////////////////////////////////////////////////////
+
 
         $scope.criteriaMatch = function( criteria ) {
     	    return function( item ) {

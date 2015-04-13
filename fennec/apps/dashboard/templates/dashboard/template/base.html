@@ -32,7 +32,7 @@
 </head>
 <body>
 {% include "dashboard/template/navbar.html" %}
-<div class="content"  ng-controller="{% block  ng-controller %}{% endblock %}">
+<div class="content"  ng-controller="{% block  ng-controller %}{% endblock %}" ng-init="{% block  ng-init %}{% endblock %}">
     {% block content %}{% endblock %}
 </div>
 {% block custom-javascript %}{% endblock %}

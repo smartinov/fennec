@@ -6,6 +6,7 @@
     <script src="{% static "dashboard/js/dashboard/controllers.js" %}" ></script>
 {% endblock %}
 {% block  ng-controller %}ProjectsController{% endblock %}
+{% block  ng-init %}load_projects(){% endblock %}
 {% block content %}
         <div id="wrapper">
     	<!-- Sidebar -->
