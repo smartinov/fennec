@@ -13,10 +13,10 @@
     	<div id="sidebar-wrapper">
         	<ul class="sidebar-nav">
                 <li class="sidebar-left-first">
-                    <a ng-hide="add_new" href="" class='' ng-click="start_add_project()">Start new project</a>
-                    <div  ng-hide="!add_new" class="input-group add-on">
-                        <input type="text" class="form-control" placeholder="Name..." ng-model="add_project.name" style="margin-left:9%;">
-                        <div class="input-group-btn">
+                    <a ng-if="!add_new" href="" class="animate-if"  ng-click="start_add_project()">Start new project</a>
+                    <div  ng-if="add_new" class="animate-if">
+                        <input type="text" class="form-control" placeholder="Name..." ng-model="add_project.name">
+                        <div style="float: right;">
                             <button class="btn btn-default" ng-show="add_project.name.length > 0"  ng-click="add_new_project()" style="background: transparent; border: none;">
                                 <i class="glyphicon glyphicon-ok" style="color: white;"></i>
                             </button>

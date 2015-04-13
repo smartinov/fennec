@@ -26,7 +26,7 @@ app.config(['$httpProvider', '$interpolateProvider', function ($httpProvider, $i
 }]);
 
 app.controller("ProjectsController",
-    function ($scope, $http, Notification,Project) {
+    function ($scope, $http, Notification, Project) {
         $scope.UserFullName = 'Nikola Latinovic';
         $scope.criteria = {parameter:'All'};
         $scope.add_project = {};
