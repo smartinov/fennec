@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
 
-from fennec.apps.repository.models import Project, Branch,  BranchRevision, Sandbox
+from fennec.apps.repository.models import Project, ProjectMember, Branch,  BranchRevision, Sandbox
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -25,6 +25,17 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Project
         created_by = serializers.HyperlinkedRelatedField(source='created_by', view_name='user-detail', queryset=User.objects.all(), lookup_field='id', slug_url_kwarg='id')
         fields = ('url', 'id', 'name', 'description', 'created_by')
+
+
+class ProjectMemberSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name="projectmember-detail", lookup_field='id')
+
+    class Meta:
+        model = ProjectMember
+        member_ref = serializers.HyperlinkedRelatedField(source='member_ref', view_name='user-detail', queryset=User.objects.all(), lookup_field='id', slug_url_kwarg='id')
+        project_ref = serializers.HyperlinkedRelatedField(source='project_ref', view_name='project-detail', queryset=Project.objects.all(), lookup_field='id', slug_url_kwarg='id')
+        fields = ('url', 'id', 'member_ref', 'project_ref')
+
 
 class BranchSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='branch-detail', lookup_field='id')

@@ -19,8 +19,8 @@ class Project(models.Model):
     modification_timestamp = models.DateTimeField(auto_now=True, null=True)
 
 
-class ProjectMembers(models.Model):
-    assignment_id = models.AutoField(primary_key=True)
+class ProjectMember(models.Model):
+    id = models.AutoField(primary_key=True)
     member_ref = models.ForeignKey(settings.AUTH_USER_MODEL, help_text="account reference")
     project_ref = models.ForeignKey('Project', help_text="project reference")
 
