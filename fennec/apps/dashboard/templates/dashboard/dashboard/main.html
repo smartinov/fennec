@@ -6,56 +6,73 @@
     <script src="{% static "dashboard/js/dashboard/controllers.js" %}" ></script>
 {% endblock %}
 {% block  ng-controller %}ProjectsController{% endblock %}
+{% block  ng-init %}load_projects(){% endblock %}
 {% block content %}
         <div id="wrapper">
     	<!-- Sidebar -->
     	<div id="sidebar-wrapper">
         	<ul class="sidebar-nav">
-        		<li style="margin-right:5%;">
-        			<div class="inner-addon right-addon">
-    					<i class="glyphicon glyphicon-search"></i>
-    					<input type="text" class="form-control" placeholder="Search" ng-model="query"/>
-					</div>
-        		</li>
-        		<li>
-        			<p>Order by:</p>
-					<select ng-model="sortorder" class="form-control order-by-dropdown">
-    					<option value="name" selected>Name</option>
-    					<option value="owner">Owner</option>
-    					<option value="percentage_complete">Complete</option>
-    					<option value="updated">Updated</option>
-					</select>
-        		</li>
-            	<li> <a href="" ng-click="filterBy('All');"  ng-class={selected:'All'==criteria.parameter}>All projects<span class="custom-badge">{$projects.length$}</span></a>
+                <li class="sidebar-left-first">
+                    <a ng-if="!add_new" href="" class="animate-if"  ng-click="start_add_project()">Start new project</a>
+                    <div  ng-if="add_new" class="animate-if">
+                        <input type="text" class="form-control" placeholder="Name..." ng-model="add_project.name">
+                        <div style="float: right;">
+                            <button class="btn btn-default" ng-show="add_project.name.length > 0"  ng-click="add_new_project()" style="background: transparent; border: none;">
+                                <i class="glyphicon glyphicon-ok" style="color: white;"></i>
+                            </button>
+                            <button class="btn btn-default"  ng-click="cancel_add_project()" style="background: transparent; border: none;">
+                                <i class="glyphicon glyphicon-remove" style="color: white;"></i>
+                            </button>
+                        </div>
+                    </div>
+                </li>
+            	<li> <a href="" ng-click="filterBy('All');"  ng-class={selected:'All'==criteria.parameter}>All projects<span class="custom-badge">[[projects.length]]</span></a>
             	</li>
-            	<li> <a href="" ng-click="filterBy('Mine');"  ng-class={selected:'Mine'==criteria.parameter}>Mine <span class="custom-badge">{$criteriaMatchLength('Mine')$}</span>
+            	<li> <a href="" ng-click="filterBy('Mine');"  ng-class={selected:'Mine'==criteria.parameter}>Mine <span class="custom-badge">[[criteriaMatchLength('Mine')]]</span>
             	</a>
             	</li>
-            	<li> <a href="" ng-click="filterBy('Shared');"ng-class={selected:'Shared'==criteria.parameter}>Shared <span class="custom-badge">{$criteriaMatchLength('Shared')$}</span></a>
+            	<li> <a href="" ng-click="filterBy('Shared');"ng-class={selected:'Shared'==criteria.parameter}>Shared <span class="custom-badge">[[criteriaMatchLength('Shared')]]</span></a>
             	</li>
-            	<li> <a href="" ng-click="filterBy('InProgress');" ng-class={selected:'InProgress'==criteria.parameter}>In progress <span class="custom-badge">{$criteriaMatchLength('InProgress')$}</span></a>
+            	<li> <a href="" ng-click="filterBy('InProgress');" ng-class={selected:'InProgress'==criteria.parameter}>In progress <span class="custom-badge">[[criteriaMatchLength('InProgress')]]</span></a>
             	</li>
-            	<li> <a href="" ng-click="filterBy('Completed');" ng-class={selected:'Completed'==criteria.parameter}>Completed <span class="custom-badge">{$criteriaMatchLength('Completed')$}</span></a>
+            	<li> <a href="" ng-click="filterBy('Completed');" ng-class={selected:'Completed'==criteria.parameter}>Completed <span class="custom-badge">[[criteriaMatchLength('Completed')]]</span></a>
             	</li>
-
-				</br></br>
-            	<li>
-					<a id="addProject" href="" ng-click="toogle_add_project('true')">Add project</a>
-				</li>
-
         	</ul>
     	</div>
     	<!-- /#sidebar-wrapper -->
+
+        <div id="sidebar-wrapper-top">
+            <div class="row">
+                <div class="col-sm-4" style="width: 6%;margin-top: 0.4%;">
+                    Order by:
+                </div>
+                <div class="col-sm-4" style="padding-left: 0%;margin-left: 0%;width: 10%;">
+				    <select ng-model="sortorder" class="form-control order-by-dropdown" ng-init="sortorder='name'">
+    				    <option value="name" selected>Name</option>
+    				    <option value="owner">Owner</option>
+    				    <option value="percentage_complete">Complete</option>
+    				    <option value="updated">Updated</option>
+				    </select>
+                </div>
+                <div class="search-form col-sm-4">
+                    <div class="inner-addon right-addon" style="margin-top: 0%; margin-left: 0%; margin-bottom: 0%">
+                        <i class="glyphicon glyphicon-search"></i>
+                        <input type="text" class="form-control" placeholder="Search..." ng-model="query"/>
+                    </div>
+			    </div>
+            </div>
+        </div>
+
     	<!-- Page Content -->
     	<div id="page-content-wrapper">
         	<div class="container">
             	<div class="row">
-                	<div class="col-lg-12" ng-repeat="currentProject in projects | filter:query | filter:criteriaMatch(criteria)  | orderBy: sortorder ">
+                	<div class="col-lg-12 animate-repeat" ng-repeat="currentProject in projects | filter:query | filter:criteriaMatch(criteria)  | orderBy: sortorder ">
                 		<div id="projectItemTemplate" class="main-row-item">
 							<div class="main-row-item-content">
-								<span id='{$ currentProject.id $}' style="cursor: pointer; font-weight:bold;" ng-click="toggleSidebar(currentProject)">{$ currentProject.name $}</span></br>
-								<span>Project owner: {$ currentProject.created_by $}</span><br>
-								<span>Last Updated: {$ currentProject.modification_timestamp $}</span><br><br>
+								<span id='[[ currentProject.id ]]' style="cursor: pointer; font-weight:bold;" ng-click="toggleSidebar(currentProject)">[[ currentProject.name ]]</span></br>
+								<span>Project owner: [[ currentProject.created_by ]]</span><br>
+								<span>Last Updated: [[ currentProject.modification_timestamp ]]</span><br><br>
 								<span>
 									<a id="project-members" style="cursor:pointer;">Members:0</a> </br>
 								</span>
@@ -65,39 +82,19 @@
 							</div>
 						</div>
                 	</div>
+                    <div ng-if="projects.length == 0">
+                        <span>No available projects.</span>
+                    </div>
                 </div>
             </div>
         </div>
         <div id="sidebar-wrapper-rigth">
-       	    <ul ng-show="!add_new">
-        	    <li><h2>{{selectedProject.name}}</h2></li>
-        	    <div class="btn-group">
-
-			    </div>
-            </ul>
-            <div ng-show="add_new">
-               <h3 style="margin-left: 10%;color:#999999; ">Add project</h3>
-               <div class="form-group">
-                <input type="text" class="form-control" placeholder="Name..." ng-model="AddProject.Name"
-                       style="width: 70%; margin-left: 10%; margin-top: 5%; margin-bottom: 5%;">
-                <div style="margin-left:10%;">
-  				    <button class="btn btn btn-danger" ng-click="toogle_add_project('false')">
-                        <span class="glyphicon glyphicon-remove"></span>
-  				    </button>
-  				    <button class="btn btn-primary" ng-show="AddProject.Name!=='' && AddProject.Name!=undefined" ng-click="add_new_project()">
-                         <span class="glyphicon glyphicon-plus"></span>
-  				    </button>
-			    </div>
-               </div>
-            </div>
-
+            <h3 class="project-title">[[selectedProject.name]]
+                <span style="float: right; margin-right: 15%;">
+                    <a  href="" ng-click="remove_project()" title="Remove"><i class="glyphicon glyphicon-remove" style="color: white;"></i></a>
+                    <a  href="" ng-click="edit_project()" title="Edit"><i class="glyphicon glyphicon-edit" style="color: white;"></i></a>
+                </span>
+            </h3>
         </div>
-    </div>
-    <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-            Are you really sure you want to delete this project?
-        </div>
-      </div>
     </div>
 {% endblock %}
