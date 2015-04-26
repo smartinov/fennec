@@ -190,6 +190,7 @@ THIRD_PARTY_APPS = (
 )
 
 LOCAL_APPS = (
+    'fennec.apps.diagram',
     'fennec.apps.dashboard',
     'fennec.apps.authentication',
     'fennec.apps.metamodel',

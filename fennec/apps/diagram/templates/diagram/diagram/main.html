@@ -1,0 +1,110 @@
+{% extends "diagram/template/base.html" %}
+{% load staticfiles %}
+{% block ng-app %}myApp{% endblock %}
+{% block title %}Diagram{% endblock %}
+{% block custom-javascript %}
+    <script>
+        /* Run before angular.js */
+        if (window.jQuery) {
+            window.hideJQuery = window.jQuery;
+            window.jQuery = false;
+        }
+    </script>
+    <!-- Vendor Libs: jQuery only used for Bootstrap functionality -->
+    <script src="{% static "js/angular/angular.js" %}"></script>
+    <script src="{% static "js/angular/angular-route.js" %}"></script>
+    <script src="{% static "js/angular/xeditable.js" %}"></script>
+
+    <!--Javascript to the end for performance -->
+    <script src="{% static "js/diagram/app.js" %}"></script>
+    <script src="{% static "js/diagram/services/d3.js" %}"></script>
+    <script src="{% static "js/diagram/services/diagramService.js" %}"></script>
+    <script src="{% static "js/diagram/controllers/fennecCtrl.js" %}"></script>
+    <script src="{% static "js/diagram/directives/fennecDiagram.js" %}"></script>
+
+
+    <script src="{% static "js/diagram/state-machine.js" %}"></script>
+
+{% endblock %}
+{% block  ng-controller %}DiagramController{% endblock %}
+{% block content %}
+
+
+<!--Sidebar-->
+<div class="fennec-sidebar">
+    <div class="well sidebar-nav">
+        <ul class="nav nav-list">
+            <li class="nav-header">Project 1</li>
+            <li class="active"><a href="#"> Diagram 1</a></li>
+
+            <li class="nav-header">Toolbar</li>
+            <button onclick="changeState(fennecStates.new_table)">New table</button>
+            <button onclick="changeState(fennecStates.select)">Select table</button>
+            <button onclick="changeState(fennecStates.new_link)">New link</button>
+            <button onclick="changeState(fennecStates.delete_obj)">Delete</button>
+            <button onclick="innerLayout.toggle('south')">toggle Property div</button>
+        </ul>
+    </div>
+</div>
+
+<!-- Diagram -->
+<div class="outer-center">
+
+    <div class="middle-center" ng-controller="DiagramController" >
+
+            <fennec-diagram data="diagramData" stable="selectedTable"></fennec-diagram>
+            <div class="property">
+                Table Name: <input data-ng-model="selectedTable.title" type="text" placeholder="Table name">
+
+                 {% verbatim %}
+                <table class="table table-bordered table-hover table-condensed">
+                    <tr style="font-weight: bold">
+                        <td style="width:35%">Column</td>
+                        <td style="width:20%">DataType</td>
+                        <td style="width:25%">Edit</td>
+                    </tr>
+
+                    <!--FOR FOR FOR FOR FOR default select first table-->
+
+                    <tr ng-repeat="user in selectedTable.attrs">
+                        <td>
+                            <!-- editable column (text with validation) -->
+                            <span editable-text="user.name" e-name="name" e-form="rowform" onbeforesave="checkName($data, user.id)"
+                                  e-required>
+                                {{ user.name || 'empty' }}
+                            </span>
+                        </td>
+                        <td style="white-space: nowrap">
+                            <!-- editable Type (select-local) -->
+                            <span editable-select="user.dataType" e-name="dataType" e-form="rowform"
+                                  e-ng-options="s.value as s.text for s in dataTypes"> {{ showDataType(user) }}
+                            </span>
+                        </td>
+
+                        <td style="white-space: nowrap">
+                            <!-- form -->
+                            <form editable-form name="rowform" onbeforesave="saveTable($data, user.id)"
+                                  ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == user">
+                                <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary">
+                                    save
+                                </button>
+                                <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()"
+                                        class="btn btn-default">
+                                    cancel
+                                </button>
+                            </form>
+                            <div class="buttons" ng-show="!rowform.$visible">
+                                <button class="btn btn-primary" ng-click="rowform.$show()">edit</button>
+                                <button class="btn btn-danger" ng-click="removeTableColumn($index)">del</button>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                {% endverbatim %}
+
+                <button class="btn btn-default" ng-click="addTable()">Add row</button>
+            </div>
+    </div>
+</div>
+
+{% endblock %}
