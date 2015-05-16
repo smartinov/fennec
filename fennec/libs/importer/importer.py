@@ -27,7 +27,6 @@ class FennecImporter():
                 for fk in table.foreign_keys:
                     self.__save_foreign_key_change(fk)
 
-
     def __save_schema_change(self, schema):
         serializer = BasicSchemaSerializer(schema)
         json = JSONRenderer().render(serializer.data)

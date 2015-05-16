@@ -136,9 +136,9 @@ class WorkbenchParser():
         comment = fk_element.find('.value[@key="comment"]').text
         delete_rule = self.__parse_fk_rule(fk_element.find('.value[@key="deleteRule"]').text)
         update_rule = self.__parse_fk_rule(fk_element.find('.value[@key="updateRule"]').text)
-        column_elements = fk_element.findall('.value[@key="columns"]/value[@struct-name="db.Column"]')
+        column_elements = fk_element.findall('.value[@key="columns"]')
         columns = [el.find('.link').text for el in column_elements]
-        ref_column_elements = fk_element.findall('.value[@key="columns"]/value[@struct-name="db.Column"]')
+        ref_column_elements = fk_element.findall('.value[@key="referencedColumns"]')
         ref_columns = [el.find('.link').text for el in ref_column_elements]
 
         return ForeignKey(name=name, id=fk_id, comment=comment,

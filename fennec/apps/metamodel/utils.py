@@ -70,6 +70,9 @@ class Column(object):
 
 class Index(object):
     def __init__(self, **kwargs):
+        """
+        columns is array of index columns id's
+        """
         self.id = kwargs.get('id')
         self.name = kwargs.get('name')
         self.storage_type = kwargs.get('storage_type')
@@ -81,6 +84,10 @@ class Index(object):
 
 class ForeignKey(object):
     def __init__(self, **kwargs):
+        """
+        source_source_columns is array of foreign key source columns id's,
+        referenced_columns is array of foreign key referenced columns id's
+        """
         self.id = kwargs.get('id')
         self.name = kwargs.get('name')
         self.comment = kwargs.get('comment')

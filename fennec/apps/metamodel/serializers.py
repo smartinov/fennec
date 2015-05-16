@@ -44,7 +44,7 @@ class IndexSerializer(serializers.Serializer):
     name = serializers.CharField()
     comment = serializers.CharField(required=False)
     storageType = serializers.CharField(source='storage_type')
-    columns = ColumnSerializer(required=False, many=True)
+    columns = serializers.CharField(required=False)
 
     tableRef = serializers.CharField(source='table_ref')
 
@@ -68,8 +68,8 @@ class ForeignKeySerializer(serializers.Serializer):
     comment = serializers.CharField(required=False)
     onUpdate = serializers.IntegerField(source='on_update_referential_action')
     onDelete = serializers.IntegerField(source='on_delete_referential_action')
-    sourceColumns = ColumnSerializer(required=False, source='source_columns', many=True)
-    referencedColumns = ColumnSerializer(required=False, source='referenced_columns', many=True)
+    sourceColumns = serializers.CharField(required=False, source='source_columns')
+    referencedColumns = serializers.CharField(required=False, source='referenced_columns')
 
     tableRef = serializers.CharField(source='table_ref')
 
