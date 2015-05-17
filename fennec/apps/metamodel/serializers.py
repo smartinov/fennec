@@ -50,7 +50,6 @@ class IndexSerializer(serializers.Serializer):
 
     def restore_object(self, attrs, instance=None):
         index = Index(**attrs)
-        index.columns = []
         return index
 
 
@@ -75,8 +74,6 @@ class ForeignKeySerializer(serializers.Serializer):
 
     def restore_object(self, attrs, instance=None):
         foreign_key = ForeignKey(**attrs)
-        foreign_key.source_columns = []
-        foreign_key.referenced_columns = []
         return foreign_key
 
 

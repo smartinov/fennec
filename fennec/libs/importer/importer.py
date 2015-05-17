@@ -1,7 +1,7 @@
 from rest_framework.renderers import JSONRenderer
 
-from fennec.apps.metamodel.serializers import ColumnSerializer, BasicSchemaSerializer, BasicTableSerializer, BasicIndexSerializer, \
-    ForeignKeyBasicSerializer
+from fennec.apps.metamodel.serializers import ColumnSerializer, BasicSchemaSerializer, BasicTableSerializer, \
+    IndexSerializer, ForeignKeySerializer
 from fennec.apps.repository.models import BranchRevisionChange
 from fennec.apps.metamodel.models import Change
 
@@ -71,7 +71,7 @@ class FennecImporter():
         self.__save_branch_revision_change(change)
 
     def __save_index_change(self, index):
-        serializer = BasicIndexSerializer(index)
+        serializer = IndexSerializer(index)
         json = JSONRenderer().render(serializer.data)
 
         change = Change()
@@ -85,7 +85,7 @@ class FennecImporter():
         self.__save_branch_revision_change(change)
 
     def __save_foreign_key_change(self, foreign_key):
-        serializer = ForeignKeyBasicSerializer(foreign_key)
+        serializer = ForeignKeySerializer(foreign_key)
         json = JSONRenderer().render(serializer.data)
 
         change = Change()
