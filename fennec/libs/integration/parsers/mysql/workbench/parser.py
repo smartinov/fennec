@@ -105,7 +105,7 @@ class WorkbenchParser():
         column_id = column_element.get('id').strip('{}').lower()
         name = column_element.find('.value[@key="name"]').text
         nullable = int(column_element.find('.value[@key="isNotNull"]').text) is 0
-        auto_increment = int(column_element.find('.value[@key="autoIncrement"]').text) is 0
+        auto_increment = int(column_element.find('.value[@key="autoIncrement"]').text) is 1
         default_value = column_element.find('.value[@key="defaultValue"]').text
         comment = column_element.find('.value[@key="comment"]').text
         length = column_element.find('.value[@key="length"]').text
