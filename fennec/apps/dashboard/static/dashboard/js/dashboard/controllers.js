@@ -12,8 +12,6 @@ app.factory('Project', function($resource){
     );
 });
 
-
-
 app.config(['$httpProvider', '$interpolateProvider', function ($httpProvider, $interpolateProvider) {
      /* for compatibility with django teplate engine */
     $httpProvider.defaults.xsrfCookieName = 'csrftoken';
