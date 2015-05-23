@@ -81,20 +81,19 @@ class Index(object):
         self.table_ref = kwargs.get('table_ref')
 
 
-
 class ForeignKey(object):
     def __init__(self, **kwargs):
         """
-        source_source_columns is array of foreign key source columns id's,
-        referenced_columns is array of foreign key referenced columns id's
+        source_column is source columns id,
+        referenced_columns is referenced columns id
         """
         self.id = kwargs.get('id')
         self.name = kwargs.get('name')
         self.comment = kwargs.get('comment')
         self.on_update_referential_action = kwargs.get('on_update_referential_action')
         self.on_delete_referential_action = kwargs.get('on_delete_referential_action')
-        self.source_columns = kwargs.get('source_columns') if kwargs.get('source_columns') else []
-        self.referenced_columns = kwargs.get('referenced_columns') if kwargs.get('referenced_columns') else []
+        self.source_column = kwargs.get('source_column')
+        self.referenced_column = kwargs.get('referenced_column')
 
         self.table_ref = kwargs.get('table_ref')
 

@@ -67,8 +67,8 @@ class ForeignKeySerializer(serializers.Serializer):
     comment = serializers.CharField(required=False)
     onUpdate = serializers.IntegerField(source='on_update_referential_action')
     onDelete = serializers.IntegerField(source='on_delete_referential_action')
-    sourceColumns = serializers.CharField(required=False, source='source_columns')
-    referencedColumns = serializers.CharField(required=False, source='referenced_columns')
+    sourceColumn = serializers.CharField(required=False, source='source_column')
+    referencedColumn = serializers.CharField(required=False, source='referenced_column')
 
     tableRef = serializers.CharField(source='table_ref')
 
