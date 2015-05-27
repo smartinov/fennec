@@ -1,3 +1,5 @@
+import ast
+import json
 from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action, link
@@ -107,6 +109,7 @@ class BranchRevisionViewSet(viewsets.ModelViewSet):
 
             change = serializer.object
             change.made_by = request.user
+            change.content = json.dumps(ast.literal_eval(change.content))  # convert unicode 'change.content' to json
             change.save()
             sandbox_change = SandboxChange()
             sandbox_change.change_ref = change
