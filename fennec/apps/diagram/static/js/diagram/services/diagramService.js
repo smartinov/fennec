@@ -1,8 +1,9 @@
 ﻿//This handles retrieving data and is used by controllers. 3 options (server, factory, provider) with 
 //each doing the same thing just structuring the functions/data differently.
+var projectsRoot = '/api/branch-revisions/1/change/';
 
 angular.module('myApp.services')
-.service('diagramService', function () {
+.service('diagramService', function ($http) {
 
 
     this.getTablesData = function () {

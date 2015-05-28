@@ -223,6 +223,7 @@ class SandboxState(object):
         for diagram in self.diagrams:
             ret_val.append({
                 'id': diagram.id,
+                'name': diagram.name,
                 'description': diagram.description,
                 'url': diagram.id
             })
