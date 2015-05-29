@@ -176,7 +176,7 @@ class BranchRevisionViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-    @action()
+    @link()
     def diagram(self, request, id=None):
         """
         Builds and returns single diagram.

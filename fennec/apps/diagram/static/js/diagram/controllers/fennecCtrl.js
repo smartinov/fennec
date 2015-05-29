@@ -12,7 +12,16 @@
                 console.log("Ctrl-> Fetching data from service.");
                 $scope.diagramData =  {tables: diagramService.getTablesData(), links: diagramService.getLinksData()};
                 $scope.selectedTable = {};
+                //pythonCreateDiagramSave();
             }
+
+            function pythonSave(){
+                  diagramService.pythonSave();
+//                    projects.then(function(result) {  // this is only run after $http completes
+//                       $scope.data = result;
+//                    });
+            }
+
 
             //$scope.$on('selectedTableEvent', function(scope, selectedTable){
             //    // when select the table this method is called
@@ -32,6 +41,7 @@
                 deleteTable(deletedTable.id, $scope.diagramData.tables);
                 $scope.$apply();
             });
+
 
 
             // add user
