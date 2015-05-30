@@ -37,6 +37,9 @@
             <li class="nav-header">Project 1</li>
             <li class="active"><a href="#"> Diagram 1</a></li>
 
+            <li class="nav-header">Diagram</li>
+            <button ng-click="saveDiagramButton()">Save diagram</button>
+
             <li class="nav-header">Toolbar</li>
             <button onclick="changeState(fennecStates.new_table)">New table</button>
             <button onclick="changeState(fennecStates.select)">Select table</button>
@@ -50,7 +53,7 @@
 <!-- Diagram -->
 <div class="outer-center">
 
-    <div class="middle-center" ng-controller="DiagramController" >
+    <div class="middle-center"  >
 
             <fennec-diagram data="diagramData" stable="selectedTable"></fennec-diagram>
             <div class="property">

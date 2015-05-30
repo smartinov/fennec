@@ -2,7 +2,6 @@
   'use strict';
 
   angular.module('myApp.directives')
-    //.directive('d3Bars',  ['d3Service','$compile', function(d3Service,$compile) {
     .directive('fennecDiagram',  ['d3Service','$compile', function(d3Service,$compile) {
       return {
         restrict: 'EA',

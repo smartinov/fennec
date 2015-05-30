@@ -7,13 +7,65 @@
     var module = angular.module('myApp.controllers')
         .controller('DiagramController',  function($scope, $filter, $http, diagramService){
 
+            // TODO: get from url branchRevisionId
+            // TODO: 1. load project_state(diagram,schemas) this is data
+            //       2. Load the selected diagram elements(symbols)
+            //       3. Copy the data to angular scope
+
             init();
             function init(){
-                console.log("Ctrl-> Fetching data from service.");
-                $scope.diagramData =  {tables: diagramService.getTablesData(), links: diagramService.getLinksData()};
+                console.log("Ctrl-> fetching data from python service");
+                $scope.diagramData = {tables: diagramService.getTablesData(), links: diagramService.getLinksData()}; //{tables: [], links: []};
                 $scope.selectedTable = {};
+                $scope.brState = null;
+
                 //pythonCreateDiagramSave();
+//                console.log("start loading data");
+//                getBranchRevisionProjectState(1);
+//                var millisecondsToWait = 1000;
+//               setTimeout(function() {
+//                    console.log($scope.brState);
+//                }, millisecondsToWait);
+//                console.log("end loading data");
+                loadBranchRevisionProjectAndDiagram(1);
+//                testLoad(1);
+                console.log("Mora da bude ispod jebeni rezultat");
+                    console.log($scope.brState);
             }
+
+
+            function loadBranchRevisionProjectAndDiagram(branchRevisionId){
+                var projectStateRequest = diagramService.loadBranchRevisionProjectState(branchRevisionId);
+                   projectStateRequest.then(function(result) {  // this is only run after $http completes
+                          //console.log(result);
+                          $scope.brState = result;
+                          //$scope.project = result
+                          // TODO: call the nex fucking shit
+
+                           var diagramRequest = diagramService.loadDiagramElements(branchRevisionId,"f199449d-357e-4f6e-8190-8d0446216c3f");
+                            diagramRequest.then(function(diagramResult){
+
+                                  console.log(diagramResult);
+                                  var diagramData = diagramResult;
+                                  console.log($scope.brState);
+
+                                  $scope.diagramData.tables[0].title = "Anyadat te geci";
+                             });
+                    });
+                    projectStateRequest.catch(function(nesto){
+                       $scope.brState = {};
+                       console.log("log loadBranchRevisionProjectState error");
+                    });
+
+                    projectStateRequest.finally(function(nesto){
+                       //console.log("log loadBranchRevisionProjectStatefinally");
+                    });
+            }
+
+            function prepareDiagramData() {
+
+            }
+
 
             function pythonSave(){
                   diagramService.pythonSave();
@@ -42,7 +94,9 @@
                 $scope.$apply();
             });
 
-
+            $scope.saveDiagramButton = function(){
+                console.log("Saving diagram be patient..");
+            }
 
             // add user
             $scope.addTable = function() {
