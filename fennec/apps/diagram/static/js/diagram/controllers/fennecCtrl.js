@@ -15,9 +15,10 @@
             init();
             function init(){
                 console.log("Ctrl-> fetching data from python service");
-                $scope.diagramData = {tables: diagramService.getTablesData(), links: diagramService.getLinksData()}; //{tables: [], links: []};
+                $scope.diagramData = {tables:[], links: []};
+                //$scope.diagramData = {tables: diagramService.getTablesData(), links: []}; //{tables: [], links: []};
                 $scope.selectedTable = {};
-                $scope.brState = null;
+                $scope.branchRevisionId = 1; // read from URL
 
                 //pythonCreateDiagramSave();
 //                console.log("start loading data");
@@ -27,33 +28,35 @@
 //                    console.log($scope.brState);
 //                }, millisecondsToWait);
 //                console.log("end loading data");
-                loadBranchRevisionProjectAndDiagram(1);
 //                testLoad(1);
-                console.log("Mora da bude ispod jebeni rezultat");
-                    console.log($scope.brState);
+
+                //var diagramId = "f199449d-357e-4f6e-8190-8d0446216c3f";
+                loadBranchRevisionProjectAndDiagram(1);
             }
 
 
-            function loadBranchRevisionProjectAndDiagram(branchRevisionId){
+            function loadBranchRevisionProjectAndDiagram(branchRevisionId,diagramId){
                 var projectStateRequest = diagramService.loadBranchRevisionProjectState(branchRevisionId);
-                   projectStateRequest.then(function(result) {  // this is only run after $http completes
+                   projectStateRequest.then(function(brState) {  // this is only run after $http completes
                           //console.log(result);
-                          $scope.brState = result;
-                          //$scope.project = result
-                          // TODO: call the nex fucking shit
+                           if(diagramId == undefined){
+                                if(brState.diagrams.length>0){
+                                    diagramId = brState.diagrams[0].id;
+                                  //  console.log("Setting default diagram id:");
+                                //    console.log(diagramId);
+                                }
+                           }
+                           var diagramRequest = diagramService.loadDiagramElements(branchRevisionId,diagramId);
+                            diagramRequest.then(function(diagramData){
+                                  //console.log(diagramResult);
+                                  //var diagramData = diagramResult;
+                                  //console.log($scope.brState);
 
-                           var diagramRequest = diagramService.loadDiagramElements(branchRevisionId,"f199449d-357e-4f6e-8190-8d0446216c3f");
-                            diagramRequest.then(function(diagramResult){
-
-                                  console.log(diagramResult);
-                                  var diagramData = diagramResult;
-                                  console.log($scope.brState);
-
-                                  $scope.diagramData.tables[0].title = "Anyadat te geci";
+                                  //$scope.diagramData.tables[0].title = "Anyadat te geci";
+                                prepareDiagramData(brState,diagramData);
                              });
                     });
                     projectStateRequest.catch(function(nesto){
-                       $scope.brState = {};
                        console.log("log loadBranchRevisionProjectState error");
                     });
 
@@ -62,10 +65,76 @@
                     });
             }
 
-            function prepareDiagramData() {
+            function prepareDiagramData(branchRevisionStatusData,diagramData) {
+                console.log(branchRevisionStatusData); console.log(diagramData);
+                // ADD PROJECT INFO to scope
+//                  "project": {
+//                    "id": 1,
+//                    "name": "Project 1",
+//                    "description": null,
+//                    "url": "Project object",
+//                    "branch": {
+//                        "id": 1,
+//                        "name": "master",
+//                        "revision": 0
+//                    }
+//                }
+                $scope.projectInfo = branchRevisionStatusData.project;
+                console.log("ProjectInfo: ");console.log($scope.projectInfo);
+                // ADD DIAGRAMS to scope
+//                "diagrams": [
+//                    {
+//                        "id": "f199449d-357e-4f6e-8190-8d0446216c3f",
+//                        "name": "Diagram 1",
+//                        "description": "Diagram 1",
+//                        "url": "f199449d-357e-4f6e-8190-8d0446216c3f"
+//                    }
+//                ]
+                $scope.diagrams = branchRevisionStatusData.diagrams;
+                console.log("Diagrams: ");console.log($scope.diagrams);
+                $scope.activeDiagram = $scope.diagrams[0];
+                // PADD SCHEMAS to scope
 
+                setSchemasAndCreateFrontData(branchRevisionStatusData,diagramData);
+                console.log($scope.diagramData);
             }
 
+            function setSchemasAndCreateFrontData(branchRevisionStatusData,diagramData) {
+                // fetch diagram elements
+                $scope.schemasInfo = [];
+                for(var i in branchRevisionStatusData.schemas){
+                    $scope.schemasInfo.push({
+                        id: branchRevisionStatusData.schemas[i].id,
+                        databaseName:branchRevisionStatusData.schemas[i].databaseName,
+                        comment: branchRevisionStatusData.schemas[i].comment,
+                        collation: branchRevisionStatusData.schemas[i].collation,
+                        namespaces: branchRevisionStatusData.schemas[i].namespaces
+                    });
+                    for(var j in branchRevisionStatusData.schemas[i].tables){
+                         // check if table exists on diagram
+                         for(var k in diagramData.tableElements){
+                              var dataTable = branchRevisionStatusData.schemas[i].tables[j];
+                              if(dataTable.id == diagramData.tableElements[k].tableRef){
+                                  // add to scope
+                                  $scope.diagramData.tables.push({
+                                        data: dataTable,
+                                        element: diagramData.tableElements[k],
+                                        dataModified: 0,
+                                        elModified: 0,
+                                        attrs:[] // for now we need it
+                                  });
+                                  break;
+                              }
+                         }
+                    }
+                }
+            }
+
+
+
+            function getDiagramTableElements(branchRevisionId, diagramId){
+
+            }
 
             function pythonSave(){
                   diagramService.pythonSave();
@@ -96,6 +165,7 @@
 
             $scope.saveDiagramButton = function(){
                 console.log("Saving diagram be patient..");
+                console.log($scope.diagramData);
             }
 
             // add user

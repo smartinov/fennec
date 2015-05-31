@@ -57,9 +57,9 @@
 
             <fennec-diagram data="diagramData" stable="selectedTable"></fennec-diagram>
             <div class="property">
-                Table Name: <input data-ng-model="selectedTable.title" type="text" placeholder="Table name">
+                Table Name: <input data-ng-model="selectedTable.data.name" type="text" placeholder="Table name">
 
-                 {% verbatim %}
+{#                 {% verbatim %}#}
                 <table class="table table-bordered table-hover table-condensed">
                     <tr style="font-weight: bold">
                         <td style="width:35%">Column</td>
@@ -69,25 +69,25 @@
 
                     <!--FOR FOR FOR FOR FOR default select first table-->
 
-                    <tr ng-repeat="user in selectedTable.attrs">
+                    <tr ng-repeat="column in selectedTable.attrs">
                         <td>
                             <!-- editable column (text with validation) -->
-                            <span editable-text="user.name" e-name="name" e-form="rowform" onbeforesave="checkName($data, user.id)"
+                            <span editable-text="column.name" e-name="name" e-form="rowform" onbeforesave="checkName($data, column.id)"
                                   e-required>
-                                {{ user.name || 'empty' }}
+                                [[ column.name || 'empty' ]]
                             </span>
                         </td>
                         <td style="white-space: nowrap">
                             <!-- editable Type (select-local) -->
-                            <span editable-select="user.dataType" e-name="dataType" e-form="rowform"
-                                  e-ng-options="s.value as s.text for s in dataTypes"> {{ showDataType(user) }}
+                            <span editable-select="column.dataType" e-name="dataType" e-form="rowform"
+                                  e-ng-options="s.value as s.text for s in dataTypes"> [[ showDataType(column) ]]
                             </span>
                         </td>
 
                         <td style="white-space: nowrap">
                             <!-- form -->
-                            <form editable-form name="rowform" onbeforesave="saveTable($data, user.id)"
-                                  ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == user">
+                            <form editable-form name="rowform" onbeforesave="saveTable($data, column.id)"
+                                  ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == column">
                                 <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary">
                                     save
                                 </button>
@@ -103,7 +103,7 @@
                         </td>
                     </tr>
                 </table>
-                {% endverbatim %}
+{#                {% endverbatim %}#}
 
                 <button class="btn btn-default" ng-click="addTable()">Add row</button>
             </div>

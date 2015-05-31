@@ -106,7 +106,7 @@
               var table = svgTables.enter().append("g").classed("table", true).attr("id", function(d,i) { return "table"+i})
               table.append("rect").classed("table", true).on("click", mouseClick);
               var t = table.append("rect").classed("titleBox", true).call(drag);
-              table.append("text").classed("title", true).data(tablesData);
+              table.append("text").classed("name", true).data(tablesData);
 
               var attributes =  table.append("g").classed("attributes",true).selectAll("attribute").data(function(d) { return d.attrs});
               var attribute = attributes.enter().append("text").classed("attribute", true).attr("id", function(d,i) { return "attribute"+i}).on("click", mouseClick);
@@ -114,32 +114,32 @@
 
               table.selectAll("rect.table")
                   .attr({
-                    x: function(d) { return d.xPos; },
-                    y: function(d) { return d.yPos; },
-                    width: function(d) { return d.width; },
-                    height: function(d) { return d.height; }
+                    x: function(t) { return t.element.positionX; },
+                    y: function(t) { return t.element.positionY; },
+                    width: function(t) { return t.element.width; },
+                    height: function(t) { return t.element.height; }
                   })
 
               table.selectAll("rect.titleBox")
                   .classed("drag", true)
                   .attr({
-                    x: function(d) { return d.xPos; },
-                    y: function(d) { return d.yPos; },
-                    width: function(d) { return d.width; },
+                    x: function(t) { return t.element.positionX; },
+                    y: function(t) { return t.element.positionY; },
+                    width: function(t) { return t.element.width; },
                     height: 25,
                     fill: "#ADD8E6"
                   })
 
-              table.selectAll("text.title")
+              table.selectAll("text.name")
                   .attr({
-                    x: function(d) { return d.xPos + 10; },
-                    y: function(d) { return d.yPos+ 20; },
-                    width: function(d) { return d.width; },
+                    x: function(t) { return t.element.positionX + 10; },
+                    y: function(t) { return t.element.positionY + 20; },
+//                    width: function(t) { return t.element.width; }, text attribute don't need width
                     height: 25,
                     fill: "#ffffff"
                   })
-                  .text(function(d) {
-                    return d.title;
+                  .text(function(t) {
+                    return t.data.name;
                   })
 
               // TODO: find better way than using getAttributeTableMethod
@@ -147,13 +147,12 @@
                   .attr({
                     x: function(d) {
                       var table = getAttributeTable(d.id);
-                      return table.xPos + 10;
+                      return table.element.positionX + 10;
                     },
                     y: function(d,i) {
                       var table = getAttributeTable(d.id);
-                      return table.yPos+45+((i==0)?0:(20*i));
+                      return table.element.positionY+45+((i==0)?0:(20*i));
                     },
-                    width: function(d) { return d.width; },
                     height: 25,
                     fill: "#999999"
                   })
@@ -163,8 +162,8 @@
 
               table.selectAll("rect.resize-icon")
                   .attr({
-                    x: function(d) { return d.xPos + d.width-resizeRectSize; },
-                    y: function(d) { return d.yPos + d.height - resizeRectSize; },
+                    x: function(d) { return d.element.positionX + d.element.width-resizeRectSize; },
+                    y: function(d) { return d.element.positionY + d.element.height - resizeRectSize; },
                     width: resizeRectSize,
                     height: resizeRectSize,
                     fill: "#999999"
@@ -250,13 +249,18 @@
               var mouseClickY = point[1];
               //console.log("mouseClick on x:"+mouseClickX+" y: "+mouseClickY);
               if(actionStates == fennecStates.new_table){
-                tablesData.push({id:tablesData.length+1,
-                  title:"Table"+(tablesData.length+1),
-                  xPos:mouseClickX,
-                  yPos:mouseClickY,
-                  height:tableDefaultHeight,
-                  width:tableDefaultWidth,
-                  attrs:[{id:genGuid(), name:"Attribute 2", dataType:"int" }]});
+                tablesData.push(
+                  { data:{
+                      id:genGuid(), name:"Table "+(tablesData.length+1),"comment":"no comment","collation":"utf-8",namespaceRef:"",
+                      columns: [],indexes: [],foreignKeys: [],schemaRef:"642c3eae-bdd9-4b80-aed1-15614d34021e"
+                  },
+                      element:{
+                      id:genGuid(),positionX:mouseClickX,positionY:mouseClickY,width:tableDefaultWidth, height:tableDefaultHeight, tableRef: "t1",
+                      diagramRef:"f199449d-357e-4f6e-8190-8d0446216c3f", color:"#FFFFFF",collapsed:false
+                  },
+                  attrs:[{id:genGuid(), name:"Attribute 2", dataType:"int" }]
+                }
+                );
                 restart(true);
                 innerLayout.close('south');
                 changeState(fennecStates.select);
@@ -354,6 +358,7 @@
               return linkCoordinate;
             }
 
+            // TABLE MOVE
             var relativeMovePosX=0;
             var relativeMovePosY=0;
             function move(){
@@ -380,12 +385,13 @@
               updateLinkPosition(movingTableObject);
             };
             function updateTablePosition(movingTableObject,x,y) {
-              var tableId = movingTableObject.node().__data__.id;
+              var tableElemId = movingTableObject.node().__data__.element.id;
               for (var i in tablesData) {
-                if (tablesData[i].id == tableId) {
-                  tablesData[i].xPos = x;
-                  tablesData[i].yPos = y;
+                if (tablesData[i].element.id == tableElemId) {
+                  tablesData[i].element.positionX = x;
+                  tablesData[i].element.positionY = y;
                   //console.log("updateTablePosition() => x: "+x+" y: "+y);
+                  tablesData[i].elModified = 1;
                   break;
                 }
               }
@@ -450,6 +456,7 @@
               return result;
             }
 
+            // TABLE RESIZE
             var resizeRectXPos ;
             var resizeRectYPos;
             function dragResize(){
@@ -458,10 +465,9 @@
               var resizeTableArrays = resizeTableObject.select("rect.table");                // [[rect.table]]
               var resizeTableTitleArrays = resizeTableObject.select("rect.titleBox");        // [[rect.titleBox.drag]]
 
-
-              var selectedTableData = resizeTableArrays.node().__data__;
-              var tableWidth = selectedTableData.width;
-              var tableHeight = selectedTableData.height;
+              var selectedTableDataWithElement = resizeTableArrays.node().__data__;
+              var tableWidth = selectedTableDataWithElement.element.width;
+              var tableHeight = selectedTableDataWithElement.element.height;
 
               var translateCoord = parseTranslateString(resizeTableObject.attr("transform"));
               // console.log("dragResize()=> translateCoord x: "+translateCoord.x +" , y: "+translateCoord.y);
@@ -485,8 +491,8 @@
               resizeTableArrays.attr("width", tableWidth).attr("height", tableHeight);
               resizeTableTitleArrays.attr("width", tableWidth);
 
-              hideAttributesOnResize(resizeTableObject,tableWidth, tableHeight,selectedTableData.attrs);       // console.log("dragResize()=> tableHeight: "+tableHeight+" tableWidth: "+tableWidth );
-              updateTableSize(selectedTableData,tableHeight,tableWidth);
+              hideAttributesOnResize(resizeTableObject,tableWidth, tableHeight,selectedTableDataWithElement.attrs);       // console.log("dragResize()=> tableHeight: "+tableHeight+" tableWidth: "+tableWidth );
+              updateTableSize(selectedTableDataWithElement.element,tableHeight,tableWidth);
               updateLinkPosition(resizeTableObject);
             };
             function calculateResizeRectPosition(resizeTableArrays,translateCoord,tableWidth,tableHeight){
@@ -503,17 +509,17 @@
               //console.log("resizeRectXPos: "+resizeRectXPos+ " resizeRectYPos: "+resizeRectYPos);
               return {x:resizeRectXPos, y:resizeRectYPos};
             }
-            function updateTableSize(selectedTableData,tableHeight, tableWidth){
-              var tableId = selectedTableData.id;
+            function updateTableSize(selectedTableElement,tableHeight, tableWidth){
+              var tableId = selectedTableElement.id;
               for (var i in tablesData) {
-                if (tablesData[i].id == tableId) {
-                  tablesData[i].height = tableHeight;
-                  tablesData[i].width = tableWidth;
+                if (tablesData[i].element.id == tableId) {
+                  tablesData[i].element.height = tableHeight;
+                  tablesData[i].element.width = tableWidth;
+                  tablesData[i].elModified = 1;
                   break;
                 }
               }
             }
-
             function hideAttributesOnResize(resizeTableObject,tableWidth,tableHeight, tableAttributes){
               // TODO: find how to truncate text on resizing left
               // TODO: find way need to minus 100 from dragx , what is that 100 (-> (dragx-100))

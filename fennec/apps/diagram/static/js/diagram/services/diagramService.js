@@ -48,36 +48,31 @@ angular.module('myApp.services')
            });
     }
 
-    this.myXhr = function(branchRevisionId){
-         var url = branchRevisionRoot+branchRevisionId+"/project_state";
-        var deferred = $q.defer();
-        $http({
-            url: url,
-            method: 'GET',
-            headers: {'Content-Type': 'application/json'}
-            })
-            //if request is successful
-            .success(function(data,status,headers,config){
-                //resolve the promise
-                deferred.resolve('request successful');
-            })
-            //if request is not successful
-            .error(function(data,status,headers,config){
-                //reject the promise
-                deferred.reject('ERROR');
-            });
-        //return the promise
-        return deferred.promise;
-    }
-
+        //var tables = [{data:{...}, element:{..}, dataModified, elModified }]			dataModified, elModified = true, false
     this.getTablesData = function () {
-        var tablesData = [{
-            id:"t1", title:"Table 1",width:300,height:150,xPos:100, yPos:100,
-            attrs:[]//{id:"c11", name:"Column t1_1", dataType:"INT" },{id:"c12", name:"Column t1_2", dataType:"INT" }]
-        },{
-            id:"t2", title:"Table 2",width:300,height:150,xPos:600, yPos:100,
-            attrs:[]//[{id:"c21", name:"Column t2_1", dataType:"TEXT" },{id:"c22", name:"Column t2_2", dataType:"TEXT" }]
+        var tablesData = [
+            {data:{
+                id:"t1", name:"Table 1","comment":"no comment","collation":"utf-8",namespaceRef:"",
+                columns: [],indexes: [],foreignKeys: [],schemaRef:"642c3eae-bdd9-4b80-aed1-15614d34021e"
+            },
+            element:{
+              id:"e1",positionX:100,positionY:100,width:300, height:150, tableRef: "t1",
+              diagramRef:"f199449d-357e-4f6e-8190-8d0446216c3f", color:"#FFFFFF",collapsed:false
+            },
+            dataModified: 0,
+            elModified: 0,
+            //width:300,height:150,xPos:100, yPos:100,
+            attrs:[]
+            //attrs:[{id:"c11", name:"Column t1_1", dataType:"INT" }]
         }];
+
+//        var tablesData = [{
+//            id:"t1", title:"Table 1",width:300,height:150,xPos:100, yPos:100,
+//            attrs:[]//[{id:"c11", name:"Column t1_1", dataType:"INT" },{id:"c12", name:"Column t1_2", dataType:"INT" }]
+//        },{
+//            id:"t2", title:"Table 2",width:300,height:150,xPos:600, yPos:100,
+//            attrs:[]//[{id:"c21", name:"Column t2_1", dataType:"TEXT" },{id:"c22", name:"Column t2_2", dataType:"TEXT" }]
+//        }];
         return tablesData;
     };
     this.getLinksData = function(){
