@@ -34,11 +34,13 @@
 <div class="fennec-sidebar">
     <div class="well sidebar-nav">
         <ul class="nav nav-list">
-            <li class="nav-header">Project 1</li>
-            <li class="active"><a href="#"> Diagram 1</a></li>
+{#            <li class="nav-header">Project 1</li>#}
+            <li class="nav-header">[[projectInfo.name]]</li>
+
+            <li class="active"><a href="#"> [[activeDiagram.name]]</a></li>
 
             <li class="nav-header">Diagram</li>
-            <button ng-click="saveDiagramButton()">Save diagram</button>
+            <button ng-click="saveDiagramButton()">Save [[activeDiagram.name]]</button>
 
             <li class="nav-header">Toolbar</li>
             <button onclick="changeState(fennecStates.new_table)">New table</button>

@@ -249,16 +249,19 @@
               var mouseClickY = point[1];
               //console.log("mouseClick on x:"+mouseClickX+" y: "+mouseClickY);
               if(actionStates == fennecStates.new_table){
+                var tableDataId = genGuid();
                 tablesData.push(
                   { data:{
-                      id:genGuid(), name:"Table "+(tablesData.length+1),"comment":"no comment","collation":"utf-8",namespaceRef:"",
+                      id:tableDataId, name:"Table "+(tablesData.length+1),"comment":"no comment","collation":"utf-8",namespaceRef:"",
                       columns: [],indexes: [],foreignKeys: [],schemaRef:"642c3eae-bdd9-4b80-aed1-15614d34021e"
                   },
-                      element:{
-                      id:genGuid(),positionX:mouseClickX,positionY:mouseClickY,width:tableDefaultWidth, height:tableDefaultHeight, tableRef: "t1",
+                   element:{
+                      id:genGuid(),positionX:mouseClickX,positionY:mouseClickY,width:tableDefaultWidth, height:tableDefaultHeight, tableRef: tableDataId,
                       diagramRef:"f199449d-357e-4f6e-8190-8d0446216c3f", color:"#FFFFFF",collapsed:false
                   },
-                  attrs:[{id:genGuid(), name:"Attribute 2", dataType:"int" }]
+                    dataModified: 1,
+                    elModified: 1,
+                    attrs:[{id:genGuid(), name:"Attribute 2", dataType:"int" }]
                 }
                 );
                 restart(true);

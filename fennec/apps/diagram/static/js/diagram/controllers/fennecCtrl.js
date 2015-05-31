@@ -13,11 +13,15 @@
             //       3. Copy the data to angular scope
 
             init();
-            function init(){
+            function init() {
                 console.log("Ctrl-> fetching data from python service");
-                $scope.diagramData = {tables:[], links: []};
+                $scope.diagramData = {tables: [], links: []};
                 //$scope.diagramData = {tables: diagramService.getTablesData(), links: []}; //{tables: [], links: []};
                 $scope.selectedTable = {};
+                $scope.projectInfo = {};
+                $scope.schemasInfo = [];
+                $scope.diagrams = [];
+                $scope.activeDiagram = {};
                 $scope.branchRevisionId = 1; // read from URL
 
                 //pythonCreateDiagramSave();
@@ -34,7 +38,7 @@
                 loadBranchRevisionProjectAndDiagram(1);
             }
 
-
+            // LOAD FUNCTIONS
             function loadBranchRevisionProjectAndDiagram(branchRevisionId,diagramId){
                 var projectStateRequest = diagramService.loadBranchRevisionProjectState(branchRevisionId);
                    projectStateRequest.then(function(brState) {  // this is only run after $http completes
@@ -64,7 +68,6 @@
                        //console.log("log loadBranchRevisionProjectStatefinally");
                     });
             }
-
             function prepareDiagramData(branchRevisionStatusData,diagramData) {
                 console.log(branchRevisionStatusData); console.log(diagramData);
                 // ADD PROJECT INFO to scope
@@ -98,7 +101,6 @@
                 setSchemasAndCreateFrontData(branchRevisionStatusData,diagramData);
                 console.log($scope.diagramData);
             }
-
             function setSchemasAndCreateFrontData(branchRevisionStatusData,diagramData) {
                 // fetch diagram elements
                 $scope.schemasInfo = [];
@@ -130,7 +132,22 @@
                 }
             }
 
+            // SAVE DIAGRAM ON BUTTON
+            $scope.saveDiagramButton = function(){
+                console.log("Saving diagram be patient..");
+                console.log("element modified: "+$scope.diagramData.tables[0].elModified);
+                console.log($scope.diagramData.tables[0].dataModified);
 
+                for(var i in $scope.diagramData.tables){
+                    var table = $scope.diagramData.tables[i];
+                    diagramService.saveTableData($scope.activeDiagram.id,table.data);
+
+                    if(table.elModified == 1){
+                        diagramService.saveTableElement($scope.activeDiagram.id,table.element);
+                        table.elModified = 0; // reset it
+                    }
+                }
+            }
 
             function getDiagramTableElements(branchRevisionId, diagramId){
 
@@ -163,12 +180,9 @@
                 $scope.$apply();
             });
 
-            $scope.saveDiagramButton = function(){
-                console.log("Saving diagram be patient..");
-                console.log($scope.diagramData);
-            }
 
-            // add user
+
+            // add table
             $scope.addTable = function() {
                 $scope.inserted = {
                     id: genGuid(),
