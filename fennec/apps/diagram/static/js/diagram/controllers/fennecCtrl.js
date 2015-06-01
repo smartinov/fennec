@@ -99,12 +99,14 @@
                 // PADD SCHEMAS to scope
 
                 setSchemasAndCreateFrontData(branchRevisionStatusData,diagramData);
+                console.log("Front diagram data:");
                 console.log($scope.diagramData);
             }
             function setSchemasAndCreateFrontData(branchRevisionStatusData,diagramData) {
-                // fetch diagram elements
                 $scope.schemasInfo = [];
+
                 for(var i in branchRevisionStatusData.schemas){
+                    // SET SCHEMAS
                     $scope.schemasInfo.push({
                         id: branchRevisionStatusData.schemas[i].id,
                         databaseName:branchRevisionStatusData.schemas[i].databaseName,
@@ -112,19 +114,33 @@
                         collation: branchRevisionStatusData.schemas[i].collation,
                         namespaces: branchRevisionStatusData.schemas[i].namespaces
                     });
+
+                    // SET DIAGRAM TABLES
                     for(var j in branchRevisionStatusData.schemas[i].tables){
-                         // check if table exists on diagram
+                         // CHECK IF TABLE EXISTS ON CURRENT DIAGRAM
                          for(var k in diagramData.tableElements){
                               var dataTable = branchRevisionStatusData.schemas[i].tables[j];
                               if(dataTable.id == diagramData.tableElements[k].tableRef){
-                                  // add to scope
-                                  $scope.diagramData.tables.push({
+                                  // CREATE FRONT TABLE DATA
+                                  var table ={
                                         data: dataTable,
                                         element: diagramData.tableElements[k],
                                         dataModified: 0,
                                         elModified: 0,
                                         attrs:[] // for now we need it
-                                  });
+                                  };
+
+                                  // ADD COLUMNS TO TABLE
+                                  var columns = [];
+                                  for(var j in dataTable.columns){
+                                      columns.push({
+                                            cdata: dataTable.columns[j],
+                                            modified: 0
+                                      });
+                                  }
+                                  table.data.columns = columns;
+                                  // add to scope
+                                  $scope.diagramData.tables.push(table);
                                   break;
                               }
                          }
@@ -245,12 +261,12 @@
             ];
 
 
-            $scope.showDataType = function(user) {
+            $scope.showColumnType = function(column) {
                 var selected = [];
-                if(user.dataType) {
-                    selected = $filter('filter')($scope.dataTypes, {text: user.dataType}); // this is how can we search trough list
+                if(column.cdata.column_type) {
+                    selected = $filter('filter')($scope.dataTypes, {text: column.cdata.column_type}); // this is how can we search trough list
                     if(selected.length ==0){
-                        selected = $filter('filter')($scope.dataTypes, {value: user.dataType});
+                        selected = $filter('filter')($scope.dataTypes, {value: column.cdata.column_type});
                     }
                 }
                 return selected.length ? selected[0].text : 'Not set';

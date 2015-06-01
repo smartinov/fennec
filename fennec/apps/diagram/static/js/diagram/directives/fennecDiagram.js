@@ -22,8 +22,8 @@
             var resizeRectSize = 16;
 
             scope.$watch('data.tables', function() {
-              //console.log(tablesData[0].attrs);
-              console.log("Dir-> changes occur on dir input table data: ");
+              //console.log(tablesData[0].data.columns);
+              console.log("changes occur on directive table data:");
               console.log(tablesData);
               restart(true);
             },true);
@@ -108,7 +108,7 @@
               var t = table.append("rect").classed("titleBox", true).call(drag);
               table.append("text").classed("name", true).data(tablesData);
 
-              var attributes =  table.append("g").classed("attributes",true).selectAll("attribute").data(function(d) { return d.attrs});
+              var attributes =  table.append("g").classed("attributes",true).selectAll("attribute").data(function(d) { return d.data.columns});
               var attribute = attributes.enter().append("text").classed("attribute", true).attr("id", function(d,i) { return "attribute"+i}).on("click", mouseClick);
               table.append("rect").classed("resize-icon", true).call(resize);
 
@@ -146,18 +146,18 @@
               table.selectAll("text.attribute")
                   .attr({
                     x: function(d) {
-                      var table = getAttributeTable(d.id);
+                      var table = getAttributeTable(d.cdata.id);
                       return table.element.positionX + 10;
                     },
                     y: function(d,i) {
-                      var table = getAttributeTable(d.id);
+                      var table = getAttributeTable(d.cdata.id);
                       return table.element.positionY+45+((i==0)?0:(20*i));
                     },
                     height: 25,
                     fill: "#999999"
                   })
                   .text(function(d) {
-                    return d.name+ " (" + getTypeNameForValue(d.dataType)+")";
+                    return d.cdata.name+ " (" + getTypeNameForValue(d.cdata.column_type)+")";
                   })
 
               table.selectAll("rect.resize-icon")
@@ -172,7 +172,7 @@
             }
 
             //TODO: find way to skip this and pass dataType as value
-            function getTypeNameForValue(dataTypeValue){
+            function getTypeNameForValue(columnType){
 
               var dataTypes =  [
                 {value: 1, text: 'ID'},
@@ -188,11 +188,11 @@
                 {value: 11, text: 'BOOLEAN'}
               ];
 
-              if(isNumber(dataTypeValue)== false){
-                return dataTypeValue;
+              if(isNumber(columnType)== false){
+                return columnType;
               }else{
                 for(var i =0;i<dataTypes.length;i++){
-                  if(dataTypes[i].value == dataTypeValue){
+                  if(dataTypes[i].value == columnType){
                     return dataTypes[i].text;
                   }
                 }
@@ -204,8 +204,9 @@
             function getAttributeTable(attrId){
               // TODO: latter extend to check all attr just in case
               for(var i=0;i<tablesData.length;i++){
-                for(var j=0;j<tablesData[i].attrs.length;j++){
-                  if(tablesData[i].attrs[j].id == attrId){
+                for(var j=0;j<tablesData[i].data.columns.length;j++){
+                  var columnData = tablesData[i].data.columns[j].cdata;
+                  if(columnData.id == attrId){
                     return tablesData[i];
                   }
                 }
@@ -260,8 +261,7 @@
                       diagramRef:"f199449d-357e-4f6e-8190-8d0446216c3f", color:"#FFFFFF",collapsed:false
                   },
                     dataModified: 1,
-                    elModified: 1,
-                    attrs:[{id:genGuid(), name:"Attribute 2", dataType:"int" }]
+                    elModified: 1
                 }
                 );
                 restart(true);
@@ -272,7 +272,7 @@
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
                   if(tableData != undefined){
-                    console.log("Dir-> Table selected: "+tableData.id);
+                    console.log("directive-> table selected: "+tableData.data.name);
                     scope.stable = tableData;
                     scope.$apply();
                     //passing value to controller if this directive will be private (zatvoren)
@@ -284,7 +284,7 @@
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
                   if(tableData != undefined){
-                    console.log("Dir-> Table deleted: "+tableData.id);
+                    console.log("directive-> table deleted: "+tableData.id);
                     scope.$emit('deleteTableEvent', tableData );
                   }
                 }

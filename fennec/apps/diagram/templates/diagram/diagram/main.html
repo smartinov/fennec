@@ -71,19 +71,22 @@
 
                     <!--FOR FOR FOR FOR FOR default select first table-->
 
-                    <tr ng-repeat="column in selectedTable.attrs">
+                    <tr ng-repeat="column in selectedTable.data.columns">
                         <td>
                             <!-- editable column (text with validation) -->
-                            <span editable-text="column.name" e-name="name" e-form="rowform" onbeforesave="checkName($data, column.id)"
+                            <span editable-text="column.cdata.name" e-name="name" e-form="rowform" onbeforesave="checkName($data, column.id)"
                                   e-required>
-                                [[ column.name || 'empty' ]]
+                                [[ column.cdata.name || 'empty' ]]
                             </span>
                         </td>
                         <td style="white-space: nowrap">
                             <!-- editable Type (select-local) -->
-                            <span editable-select="column.dataType" e-name="dataType" e-form="rowform"
-                                  e-ng-options="s.value as s.text for s in dataTypes"> [[ showDataType(column) ]]
+                            <span editable-select="column.cdata.column_type" e-name="dataType" e-form="rowform"
+                                  e-ng-options="s.value as s.text for s in dataTypes"> [[ showColumnType(column) ]]
                             </span>
+{#                             <span editable-select="column.dataType" e-name="dataType" e-form="rowform"#}
+{#                                  e-ng-options="s.value as s.text for s in dataTypes"> [[ showDataType(column) ]]#}
+{#                            </span>#}
                         </td>
 
                         <td style="white-space: nowrap">
