@@ -57,8 +57,26 @@
 
     <div class="middle-center"  >
 
-            <fennec-diagram data="diagramData" stable="selectedTable"></fennec-diagram>
-            <div class="property">
+            <div role="tabpanel">
+			<ul class="nav nav-tabs" role="tablist">
+				<li role="presentation" ng-repeat="tab in tabs" ng-click="selectTab($index)" ng-class="{'active':selectedTab == $index}">
+					<a data-target="#tab" aria-controls="home" role="tab" data-toggle="tab">Tab [[tab.id]] <span ng-click="deleteTab($index)"><i class="icon-remove"></i></span></a>
+				</li>
+				<li role="presentation" ng-click="addTab()">
+					<a aria-controls="home" role="tab" data-toggle="tab">( + )</a>
+				</li>
+			</ul>
+
+		</div>
+        <div class="tab-content">
+				<div role="tabpanel" class="tab-pane active" id="tab">
+					 <fennec-diagram data="diagramData" stable="selectedTable"></fennec-diagram>
+				</div>
+		</div>
+
+  {#        TABLE COLUMNS PROPERTIES#}
+
+          <div class="property">
                 Table Name: <input data-ng-model="selectedTable.data.name" type="text" placeholder="Table name">
 
 {#                 {% verbatim %}#}
@@ -112,6 +130,7 @@
 
                 <button class="btn btn-default" ng-click="addTable()">Add row</button>
             </div>
+
     </div>
 </div>
 
