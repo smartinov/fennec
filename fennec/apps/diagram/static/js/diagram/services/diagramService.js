@@ -22,7 +22,7 @@ angular.module('myApp.services')
             });
         }
 
-        // *** SAVE FUNCTIONS ***
+        // ****** SAVE FUNCTIONS ******
         var loggedUserId = 1;
 
         this.pythonCreateDiagramSave = function () {
@@ -52,8 +52,9 @@ angular.module('myApp.services')
         this.saveTableData = function (branchRevisionId, tableDataContent) {
             var url = branchRevisionRoot + branchRevisionId + "/change/";
             console.log("save table data url: " + url);
+
             var data = {
-                "content": tableDataContent,
+                "content": this.createPostTableData(tableDataContent),
                 "objectType": "Table",
                 "objectCode": tableDataContent.id,
                 "changeType": 0,
@@ -64,10 +65,25 @@ angular.module('myApp.services')
             console.log(data);
             $http.post(projectsRoot, data).
                 success(function () {
-                    console.log("Table data saved successfully");
+                    console.log("Table["+tableDataContent.name +", "+ tableDataContent.id +"] saved successfully");
+                    return true;
                 }).error(function () {
-                    console.log("Saving table data failed")
+                    console.log("Saving table["+tableDataContent.name +", "+ tableDataContent.id +"] failed");
+                    return false;
                 });
+        }
+        this.createPostTableData = function (tableDataContent) {
+            return {
+                id: tableDataContent.id,
+                name: tableDataContent.name,
+                "comment": tableDataContent.comment,
+                "collation": tableDataContent.collation,
+                namespaceRef: tableDataContent.namespaceRef,
+                columns: [],
+                indexes: [],
+                foreignKeys: [],
+                schemaRef: tableDataContent.schemaRef
+            }
         }
         this.saveTableElement = function (branchRevisionId, tableElementContent) {
             var url = branchRevisionRoot + branchRevisionId + "/change/";
@@ -83,35 +99,61 @@ angular.module('myApp.services')
             console.log(data);
             $http.post(projectsRoot, data).
                 success(function () {
-                    console.log("Table element saved successfully");
+                    console.log("Table element with id:" + tableElementContent.id + " saved successfully");
+                     return true;
                 }).error(function () {
-                    console.log("Saving element data failed")
+                    console.log("Saving table element with id:" + tableElementContent.id + " failed");
+                        return false;
                 });
         }
+
+        this.saveColumn = function (branchRevisionId, columnContent) {
+            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var data = {
+                "content": columnContent,
+                "objectType": "Column",
+                "objectCode": columnContent.id,
+                "changeType": 0,
+                "isUIChange": false,
+                "made_by": loggedUserId
+            }
+            console.log("Saving column: ");
+            console.log(data);
+            $http.post(projectsRoot, data).
+                success(function () {
+                    console.log("Column["+columnContent.name +", "+ columnContent.id +"] saved successfully");
+                    return true;
+                }).error(function () {
+                    console.log("Saving column["+columnContent.name +", "+ columnContent.id +"] failed");
+                    return false;
+                });
+        }
+
 
         //var tables = [{data:{...}, element:{..}, dataModified, elModified }]			dataModified, elModified = true, false
         this.getTablesData = function () {
             var tablesData = [
                 {data: {
                     id: "t1", name: "Table 1", "comment": "no comment", "collation": "utf-8", namespaceRef: "",
-                    columns: [{
+                    columns: [
+                        {
                             cdata: {
-                                 id:"125ca512-5c8e-4952-9c68-1f9623d5eaaa",
-                                 name:"userId",
-                                 comment:"some comment",
-                                 column_type:"INT"
-                                 // and all of column attributes
+                                id: "125ca512-5c8e-4952-9c68-1f9623d5eaaa",
+                                name: "userId",
+                                comment: "some comment",
+                                column_type: "INT"
+                                // and all of column attributes
                             },
                             modified: 0
                         }
                     ], indexes: [], foreignKeys: [], schemaRef: "642c3eae-bdd9-4b80-aed1-15614d34021e"
                 },
-                 element: {
+                    element: {
                         id: "e1", positionX: 100, positionY: 100, width: 300, height: 150, tableRef: "t1",
                         diagramRef: "f199449d-357e-4f6e-8190-8d0446216c3f", color: "#FFFFFF", collapsed: false
-                 },
-                 dataModified: 0,
-                 elModified: 0,
+                    },
+                    dataModified: 0,
+                    elModified: 0,
                     //width:300,height:150,xPos:100, yPos:100,
                     attrs: []
                     //attrs:[{id:"c11", name:"Column t1_1", dataType:"INT" }]
@@ -147,6 +189,8 @@ angular.module('myApp.services')
             }
             return null;
         }
+
+        // ********** HELPER METHODS ****************
 
 
     });
