@@ -105,7 +105,7 @@
 
                         <td style="white-space: nowrap">
                             <!-- form -->
-                            <form editable-form name="rowform" onbeforesave="saveTable($data, column.cdata.id)"
+                            <form editable-form name="rowform" onbeforesave="saveColumn($data, column.cdata.id)"
                                   ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == column">
                                 <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary">
                                     save
@@ -124,7 +124,7 @@
                 </table>
 {#                {% endverbatim %}#}
 
-                <button class="btn btn-default" ng-click="addTable()">Add row</button>
+                <button class="btn btn-default" ng-click="addColumn()">Add column</button>
             </div>
 
     </div>

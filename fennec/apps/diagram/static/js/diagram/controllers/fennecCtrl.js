@@ -222,7 +222,7 @@
             });
 
             // ********* ADD/EDIT COLUMN *********
-            $scope.addTable = function() {
+            $scope.addColumn = function() {
                 var tableDataId = $scope.selectedTable.data.id;
                 console.log("Selected table id: "+tableDataId);
                 $scope.inserted = {
@@ -251,23 +251,22 @@
                 }
                 console.log("ctrl-> new column initialized");
             };
-            $scope.saveTable = function(data, id) {
+            $scope.saveColumn = function(data, id) {
                 var selected = $filter('filter')($scope.dataTypes, {value: data.dataType});
                 if(selected.length !=0){
                     var tableId = $scope.selectedTable.data.id;
                     var tableIndex = findTablePositionInArray(tableId,  $scope.diagramData.tables);
                     var selectedTableColumns = $scope.diagramData.tables[tableIndex].data.columns;
-                    var columnData = getColumnDataForId(id, selectedTableColumns);
-                    columnData.column_type= selected[0].text;
-                    data.column_type= selected[0].text;
+                    var column = getColumnForId(id, selectedTableColumns);
+                    column.cdata.column_type= selected[0].text;
                 }
                 console.log("Column successfully saved")
                 return [200, {status: 'ok'}];
             };
-            function getColumnDataForId(columnId, columns){
+            function getColumnForId(columnId, columns){
                 for(var i = 0; i<columns.length;i++){
                     if(columns[i].cdata.id==columnId){
-                        return columns[i].cdata;
+                        return columns[i];
                     }
                 }
             }
@@ -297,7 +296,6 @@
                 {value: 10, text: 'BOOL'},
                 {value: 11, text: 'BOOLEAN'}
             ];
-
             $scope.showColumnType = function(column) {
                 var selected = [];
                 if(column.cdata.column_type) {
