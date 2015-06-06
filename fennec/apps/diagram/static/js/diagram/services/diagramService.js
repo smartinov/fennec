@@ -129,6 +129,28 @@ angular.module('myApp.services')
                 });
         }
 
+        // ****** DELETE FUNCTIONS ******
+          this.deleteTableElement = function (branchRevisionId, tableElementContent) {
+            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var data = {
+                "content": tableElementContent,
+                "objectType": "TableElement",
+                "objectCode": tableElementContent.id,
+                "changeType": 2,
+                "isUIChange": true,
+                "made_by": loggedUserId
+            }
+            console.log("Deleting table element: ");
+            console.log(data);
+            $http.post(projectsRoot, data).
+                success(function () {
+                    console.log("Table element with id:" + tableElementContent.id + " is deleted successfully");
+                }).error(function () {
+                    var msg = "Deleting table element with id:" + tableElementContent.id + " failed";
+                    console.log(msg);
+                    throw msg;
+                });
+        }
 
         //var tables = [{data:{...}, element:{..}, dataModified, elModified }]			dataModified, elModified = true, false
         this.getTablesData = function () {
@@ -153,20 +175,9 @@ angular.module('myApp.services')
                         diagramRef: "f199449d-357e-4f6e-8190-8d0446216c3f", color: "#FFFFFF", collapsed: false
                     },
                     dataModified: 0,
-                    elModified: 0,
-                    //width:300,height:150,xPos:100, yPos:100,
-                    attrs: []
-                    //attrs:[{id:"c11", name:"Column t1_1", dataType:"INT" }]
+                    elModified: 0
                 }
             ];
-
-//        var tablesData = [{
-//            id:"t1", title:"Table 1",width:300,height:150,xPos:100, yPos:100,
-//            attrs:[]//[{id:"c11", name:"Column t1_1", dataType:"INT" },{id:"c12", name:"Column t1_2", dataType:"INT" }]
-//        },{
-//            id:"t2", title:"Table 2",width:300,height:150,xPos:600, yPos:100,
-//            attrs:[]//[{id:"c21", name:"Column t2_1", dataType:"TEXT" },{id:"c22", name:"Column t2_2", dataType:"TEXT" }]
-//        }];
             return tablesData;
         };
         this.getLinksData = function () {

@@ -284,7 +284,7 @@
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
                   if(tableData != undefined){
-                    console.log("directive-> table deleted: "+tableData.id);
+                    console.log("directive-> table is deleting: "+tableData.data.name);
                     scope.$emit('deleteTableEvent', tableData );
                   }
                 }

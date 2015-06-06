@@ -51,6 +51,9 @@
                 $scope.activeDiagram = {};
                 $scope.branchRevisionId = 1; // read from URL
 
+                $scope.deletedTableElements = []; // for now only deleting table elements
+                $scope.deletedColumns = [];
+
                 //pythonCreateDiagramSave();
 //                console.log("start loading data");
 //                getBranchRevisionProjectState(1);
@@ -186,12 +189,15 @@
 
                 console.log("Saving diagram["+$scope.activeDiagram.name+"] be patient..");
                 try{
+                var diagramId = $scope.activeDiagram.id;
+
+                // save/update
                 for (var i in $scope.diagramData.tables) {
                     var table = $scope.diagramData.tables[i];
-                    var tableDataPostSuccess = diagramService.saveTableData($scope.activeDiagram.id, table.data);
+                    var tableDataPostSuccess = diagramService.saveTableData(diagramId, table.data);
 
                     if (table.elModified == 1) {
-                        var tableElementPostSuccess = diagramService.saveTableElement($scope.activeDiagram.id, table.element);
+                        var tableElementPostSuccess = diagramService.saveTableElement(diagramId, table.element);
                         if(tableElementPostSuccess){
                              table.elModified = 0; // reset it
                         }
@@ -200,28 +206,23 @@
                     for(var j in table.data.columns){
                         var column = table.data.columns[j];
                         if(column.modified == 1){
-                            var success = diagramService.saveColumn($scope.activeDiagram.id,column.cdata);
+                            var success = diagramService.saveColumn(diagramId,column.cdata);
                             if(success){
                                 column.modified = 0; // reset it
                             }
                         }
                     }
                 }
+                // delete
+                for(var i in $scope.deletedTableElements){
+                    var delTableElement = $scope.deletedTableElements[i];
+                    diagramService.deleteTableElement(diagramId, delTableElement);
+                }
+
                 console.log("Diagram["+$scope.activeDiagram.name+"] saved successfully");
                 }catch (err){
-                    console.log("Saving diagram["+$scope.activeDiagram.name+"] failed");
+                    console.log("Saving diagram["+$scope.activeDiagram.name+"] failed with msg:"+err);
                 }
-            }
-
-            function getDiagramTableElements(branchRevisionId, diagramId) {
-
-            }
-
-            function pythonSave() {
-                diagramService.pythonSave();
-//                    projects.then(function(result) {  // this is only run after $http completes
-//                       $scope.data = result;
-//                    });
             }
 
 
@@ -232,15 +233,13 @@
             //    $scope.$apply();
             //});
             $scope.$on('deleteTableEvent', function (scope, deletedTable) {
-                console.log("Ctrl-> table deleted: " + deletedTable.id);
-
-                // when select the table this method is called
-                if ($scope.selectedTable != null && $scope.selectedTable.id == deletedTable.id) {
-                    $scope.selectedTable = null;
-                }
-
                 // delete from list
-                deleteTable(deletedTable.id, $scope.diagramData.tables);
+                deleteTable(deletedTable.data.id, $scope.diagramData.tables);
+
+                    // when select the table this method is called
+                if ($scope.selectedTable != null && $scope.selectedTable.id == deletedTable.id) {
+                     $scope.selectedTable = null;
+                }
                 $scope.$apply();
             });
 
@@ -338,8 +337,9 @@
             };
             function deleteTable(tableId, tables) {
                 for (var i = 0; i < tables.length; i++) {
-                    if (tables[i].id === tableId) {
-                        console.log("Ctrl-> Table[" + tableId + "] is deleted");
+                    if (tables[i].data.id === tableId) {
+                        console.log("ctrl -> table[" + tables[i].data.name + "] is deleted");
+                        $scope.deletedTableElements.push(tables[i].element);
                         tables.splice(i, 1);
                     }
                 }
