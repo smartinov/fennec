@@ -494,7 +494,7 @@
               resizeTableArrays.attr("width", tableWidth).attr("height", tableHeight);
               resizeTableTitleArrays.attr("width", tableWidth);
 
-              hideAttributesOnResize(resizeTableObject,tableWidth, tableHeight,selectedTableDataWithElement.attrs);       // console.log("dragResize()=> tableHeight: "+tableHeight+" tableWidth: "+tableWidth );
+              hideAttributesOnResize(resizeTableObject,tableWidth, tableHeight,selectedTableDataWithElement.data.columns);       // console.log("dragResize()=> tableHeight: "+tableHeight+" tableWidth: "+tableWidth );
               updateTableSize(selectedTableDataWithElement.element,tableHeight,tableWidth);
               updateLinkPosition(resizeTableObject);
             };
@@ -530,7 +530,7 @@
               var attrNumber =tableAttributes.length;
               //attribute0, attribute1
               for (var i = attrNumber-1; i>= 0; i--) {
-                // Note: when select attribute(child element) from resizeTableObject, the data will be inherited from parent object in this case from table, we lose attribute data
+                 // Note: when select attribute(child element) from resizeTableObject, the data will be inherited from parent object in this case from table, we lose attribute data
                 // to fix this d3 logic :), add attribute data here ( this is how d3 work, it is build to inherit all data from parent to childs because of data consistency)
                 var attrObjArray = resizeTableObject.select("#attribute"+i).data($(tableAttributes[i]));
                 attributesObjectsFromPage.push(attrObjArray);

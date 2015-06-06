@@ -95,14 +95,14 @@ angular.module('myApp.services')
                 {data: {
                     id: "t1", name: "Table 1", "comment": "no comment", "collation": "utf-8", namespaceRef: "",
                     columns: [{
-                        cdata: {
-                             id:"125ca512-5c8e-4952-9c68-1f9623d5eaaa",
-                             name:"userId",
-                             comment:"some comment",
-                             column_type:"INT"
-                             // and all of column attributes
-                        },
-                        modified: 0
+                            cdata: {
+                                 id:"125ca512-5c8e-4952-9c68-1f9623d5eaaa",
+                                 name:"userId",
+                                 comment:"some comment",
+                                 column_type:"INT"
+                                 // and all of column attributes
+                            },
+                            modified: 0
                         }
                     ], indexes: [], foreignKeys: [], schemaRef: "642c3eae-bdd9-4b80-aed1-15614d34021e"
                 },

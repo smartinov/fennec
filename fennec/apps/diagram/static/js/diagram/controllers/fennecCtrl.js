@@ -221,55 +221,68 @@
                 $scope.$apply();
             });
 
-
-
-            // add table
+            // ********* ADD/EDIT COLUMN *********
             $scope.addTable = function() {
+                var tableDataId = $scope.selectedTable.data.id;
+                console.log("Selected table id: "+tableDataId);
                 $scope.inserted = {
-                    id: genGuid(),
-                    name: "column",
-                    dataType: "INT"
+                    cdata:{
+                        id: genGuid(),
+                        name: "column",
+                        comment:"add some comment",
+                        column_type: "INT",
+                        length:150,
+                        precision:0.0,
+                        default:"default",
+                        collation:"utf-8",
+                        ordinal:0,
+                        primary: true,
+                        nullable: true,
+                        unique:true,
+                        autoIncrement:false,
+                        dictionary:false,
+                        tableRef:tableDataId
+                    },
+                    modified: 1
                 };
-                var id = $scope.selectedTable.id;
-                var tableIndex = findTablePositionInArray(id,  $scope.diagramData.tables);
+                var tableIndex = findTablePositionInArray(tableDataId,  $scope.diagramData.tables);
                 if(tableIndex != null){
-                    $scope.diagramData.tables[tableIndex].attrs.push($scope.inserted);
+                    $scope.diagramData.tables[tableIndex].data.columns.push($scope.inserted);
                 }
-                console.log("Ctrl-> addTable init");
+                console.log("ctrl-> new column initialized");
             };
             $scope.saveTable = function(data, id) {
                 var selected = $filter('filter')($scope.dataTypes, {value: data.dataType});
                 if(selected.length !=0){
-                    var tableId = $scope.selectedTable.id;
+                    var tableId = $scope.selectedTable.data.id;
                     var tableIndex = findTablePositionInArray(tableId,  $scope.diagramData.tables);
-                    var column = getColumnForId(id, $scope.diagramData.tables[tableIndex].attrs);
-                    column.dataType= selected[0].text;
-                    data.dataType= selected[0].text;
+                    var selectedTableColumns = $scope.diagramData.tables[tableIndex].data.columns;
+                    var columnData = getColumnDataForId(id, selectedTableColumns);
+                    columnData.column_type= selected[0].text;
+                    data.column_type= selected[0].text;
                 }
-                console.log("Attribute saved")
+                console.log("Column successfully saved")
                 return [200, {status: 'ok'}];
             };
-            function getColumnForId(columnId, columns){
+            function getColumnDataForId(columnId, columns){
                 for(var i = 0; i<columns.length;i++){
-                    if(columns[i].id==columnId){
-                        return columns[i];
+                    if(columns[i].cdata.id==columnId){
+                        return columns[i].cdata;
                     }
                 }
             }
 
-            // remove column
+            // ********* REMOVE COLUMN *********
             $scope.removeTableColumn = function(index) {
                 // delete links if exists
-                var column = $scope.selectedTable.attrs[index];
-                deleteLink( $scope.selectedTable.id, column.id , $scope.diagramData.links);
+                var columnData = $scope.selectedTable.data.columns[index].cdata;
+                deleteLink( $scope.selectedTable.id, columnData.id , $scope.diagramData.links);
 
                 // remove column from table
-                $scope.selectedTable.attrs.splice(index,1);
+                $scope.selectedTable.data.columns.splice(index,1);
 
-                console.log("Ctrl-> Column["+column.name+"] deleted");
+                console.log("ctrl -> column["+columnData.name+"] deleted successfully");
             };
-
-
 
             $scope.dataTypes = [
                 {value: 1, text: 'ID'},
@@ -284,7 +297,6 @@
                 {value: 10, text: 'BOOL'},
                 {value: 11, text: 'BOOLEAN'}
             ];
-
 
             $scope.showColumnType = function(column) {
                 var selected = [];
@@ -331,11 +343,10 @@
             }
 
 
-
-            // ******** THIS CONTROLLER UTIL FUNCTION
+            // ******** THIS CONTROLLER UTIL FUNCTION ********
             function findTablePositionInArray(tableId, tables){
                 for(var i = 0; i<tables.length;i++){
-                    if(tables[i].id==tableId){
+                    if(tables[i].data.id==tableId){
                         return i;
                     }
                 }
