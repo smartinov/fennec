@@ -644,7 +644,6 @@
               var possible = "abcdef";
               var hexLetter = possible.charAt(Math.floor(Math.random() * possible.length))
               id = hexLetter+id;
-              console.log(id);
               return id;
             }
             function parseAllTransformation (a)

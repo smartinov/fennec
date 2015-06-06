@@ -151,6 +151,27 @@ angular.module('myApp.services')
                     throw msg;
                 });
         }
+        this.deleteColumn = function (branchRevisionId, columnContent) {
+            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var data = {
+                "content": columnContent,
+                "objectType": "Column",
+                "objectCode": columnContent.id,
+                "changeType": 2,
+                "isUIChange": false,
+                "made_by": loggedUserId
+            }
+            console.log("Deleting column: ");
+            console.log(data);
+            $http.post(projectsRoot, data).
+                success(function () {
+                    console.log("Column["+columnContent.name +", "+ columnContent.id +"] deleted successfully");
+                }).error(function () {
+                    var msg = "Deleting column["+columnContent.name +", "+ columnContent.id +"] failed";
+                    console.log(msg);
+                    throw msg;
+                });
+        }
 
         //var tables = [{data:{...}, element:{..}, dataModified, elModified }]			dataModified, elModified = true, false
         this.getTablesData = function () {

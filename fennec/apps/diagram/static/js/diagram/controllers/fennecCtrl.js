@@ -52,7 +52,7 @@
                 $scope.branchRevisionId = 1; // read from URL
 
                 $scope.deletedTableElements = []; // for now only deleting table elements
-                $scope.deletedColumns = [];
+                $scope.deletedColumnsData = [];
 
                 //pythonCreateDiagramSave();
 //                console.log("start loading data");
@@ -213,10 +213,16 @@
                         }
                     }
                 }
-                // delete
+                // delete table elements
                 for(var i in $scope.deletedTableElements){
                     var delTableElement = $scope.deletedTableElements[i];
                     diagramService.deleteTableElement(diagramId, delTableElement);
+                }
+
+                // delete columns
+                for(var i in $scope.deletedColumnsData){
+                    var delColumnData = $scope.deletedColumnsData[i];
+                    diagramService.deleteColumn(diagramId, delColumnData);
                 }
 
                 console.log("Diagram["+$scope.activeDiagram.name+"] saved successfully");
@@ -233,7 +239,6 @@
             //    $scope.$apply();
             //});
             $scope.$on('deleteTableEvent', function (scope, deletedTable) {
-                // delete from list
                 deleteTable(deletedTable.data.id, $scope.diagramData.tables);
 
                     // when select the table this method is called
@@ -303,7 +308,8 @@
                 // remove column from table
                 $scope.selectedTable.data.columns.splice(index, 1);
 
-                console.log("ctrl -> column[" + columnData.name + "] deleted successfully");
+                $scope.deletedColumnsData.push(columnData);
+                console.log("ctrl -> column[" + columnData.name + "] successfully deleted");
             };
 
             $scope.dataTypes = [
