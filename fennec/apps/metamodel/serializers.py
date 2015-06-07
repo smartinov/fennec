@@ -71,6 +71,7 @@ class ForeignKeySerializer(serializers.Serializer):
     referencedColumn = serializers.CharField(required=False, source='referenced_column')
 
     tableRef = serializers.CharField(source='table_ref')
+    referencedTableRef = serializers.CharField(source='referenced_table_ref')
 
     def restore_object(self, attrs, instance=None):
         foreign_key = ForeignKey(**attrs)
@@ -177,6 +178,7 @@ class RelationshipElementSerializer(serializers.Serializer):
     endPositionX = serializers.FloatField(source='end_position_x')
     endPositionY = serializers.FloatField(source='end_position_y')
     drawStyle = serializers.IntegerField(source='draw_style')
+    cardinality = serializers.IntegerField(source='cardinality')
     foreignKeyRef = serializers.CharField(source='foreign_key_ref')
 
     diagramRef = serializers.CharField(source='diagram_ref')
