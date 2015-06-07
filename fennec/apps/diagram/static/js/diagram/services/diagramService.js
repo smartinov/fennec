@@ -203,13 +203,41 @@ angular.module('myApp.services')
             return tablesData;
         };
         this.getLinksData = function () {
-            var linksData = [
-                {   id: "fbc3a98-64d0-4321-b387-b8f4053e1d09",
-                    source: { x: 400, y: 136, tableId: "t1", attr: {id: "c11", name: "Column t1_2", dataType: "int" }},
-                    target: { x: 600, y: 136, tableId: "t2", attr: {id: "c21", name: "Column t2_2", dataType: "string" }},
-                    biDirection: false
+             var linksData = [
+//              Foreign key
+                {data: {
+                      "id":"91a6b2be-9562-4413-b1dc-442d64e503ea",
+                      "name":"fk_Account_Tenant",
+                      "onUpdate":3, 										// 0 RESTRICT 1 CASCADE 2 SET NULL 3 NO ACTION
+                      "onDelete":3,
+                      "sourceColumn":"Tenant_RefID",
+                      "referencedColumn":"TenantID",
+                      "tableRef":"bc5d4f7d-a9df-f88b-a3bf-ba88fa08f5d7",
+                      "referencedTableRef": "b5f6a3ff-75fe-dbb8-d018-90815beef1d6"
+                 },
+//              Relationship element
+                 element:{
+                      "id":"f0f1df1d-6d4e-4e95-ae70-327125bf9979",
+                      "startPositionX":10.0,
+                      "startPositionY":10.0,
+                      "endPositionX":20.0,
+                      "endPositionY":20.0,
+                      "drawStyle":0,
+                      "cardinality":1,
+                      "foreignKeyRef":"91a6b2be-9562-4413-b1dc-442d64e503ea",
+                      "diagramRef":"f199449d-357e-4f6e-8190-8d0446216c3f"
+                 },
+                 dataModified: 0,
+                 elModified: 0
                 }
             ];
+//            var linksData = [
+//                {   id: "fbc3a98-64d0-4321-b387-b8f4053e1d09",
+//                    source: { x: 400, y: 136, tableId: "t1", attr: {id: "c11" }},
+//                    target: { x: 600, y: 136, tableId: "t2", attr: {id: "c21" }},
+//                    biDirection: false
+//                }
+//            ];
             return linksData;
         }
         this.getTableForId = function (id) {

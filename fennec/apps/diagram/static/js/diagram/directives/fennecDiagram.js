@@ -202,7 +202,7 @@
               return !isNaN(parseFloat(n)) && isFinite(n);
             }
             function getAttributeTable(attrId){
-              // TODO: latter extend to check all attr just in case
+              // TODO: latter extend to check all column just in case
               for(var i=0;i<tablesData.length;i++){
                 for(var j=0;j<tablesData[i].data.columns.length;j++){
                   var columnData = tablesData[i].data.columns[j].cdata;
@@ -627,7 +627,6 @@
               // TODO: this is not good , need to set like in add links part
               var table = movingTableObject.node().__data__;
               for(var i=0;i<linksData.length;i++){
-                //{id:11111, source: { x:400, y:100, tableId:0, attrId:0, attrName: "Attribute 1"}, target: { x:600, y:100, tableId:1, attrId:2, attrName: "Attribute 2"}, biDirection: true }
                 if(linksData[i].source.tableId == table.id){
                   return linksData[i];
                 }

@@ -41,9 +41,9 @@
 
             init();
             function init() {
-                console.log("Ctrl-> fetching data from python service");
+                console.log("ctrl-> fetching data from python service");
                 $scope.diagramData = {tables: [], links: []};
-                //$scope.diagramData = {tables: diagramService.getTablesData(), links: []}; //{tables: [], links: []};
+
                 $scope.selectedTable = {};
                 $scope.projectInfo = {};
                 $scope.schemasInfo = [];
@@ -81,13 +81,12 @@
                         }
                     }
                     var diagramRequest = diagramService.loadDiagramElements(branchRevisionId, diagramId);
-                    diagramRequest.then(function (diagramData) {
+                    diagramRequest.then(function (diagramElements) {
                         //console.log(diagramResult);
                         //var diagramData = diagramResult;
                         //console.log($scope.brState);
 
-                        //$scope.diagramData.tables[0].title = "Anyadat te geci";
-                        prepareDiagramData(brState, diagramData);
+                        prepareDiagramData(brState, diagramElements);
                     });
                 });
                 projectStateRequest.catch(function (nesto) {
@@ -99,9 +98,9 @@
                 });
             }
 
-            function prepareDiagramData(branchRevisionStatusData, diagramData) {
+            function prepareDiagramData(branchRevisionStatusData, diagramElements) {
                 console.log(branchRevisionStatusData);
-                console.log(diagramData);
+                console.log(diagramElements);
                 // ADD PROJECT INFO to scope
 //                  "project": {
 //                    "id": 1,
@@ -130,14 +129,14 @@
                 console.log("Diagrams: ");
                 console.log($scope.diagrams);
                 $scope.activeDiagram = $scope.diagrams[0];
-                // PADD SCHEMAS to scope
-
-                setSchemasAndCreateFrontData(branchRevisionStatusData, diagramData);
+                // ADD SCHEMAS to scope
+                setSchemasAndCreateFrontData(branchRevisionStatusData, diagramElements);
                 console.log("Front diagram data:");
                 console.log($scope.diagramData);
             }
 
-            function setSchemasAndCreateFrontData(branchRevisionStatusData, diagramData) {
+            function setSchemasAndCreateFrontData(branchRevisionStatusData, diagramElements) {
+                // Load all data with project_state and then load diagram elements and bound the two together
                 $scope.schemasInfo = [];
 
                 for (var i in branchRevisionStatusData.schemas) {
@@ -153,16 +152,15 @@
                     // SET DIAGRAM TABLES
                     for (var j in branchRevisionStatusData.schemas[i].tables) {
                         // CHECK IF TABLE EXISTS ON CURRENT DIAGRAM
-                        for (var k in diagramData.tableElements) {
+                        for (var k in diagramElements.tableElements) {
                             var dataTable = branchRevisionStatusData.schemas[i].tables[j];
-                            if (dataTable.id == diagramData.tableElements[k].tableRef) {
+                            if (dataTable.id == diagramElements.tableElements[k].tableRef) {
                                 // CREATE FRONT TABLE DATA
                                 var table = {
                                     data: dataTable,
-                                    element: diagramData.tableElements[k],
+                                    element: diagramElements.tableElements[k],
                                     dataModified: 0,
-                                    elModified: 0,
-                                    attrs: [] // for now we need it
+                                    elModified: 0
                                 };
 
                                 // ADD COLUMNS TO TABLE
