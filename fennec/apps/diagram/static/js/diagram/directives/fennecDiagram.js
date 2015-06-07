@@ -88,16 +88,12 @@
               mousedown_link = null;
             }
 
-            //restart();
             function restart(redrawAll){
               if(redrawAll){
                 d3.select(".diagram").selectAll("*").remove();
                 initSvgDiagram();
               }
-
-              // Create table links
-              redrawLines();
-
+              redrawLines();// Create table links
               redrawTables();
             }
             function redrawTables(){
@@ -217,15 +213,15 @@
 
               var svgLinks = svg.selectAll("g.link").data(linksData);
               var link = svgLinks.enter().append("g").classed("link", true);
-              link.append("svg:line").classed("link",true).attr("id", function(d) { return d.id});
+              link.append("svg:line").classed("link",true).attr("id", function(d) { return d.element.id});
               link.selectAll("line.link")
                   .attr({
-                    x1: function(d) { return d.source.x; },
-                    y1: function(d) { return d.source.y; },
-                    x2: function(d) { return d.target.x; },
-                    y2: function(d) { return d.target.y; }
+                    x1: function(d) { return d.element.startPositionX; },
+                    y1: function(d) { return d.element.startPositionY; },
+                    x2: function(d) { return d.element.endPositionX; },
+                    y2: function(d) { return d.element.endPositionY; }
                   }).style("stroke", "rgb(6,120,155)").style("stroke-width", 3)
-                  .style('marker-start', function(d) { return (d.biDirection==true) ? 'url(#start-arrow)' : ''; })
+                  .style('marker-start', function(d) { return (d.element.cardinality==3) ? 'url(#start-arrow)' : ''; })
                   .style('marker-end', function(d) { return  'url(#end-arrow)'; });
               svgLinks.exit().remove();
             }

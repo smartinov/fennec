@@ -151,11 +151,12 @@
 
                     // SET DIAGRAM TABLES
                     for (var j in branchRevisionStatusData.schemas[i].tables) {
+                        var dataTable = branchRevisionStatusData.schemas[i].tables[j];
+
                         // CHECK IF TABLE EXISTS ON CURRENT DIAGRAM
                         for (var k in diagramElements.tableElements) {
-                            var dataTable = branchRevisionStatusData.schemas[i].tables[j];
                             if (dataTable.id == diagramElements.tableElements[k].tableRef) {
-                                // CREATE FRONT TABLE DATA
+                                // TABLE EXISTS ON CURRENT DIAGRAM, CREATE FRONT TABLE DATA
                                 var table = {
                                     data: dataTable,
                                     element: diagramElements.tableElements[k],
@@ -172,6 +173,25 @@
                                     });
                                 }
                                 table.data.columns = columns;
+
+                                // IF foreignKeys EXISTS on table data CHECK ON DIAGRAM AND CREATE LINK
+                                for (var j in dataTable.foreignKeys) {
+                                    var foreignKey = dataTable.foreignKeys[j];
+                                    for(var m in diagramElements.relationshipElements){
+                                        var relationElement = diagramElements.relationshipElements[m];
+                                        if(foreignKey.id == relationElement.foreignKeyRef){
+                                            var link ={
+                                                data: foreignKey,
+                                                element:relationElement,
+                                                dataModified: 0,
+                                                elModified: 0
+                                            }
+                                            $scope.diagramData.links.push(link);
+                                            break;
+                                        }
+                                    }
+                                }
+
                                 // add to scope
                                 $scope.diagramData.tables.push(table);
                                 break;

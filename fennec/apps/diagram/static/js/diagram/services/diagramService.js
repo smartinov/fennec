@@ -223,7 +223,7 @@ angular.module('myApp.services')
                       "endPositionX":20.0,
                       "endPositionY":20.0,
                       "drawStyle":0,
-                      "cardinality":1,
+                      "cardinality":1,  // 0-one-to-one,1- one-to-many,2- many-to-one,3- many-to-many
                       "foreignKeyRef":"91a6b2be-9562-4413-b1dc-442d64e503ea",
                       "diagramRef":"f199449d-357e-4f6e-8190-8d0446216c3f"
                  },
