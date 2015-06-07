@@ -189,7 +189,8 @@ angular.module('myApp.services')
                             },
                             modified: 0
                         }
-                    ], indexes: [], foreignKeys: [], schemaRef: "642c3eae-bdd9-4b80-aed1-15614d34021e"
+                    ], indexes: [],
+                    foreignKeys: [], schemaRef: "642c3eae-bdd9-4b80-aed1-15614d34021e"
                 },
                     element: {
                         id: "e1", positionX: 100, positionY: 100, width: 300, height: 150, tableRef: "t1",
@@ -203,7 +204,7 @@ angular.module('myApp.services')
         };
         this.getLinksData = function () {
             var linksData = [
-                {id: "fbc3a98-64d0-4321-b387-b8f4053e1d09",
+                {   id: "fbc3a98-64d0-4321-b387-b8f4053e1d09",
                     source: { x: 400, y: 136, tableId: "t1", attr: {id: "c11", name: "Column t1_2", dataType: "int" }},
                     target: { x: 600, y: 136, tableId: "t2", attr: {id: "c21", name: "Column t2_2", dataType: "string" }},
                     biDirection: false

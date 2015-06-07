@@ -481,8 +481,8 @@ def build_state_symbols(diagrams, new_changes):
         rel_el = rel_el[0] if rel_el else None
 
         if rel_el_change.change_type == 0:
-            diagram_parent.relationship_elements.append(rel_el)
-        elif rel_el_change.change_type == 0:
+            diagram_parent.relationship_elements.append(change_obj)
+        elif rel_el_change.change_type == 1:
             if rel_el is None:
                 continue
             rel_el.start_position_x = change_obj.start_position_x

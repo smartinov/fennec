@@ -175,7 +175,7 @@ class RelationshipElementSerializer(serializers.Serializer):
     startPositionX = serializers.FloatField(source='start_position_x')
     startPositionY = serializers.FloatField(source='start_position_y')
     endPositionX = serializers.FloatField(source='end_position_x')
-    endPositionX = serializers.FloatField(source='end_position_y')
+    endPositionY = serializers.FloatField(source='end_position_y')
     drawStyle = serializers.IntegerField(source='draw_style')
     foreignKeyRef = serializers.CharField(source='foreign_key_ref')
 
