@@ -256,8 +256,8 @@
                       id:genGuid(),positionX:mouseClickX,positionY:mouseClickY,width:tableDefaultWidth, height:tableDefaultHeight, tableRef: tableDataId,
                       diagramRef:"f199449d-357e-4f6e-8190-8d0446216c3f", color:"#FFFFFF",collapsed:false
                   },
-                    dataModified: 1,
-                    elModified: 1
+                    dataModified: true,
+                    elModified: true
                 }
                 );
                 restart(true);
@@ -292,6 +292,7 @@
                 var tableOfAttrArrays = d3.select(this.parentNode.parentNode);               // [[g#table0.table]]
                 var tableData =tableOfAttrArrays.node().__data__;
                 var attrData = selectedAttributeArrays.node().__data__;  // console.log(attrData);
+
                 if(tmpSourceTableLink == null ){
                   tmpSourceTableLink = {x:0,y:0, table:tableData, attr:attrData};
                   return;
@@ -305,17 +306,41 @@
                 tmpTargetTableLink = linkPosition.targetTableLink;
                 // console.log("Source("+tmpSourceTableLink.x+","+ tmpSourceTableLink.y+") Target("+tmpTargetTableLink.x+","+tmpTargetTableLink.y+")" );
 
-                linksData.push({id:genGuid(),
-                  source:{x:tmpSourceTableLink.x, y:tmpSourceTableLink.y, tableId:tmpSourceTableLink.table.id, attr:tmpSourceTableLink.attr},
-                  target:{x:tmpTargetTableLink.x, y:tmpTargetTableLink.y, tableId:tmpTargetTableLink.table.id, attr:tmpTargetTableLink.attr},
-                  biDirection:linkPosition.biDirection});
+                  var fk_data_id = genGuid();
+                  linksData.push(
+                      {
+                          fk_data: {
+                              "id":fk_data_id,
+                              "name":"fk_"+tmpSourceTableLink.attr.cdata.name+"_"+tmpTargetTableLink.attr.cdata.name+"1",
+                              "onUpdate":3,
+                              "onDelete":3,
+                              "sourceColumn": tmpSourceTableLink.attr.cdata.name,
+                              "referencedColumn":tmpTargetTableLink.attr.cdata.name,
+                              "tableRef":tmpSourceTableLink.table.data.id,
+                              "referencedTableRef": tmpTargetTableLink.table.data.id,
+                          },
+                          element: {
+                              "id":genGuid(),
+                              "startPositionX":tmpSourceTableLink.x,
+                              "startPositionY":tmpSourceTableLink.y,
+                              "endPositionX":tmpTargetTableLink.x,
+                              "endPositionY":tmpTargetTableLink.y,
+                              "drawStyle":0,
+                              "cardinality":1,  // 0-one-to-one,1- one-to-many,2- many-to-one,3- many-to-many
+                              "foreignKeyRef":fk_data_id,
+                              "diagramRef":tmpSourceTableLink.table.element.diagramRef
+                          },
+                          dataModified: true,
+                          elModified: true
+                      }
+                  );
                 clearTmpLinks();
                 changeState(fennecStates.select);
                 redrawLines();
               }
             }
             function calculateLinkPosition(sourceTableLink,targetTableLink){
-              if(sourceTableLink.table.xPos < targetTableLink.table.xPos){
+              if(sourceTableLink.table.element.positionX < targetTableLink.table.element.positionX){
                 var linkCoord = getLinkPosition(sourceTableLink.table, sourceTableLink.attr,true);
                 sourceTableLink.x = linkCoord.x;
                 sourceTableLink.y = linkCoord.y
@@ -337,21 +362,20 @@
               };
               return result;
             }
-
-            function getLinkPosition(tableData,attrData,isLinkStartOnTableRightSide){
+            function getLinkPosition(table,column,isLinkStartOnTableRightSide){
               // isLinkStartOnTableRightSide - link start from a table right side
-              var attrPositionInList = arrayObjectIndexOf(tableData.attrs,attrData.id,"id");
+              var columnPositionInList = getColumnPositionInList(table.data.columns,column.cdata.id,"id");
               // console.log("getLinkPosition() => "+attrPositionInList);
               var linkCoordinate
               if(isLinkStartOnTableRightSide){
                 linkCoordinate = {
-                  x: tableData.xPos + tableData.width,
-                  y: tableData.yPos + 45 + (attrPositionInList*20) - (20/2-1)
+                  x: table.element.positionX + table.element.width,
+                  y: table.element.positionY + 45 + (columnPositionInList*20) - (20/2-1)
                 }
               }else{
                 linkCoordinate = {
-                  x: tableData.xPos,
-                  y: tableData.yPos + 45 + (attrPositionInList*20) - (20/2-1)
+                  x: table.element.positionX,
+                  y: table.element.positionY + 45 + (columnPositionInList*20) - (20/2-1)
                 }
               }
               return linkCoordinate;
@@ -674,9 +698,9 @@
                     s4() + '-' + s4() + s4() + s4();
               };
             })();
-            function arrayObjectIndexOf(myArray, searchTerm, property) {
+            function getColumnPositionInList(myArray, searchTerm, property) {
               for(var i = 0, len = myArray.length; i < len; i++) {
-                if (myArray[i][property] === searchTerm) return i;
+                if (myArray[i].cdata[property] === searchTerm) return i;
               }
               return -1;
             }

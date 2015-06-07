@@ -6,7 +6,7 @@ var branchRevisionRoot = '/api/branch-revisions/';
 angular.module('myApp.services')
     .service('diagramService', function ($http, $q) {
 
-
+        // ****** LOAD FUNCTIONS ******
         this.loadBranchRevisionProjectState = function (branchRevisionId) {
             var url = branchRevisionRoot + branchRevisionId + "/project_state";
             console.log(url);
@@ -66,10 +66,10 @@ angular.module('myApp.services')
             $http.post(projectsRoot, data).
                 success(function () {
                     console.log("Table["+tableDataContent.name +", "+ tableDataContent.id +"] saved successfully");
-                    return true;
                 }).error(function () {
-                    console.log("Saving table["+tableDataContent.name +", "+ tableDataContent.id +"] failed");
-                    return false;
+                    var msg = "Saving table["+tableDataContent.name +", "+ tableDataContent.id +"] failed";
+                    console.log(msg);
+                    throw msg;
                 });
         }
         this.createPostTableData = function (tableDataContent) {
@@ -100,10 +100,10 @@ angular.module('myApp.services')
             $http.post(projectsRoot, data).
                 success(function () {
                     console.log("Table element with id:" + tableElementContent.id + " saved successfully");
-                     return true;
                 }).error(function () {
-                    console.log("Saving table element with id:" + tableElementContent.id + " failed");
-                        return false;
+                    var msg = "Saving table element with id:" + tableElementContent.id + " failed";
+                    console.log(msg);
+                    throw msg;
                 });
         }
 
@@ -122,15 +122,61 @@ angular.module('myApp.services')
             $http.post(projectsRoot, data).
                 success(function () {
                     console.log("Column["+columnContent.name +", "+ columnContent.id +"] saved successfully");
-                    return true;
                 }).error(function () {
-                    console.log("Saving column["+columnContent.name +", "+ columnContent.id +"] failed");
-                    return false;
+                    var msg = "Saving column["+columnContent.name +", "+ columnContent.id +"] failed";
+                    console.log(msg);
+                    throw msg;
+                });
+        }
+        this.saveTableForeignKey = function (branchRevisionId, foreignKeyContent) {
+            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            console.log("save foreign key data url: " + url);
+
+            var data = {
+                "content": foreignKeyContent,
+                "objectType": "ForeignKey",
+                "objectCode": foreignKeyContent.id,
+                "changeType": 0,
+                "isUIChange": false,
+                "made_by": loggedUserId
+            }
+            console.log("Saving foreign key data: ");
+            console.log(data);
+            $http.post(projectsRoot, data).
+                success(function () {
+                    console.log("ForeignKey ["+foreignKeyContent.name +", "+ foreignKeyContent.id +"] saved successfully");
+                }).error(function () {
+                    var msg = "Saving foreignKey ["+foreignKeyContent.name +", "+ foreignKeyContent.id +"] failed";
+                    console.log(msg);
+                    throw msg;
+                });
+        }
+         this.saveRelationshipElement = function (branchRevisionId, relationshipElementContent) {
+            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            console.log("save relationship element url: " + url);
+
+            var data = {
+                "content": relationshipElementContent,
+                "objectType": "RelationshipElement",
+                "objectCode": relationshipElementContent.id,
+                "changeType": 0,
+                "isUIChange": true,
+                "made_by": loggedUserId
+            }
+            console.log("Saving relationship element data: ");
+            console.log(data);
+            $http.post(projectsRoot, data).
+                success(function () {
+                    console.log("Relationship element ["+ relationshipElementContent.id +"] saved successfully");
+                }).error(function () {
+                    var msg = "Saving relationship element ["+ relationshipElementContent.id +"] failed";
+                    console.log(msg);
+                    throw msg;
                 });
         }
 
         // ****** DELETE FUNCTIONS ******
-          this.deleteTableElement = function (branchRevisionId, tableElementContent) {
+        this.deleteTableElement = function (branchRevisionId, tableElementContent) {
             var url = branchRevisionRoot + branchRevisionId + "/change/";
             var data = {
                 "content": tableElementContent,
@@ -192,12 +238,12 @@ angular.module('myApp.services')
                     ], indexes: [],
                     foreignKeys: [], schemaRef: "642c3eae-bdd9-4b80-aed1-15614d34021e"
                 },
-                    element: {
+                element: {
                         id: "e1", positionX: 100, positionY: 100, width: 300, height: 150, tableRef: "t1",
                         diagramRef: "f199449d-357e-4f6e-8190-8d0446216c3f", color: "#FFFFFF", collapsed: false
-                    },
-                    dataModified: 0,
-                    elModified: 0
+                },
+                dataModified: 0,
+                elModified: 0
                 }
             ];
             return tablesData;
@@ -205,7 +251,7 @@ angular.module('myApp.services')
         this.getLinksData = function () {
              var linksData = [
 //              Foreign key
-                {data: {
+                {fk_data: {
                       "id":"91a6b2be-9562-4413-b1dc-442d64e503ea",
                       "name":"fk_Account_Tenant",
                       "onUpdate":3, 										// 0 RESTRICT 1 CASCADE 2 SET NULL 3 NO ACTION
@@ -227,8 +273,8 @@ angular.module('myApp.services')
                       "foreignKeyRef":"91a6b2be-9562-4413-b1dc-442d64e503ea",
                       "diagramRef":"f199449d-357e-4f6e-8190-8d0446216c3f"
                  },
-                 dataModified: 0,
-                 elModified: 0
+                 dataModified: false,
+                 elModified: false
                 }
             ];
 //            var linksData = [

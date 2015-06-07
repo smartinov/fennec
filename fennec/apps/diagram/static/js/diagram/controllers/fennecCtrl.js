@@ -65,7 +65,7 @@
 //                testLoad(1);
 
                 //var diagramId = "f199449d-357e-4f6e-8190-8d0446216c3f";
-                loadBranchRevisionProjectAndDiagram(1);
+                loadBranchRevisionProjectAndDiagram($scope.branchRevisionId);
             }
 
             // ******* LOAD FUNCTIONS *******
@@ -102,40 +102,21 @@
                 console.log(branchRevisionStatusData);
                 console.log(diagramElements);
                 // ADD PROJECT INFO to scope
-//                  "project": {
-//                    "id": 1,
-//                    "name": "Project 1",
-//                    "description": null,
-//                    "url": "Project object",
-//                    "branch": {
-//                        "id": 1,
-//                        "name": "master",
-//                        "revision": 0
-//                    }
-//                }
                 $scope.projectInfo = branchRevisionStatusData.project;
                 console.log("ProjectInfo: ");
                 console.log($scope.projectInfo);
                 // ADD DIAGRAMS to scope
-//                "diagrams": [
-//                    {
-//                        "id": "f199449d-357e-4f6e-8190-8d0446216c3f",
-//                        "name": "Diagram 1",
-//                        "description": "Diagram 1",
-//                        "url": "f199449d-357e-4f6e-8190-8d0446216c3f"
-//                    }
-//                ]
                 $scope.diagrams = branchRevisionStatusData.diagrams;
                 console.log("Diagrams: ");
                 console.log($scope.diagrams);
                 $scope.activeDiagram = $scope.diagrams[0];
                 // ADD SCHEMAS to scope
-                setSchemasAndCreateFrontData(branchRevisionStatusData, diagramElements);
+                setSchemasAndCreateDataToDisplay(branchRevisionStatusData, diagramElements);
                 console.log("Front diagram data:");
                 console.log($scope.diagramData);
             }
 
-            function setSchemasAndCreateFrontData(branchRevisionStatusData, diagramElements) {
+            function setSchemasAndCreateDataToDisplay(branchRevisionStatusData, diagramElements) {
                 // Load all data with project_state and then load diagram elements and bound the two together
                 $scope.schemasInfo = [];
 
@@ -181,7 +162,7 @@
                                         var relationElement = diagramElements.relationshipElements[m];
                                         if(foreignKey.id == relationElement.foreignKeyRef){
                                             var link ={
-                                                data: foreignKey,
+                                                fk_data: foreignKey,
                                                 element:relationElement,
                                                 dataModified: 0,
                                                 elModified: 0
@@ -207,41 +188,51 @@
 
                 console.log("Saving diagram["+$scope.activeDiagram.name+"] be patient..");
                 try{
-                var diagramId = $scope.activeDiagram.id;
+                var branchRevisionId = $scope.branchRevisionId;
 
-                // save/update
+                // save/update table
                 for (var i in $scope.diagramData.tables) {
                     var table = $scope.diagramData.tables[i];
-                    var tableDataPostSuccess = diagramService.saveTableData(diagramId, table.data);
+                    var tableDataPostSuccess = diagramService.saveTableData(branchRevisionId, table.data);
 
-                    if (table.elModified == 1) {
-                        var tableElementPostSuccess = diagramService.saveTableElement(diagramId, table.element);
-                        if(tableElementPostSuccess){
-                             table.elModified = 0; // reset it
-                        }
+                    if (table.elModified) {
+                        var tableElementPostSuccess = diagramService.saveTableElement(branchRevisionId, table.element);
+                        table.elModified = false; // reset it
                     }
 
                     for(var j in table.data.columns){
                         var column = table.data.columns[j];
-                        if(column.modified == 1){
-                            var success = diagramService.saveColumn(diagramId,column.cdata);
-                            if(success){
-                                column.modified = 0; // reset it
-                            }
+                        if(column.modified){
+                            var success = diagramService.saveColumn(branchRevisionId,column.cdata);
+                            column.modified = false; // reset it
                         }
                     }
                 }
+                // save/update foreignKeys and relationElements
+                for(var i in $scope.diagramData.links){
+                    var link = $scope.diagramData.links[i];
+                    if(link.dataModified){
+                        diagramService.saveTableForeignKey(branchRevisionId,link.fk_data);
+                        link.dataModified = false;
+                    }
+                    if(link.elModified){
+                        diagramService.saveRelationshipElement(branchRevisionId,link.element);
+                        link.elModified = false;
+                    }
+                }
+
                 // delete table elements
                 for(var i in $scope.deletedTableElements){
                     var delTableElement = $scope.deletedTableElements[i];
-                    diagramService.deleteTableElement(diagramId, delTableElement);
+                    diagramService.deleteTableElement(branchRevisionId, delTableElement);
                 }
 
                 // delete columns
                 for(var i in $scope.deletedColumnsData){
                     var delColumnData = $scope.deletedColumnsData[i];
-                    diagramService.deleteColumn(diagramId, delColumnData);
+                    diagramService.deleteColumn(branchRevisionId, delColumnData);
                 }
+
 
                 console.log("Diagram["+$scope.activeDiagram.name+"] saved successfully");
                 }catch (err){
@@ -288,7 +279,7 @@
                         dictionary: false,
                         tableRef: tableDataId
                     },
-                    modified: 1
+                    modified: true
                 };
                 var tableIndex = findTablePositionInArray(tableDataId, $scope.diagramData.tables);
                 if (tableIndex != null) {
