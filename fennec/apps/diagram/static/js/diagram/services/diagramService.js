@@ -106,28 +106,6 @@ angular.module('myApp.services')
                     throw msg;
                 });
         }
-
-        this.saveColumn = function (branchRevisionId, columnContent) {
-            var url = branchRevisionRoot + branchRevisionId + "/change/";
-            var data = {
-                "content": columnContent,
-                "objectType": "Column",
-                "objectCode": columnContent.id,
-                "changeType": 0,
-                "isUIChange": false,
-                "made_by": loggedUserId
-            }
-            console.log("Saving column: ");
-            console.log(data);
-            $http.post(projectsRoot, data).
-                success(function () {
-                    console.log("Column["+columnContent.name +", "+ columnContent.id +"] saved successfully");
-                }).error(function () {
-                    var msg = "Saving column["+columnContent.name +", "+ columnContent.id +"] failed";
-                    console.log(msg);
-                    throw msg;
-                });
-        }
         this.saveTableForeignKey = function (branchRevisionId, foreignKeyContent) {
             var url = branchRevisionRoot + branchRevisionId + "/change/";
             console.log("save foreign key data url: " + url);
@@ -151,7 +129,29 @@ angular.module('myApp.services')
                     throw msg;
                 });
         }
-         this.saveRelationshipElement = function (branchRevisionId, relationshipElementContent) {
+
+        this.saveColumn = function (branchRevisionId, columnContent) {
+            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var data = {
+                "content": columnContent,
+                "objectType": "Column",
+                "objectCode": columnContent.id,
+                "changeType": 0,
+                "isUIChange": false,
+                "made_by": loggedUserId
+            }
+            console.log("Saving column: ");
+            console.log(data);
+            $http.post(projectsRoot, data).
+                success(function () {
+                    console.log("Column["+columnContent.name +", "+ columnContent.id +"] saved successfully");
+                }).error(function () {
+                    var msg = "Saving column["+columnContent.name +", "+ columnContent.id +"] failed";
+                    console.log(msg);
+                    throw msg;
+                });
+        }
+        this.saveRelationshipElement = function (branchRevisionId, relationshipElementContent) {
             var url = branchRevisionRoot + branchRevisionId + "/change/";
             console.log("save relationship element url: " + url);
 
@@ -236,7 +236,19 @@ angular.module('myApp.services')
                             modified: 0
                         }
                     ], indexes: [],
-                    foreignKeys: [], schemaRef: "642c3eae-bdd9-4b80-aed1-15614d34021e"
+                    foreignKeys: [
+                        {
+                            "id": "91a6b2be-9562-4413-b1dc-442d64e503ea",
+                            "name": "fk_Account_Tenant",
+                            "comment": null,
+                            "onUpdate": 3,
+                            "onDelete": 3,
+                            "sourceColumn": "1111111-9562-4413-b1dc-442d64e503ea",
+                            "referencedColumn": "222222-9562-4413-b1dc-442d64e503ea",
+                            "tableRef": "bc5d4f7d-a9df-f88b-a3bf-ba88fa08f5d7",
+                            "referencedTableRef": "b5f6a3ff-75fe-dbb8-d018-90815beef1d6"
+                        }
+                    ], schemaRef: "642c3eae-bdd9-4b80-aed1-15614d34021e"
                 },
                 element: {
                         id: "e1", positionX: 100, positionY: 100, width: 300, height: 150, tableRef: "t1",
@@ -258,8 +270,8 @@ angular.module('myApp.services')
                       "onDelete":3,
                       "sourceColumn":"Tenant_RefID",
                       "referencedColumn":"TenantID",
-                      "tableRef":"bc5d4f7d-a9df-f88b-a3bf-ba88fa08f5d7",
-                      "referencedTableRef": "b5f6a3ff-75fe-dbb8-d018-90815beef1d6"
+                      "tableRef":"bc5d4f7d-a9df-f88b-a3bf-ba88fa08f5d7",            //id from table element
+                      "referencedTableRef": "b5f6a3ff-75fe-dbb8-d018-90815beef1d6" //id from table element
                  },
 //              Relationship element
                  element:{

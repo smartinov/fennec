@@ -291,14 +291,14 @@
                 var selectedAttributeArrays = d3.select(this);                       // [[text#attribute0.attribute]]
                 var tableOfAttrArrays = d3.select(this.parentNode.parentNode);               // [[g#table0.table]]
                 var tableData =tableOfAttrArrays.node().__data__;
-                var attrData = selectedAttributeArrays.node().__data__;  // console.log(attrData);
+                var columnData = selectedAttributeArrays.node().__data__;  // console.log(columnData);
 
                 if(tmpSourceTableLink == null ){
-                  tmpSourceTableLink = {x:0,y:0, table:tableData, attr:attrData};
+                  tmpSourceTableLink = {x:0,y:0, table:tableData, attr:columnData};
                   return;
                 }
                 if(tmpTargetTableLink == null){
-                  tmpTargetTableLink = {x:0,y:0, table:tableData, attr:attrData};
+                  tmpTargetTableLink = {x:0,y:0, table:tableData, attr:columnData};
                 }
 
                 var linkPosition= calculateLinkPosition(tmpSourceTableLink,tmpTargetTableLink);
@@ -314,10 +314,10 @@
                               "name":"fk_"+tmpSourceTableLink.attr.cdata.name+"_"+tmpTargetTableLink.attr.cdata.name+"1",
                               "onUpdate":3,
                               "onDelete":3,
-                              "sourceColumn": tmpSourceTableLink.attr.cdata.name,
-                              "referencedColumn":tmpTargetTableLink.attr.cdata.name,
+                              "sourceColumn": tmpSourceTableLink.attr.cdata.id,
+                              "referencedColumn":tmpTargetTableLink.attr.cdata.id,
                               "tableRef":tmpSourceTableLink.table.data.id,
-                              "referencedTableRef": tmpTargetTableLink.table.data.id,
+                              "referencedTableRef": tmpTargetTableLink.table.data.id
                           },
                           element: {
                               "id":genGuid(),
@@ -399,12 +399,6 @@
 
               movingTableObject.attr("transform", "translate(" + relativeMovePosX + "," + relativeMovePosY + ")");
               updateTablePosition(movingTableObject,startTableXPosition+relativeMovePosX, startTableYPosition+relativeMovePosY);
-              //var link = getLinkForTableId(movingTableObject);
-              //if(link != null){
-              //    var linkObjArrays = d3.select("#"+link.id);   //		[[line#id-from-link.link]]
-              //    console.log(linkObjArrays);
-              //    linkObjArrays.attr("transform", "translate(" + relativeMovePosX + "," + relativeMovePosY + ")");
-              //}
               updateLinkPosition(movingTableObject);
             };
             function updateTablePosition(movingTableObject,x,y) {
@@ -421,15 +415,15 @@
             }
             function updateLinkPosition(movingTableObject){
               var redraw = false;
-              var table = movingTableObject.node().__data__;
+              var movingTable = movingTableObject.node().__data__;
               for(var i=0;i<linksData.length;i++){
-                if(linksData[i].source.tableId == table.id){
+                if(linksData[i].fk_data.tableRef == movingTable.data.id){
                   var tableLink = linksData[i];
                   //console.log("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
                   updateLinkData(tableLink);
                   redraw = true;
                 }
-                if(linksData[i].target.tableId == table.id){
+                if(linksData[i].fk_data.referencedTableRef == movingTable.data.id){
                   var tableLink = linksData[i];
                   // console.log("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
                   updateLinkData(tableLink);
@@ -440,18 +434,27 @@
                 redrawLines();
               }
             }
+
+            // TODO: updateLinkPosition ima podatak o jednoj tabeli, findLinkTables ne treba nam,jer imam jedan a drugi mogu naci na osnovu id
             function updateLinkData(link){
-              var linkTables = findLinkTables(link.source.tableId,link.target.tableId);
-              var sourceTableLink = {x:0,y:0, table:linkTables.sourceTable, attr:link.source.attr};
-              var targetTableLink = {x:0,y:0, table:linkTables.targetTable, attr:link.target.attr};
+              var linkTables = findLinkTables(link.fk_data.tableRef,link.fk_data.referencedTableRef);
+              var sourceTableColumn = getColumnForId(linkTables.sourceTable.data.columns,link.fk_data.sourceColumn);
+              var referencedTableColumn = getColumnForId(linkTables.targetTable.data.columns,link.fk_data.referencedColumn);
+                // attr -- ovo je ispod columnData
+                // attr -- ovo je ispod columnData
+                // attr -- ovo je ispod columnData
+                // attr -- ovo je ispod columnData
+
+              var sourceTableLink = {x:0,y:0, table:linkTables.sourceTable, attr:sourceTableColumn};
+              var targetTableLink = {x:0,y:0, table:linkTables.targetTable, attr:referencedTableColumn};
               var linkPosition= calculateLinkPosition(sourceTableLink,targetTableLink);
               //console.log("updateLinkData(link) => linkId: "+link.id);
               //console.log("updateLinkData(link) before => source("+link.source.x+","+link.source.y+"), target("+link.target.x+","+  link.target.y+")");
-              link.source.x = linkPosition.sourceTableLink.x;
-              link.source.y = linkPosition.sourceTableLink.y;
-              link.target.x = linkPosition.targetTableLink.x;
-              link.target.y = linkPosition.targetTableLink.y;
-              //console.log("updateLinkData(link) after update=> source("+link.source.x+","+link.source.y+"), target("+link.target.x+","+  link.target.y+")");
+
+              link.element.startPositionX = linkPosition.sourceTableLink.x;
+              link.element.startPositionY = linkPosition.sourceTableLink.y;
+              link.element.endPositionX =linkPosition.targetTableLink.x;
+              link.element.endPositionY = linkPosition.targetTableLink.y;
             }
             function findLinkTables(sourceTableId, targetTableId){
               var result = {
@@ -459,7 +462,7 @@
                 targetTable:null
               };
               for(var i=0;i<tablesData.length;i++) {
-                if(tablesData[i].id == sourceTableId){
+                if(tablesData[i].data.id == sourceTableId){
                   result.sourceTable = tablesData[i];
                   if(result.targetTable == null){
                     continue;
@@ -467,7 +470,7 @@
                     break;
                   }
                 }
-                if(tablesData[i].id == targetTableId){
+                if(tablesData[i].data.id == targetTableId){
                   result.targetTable = tablesData[i];
                   if(result.sourceTable == null){
                     continue;
@@ -478,7 +481,13 @@
               }
               return result;
             }
-
+            function getColumnForId(columns, columnId){
+                for(var i in columns){
+                    if(columns[i].cdata.id == columnId){
+                        return columns[i];
+                    }
+                }
+            }
             // TABLE RESIZE
             var resizeRectXPos ;
             var resizeRectYPos;
