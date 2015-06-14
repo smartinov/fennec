@@ -309,8 +309,8 @@ angular.module('myApp.services')
                       "name":"fk_Account_Tenant",
                       "onUpdate":3, 										// 0 RESTRICT 1 CASCADE 2 SET NULL 3 NO ACTION
                       "onDelete":3,
-                      "sourceColumn":"Tenant_RefID",
-                      "referencedColumn":"TenantID",
+                      "sourceColumn":"sourceColumnID",
+                      "referencedColumn":"referencedColumnID",
                       "tableRef":"bc5d4f7d-a9df-f88b-a3bf-ba88fa08f5d7",            // id from table data
                       "referencedTableRef": "b5f6a3ff-75fe-dbb8-d018-90815beef1d6"  // id from table data
                  },

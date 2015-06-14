@@ -205,7 +205,8 @@
                     }
 
                     for(var j in table.data.columns){
-                        var column = table.data.columns[(table.data.columns.length-1)-j]; // colak from back is saving columns to database
+                        // var column = table.data.columns[(table.data.columns.length-1)-j]; // colak from back is saving columns to database
+                        var column = table.data.columns[j]; // colak from back is saving columns to database
                         if(column.modified){
                             diagramService.saveColumn(branchRevisionId,column.cdata);
                             column.modified = false; // reset it
@@ -326,7 +327,7 @@
             $scope.removeTableColumn = function (index) {
                 // delete links if exists
                 var columnData = $scope.selectedTable.data.columns[index].cdata;
-                deleteLink($scope.selectedTable.id, columnData.id, $scope.diagramData.links);
+                deleteColumnLink(columnData.id, $scope.diagramData.links);
 
                 // remove column from table
                 $scope.selectedTable.data.columns.splice(index, 1);
@@ -334,6 +335,16 @@
                 $scope.deletedColumnsData.push(columnData);
                 console.log("ctrl -> column[" + columnData.name + "] successfully deleted");
             };
+            function deleteColumnLink(columnId, diagramLinks) {
+                 for(var i = diagramLinks.length-1; i>=0;i--){
+                    var link = diagramLinks[i];  // contain fk_data, element and dataModified, elModified
+                    if (link.fk_data.sourceColumn == columnId  || link.fk_data.referencedColumn == columnId) {
+                        console.log("ctrl -> link[" + link.fk_data.name + "] is deleted");
+                        $scope.deletedLinks.push(link);
+                        diagramLinks.splice(i, 1);
+                    }
+                }
+            }
 
             $scope.dataTypes = [
                 {value: 1, text: 'ID'},
@@ -386,16 +397,7 @@
                 }
             }
 
-            function deleteLink(tableId, columnId, links) {
-                // if there is a link bound to column, delete link
-                for (var i = links.length - 1; i >= 0; i--) {
-                    if ((links[i].source.tableId === tableId && links[i].source.attr.id === columnId) ||
-                        (links[i].target.tableId === tableId && links[i].target.attr.id === columnId)) {
-                        console.log("Ctrl-> Link[" + links[i].id + "] is deleted");
-                        links.splice(i, 1);
-                    }
-                }
-            }
+
 
 
             // ******** THIS CONTROLLER UTIL FUNCTION ********
