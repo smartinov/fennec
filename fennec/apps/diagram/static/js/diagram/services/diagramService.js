@@ -25,6 +25,28 @@ angular.module('myApp.services')
         // ****** SAVE FUNCTIONS ******
         var loggedUserId = 1;
 
+        this.saveDiagramInfo = function(branchRevisionId, diagramContent){
+            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            console.log("save diagram data url: " + url);
+
+            var data = {
+                "content": diagramContent,
+                "objectType": "Diagram",
+                "objectCode": diagramContent.id,
+                "changeType": 0,
+                "isUIChange": true,
+                "made_by": loggedUserId
+            }
+            console.log("Saving diagram data data: ");console.log(data);
+            $http.post(projectsRoot, data).
+                success(function () {
+                    console.log("Diagram["+diagramContent.name +", "+ diagramContent.id +"] saved successfully");
+                }).error(function () {
+                    var msg = "Saving diagram["+diagramContent.name +", "+ diagramContent.id +"] failed";
+                    console.log(msg);
+                    throw msg;
+                });
+        }
         this.pythonCreateDiagramSave = function () {
             var saveBranchRevisionURL = projectsRoot;
 
@@ -274,7 +296,7 @@ angular.module('myApp.services')
                                 column_type: "INT"
                                 // and all of column attributes
                             },
-                            modified: 0
+                            modified: false
                         }
                     ], indexes: [],
                     foreignKeys: [
@@ -295,8 +317,8 @@ angular.module('myApp.services')
                         id: "e1", positionX: 100, positionY: 100, width: 300, height: 150, tableRef: "t1",
                         diagramRef: "f199449d-357e-4f6e-8190-8d0446216c3f", color: "#FFFFFF", collapsed: false
                 },
-                dataModified: 0,
-                elModified: 0
+                dataModified: false,
+                elModified: false
                 }
             ];
             return tablesData;
@@ -348,6 +370,20 @@ angular.module('myApp.services')
                 }
             }
             return null;
+        }
+        this.getFrontDiagram = function(){
+            // this is only example how front diagram data look like
+            var frontDiagrams = {
+                data:{
+                     "url": "",
+                    "id": "83654a30-c082-42db-9c27-0b6ff5460c0b",
+                    "name": "Diagram from fucking angular",
+                    "description": "Diagram from fucking angular"
+                },
+                modified: false
+            }
+
+            return frontDiagrams;
         }
 
         // ********** HELPER METHODS ****************

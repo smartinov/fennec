@@ -49,6 +49,7 @@
                 $scope.schemasInfo = [];
                 $scope.diagrams = [];
                 $scope.activeDiagram = {};
+                $scope.activeDiagramEditData = {};  // for edit form
                 $scope.branchRevisionId = 1; // read from URL
 
                clearDeletedScopes();
@@ -109,16 +110,22 @@
                 $scope.projectInfo = branchRevisionStatusData.project;
                 console.log("ProjectInfo: ");
                 console.log($scope.projectInfo);
+
                 // ADD DIAGRAMS to scope
-                $scope.diagrams = branchRevisionStatusData.diagrams;
-                console.log("Diagrams: ");
-                console.log($scope.diagrams);
+                for(var i in branchRevisionStatusData.diagrams){
+                    $scope.diagrams.push({data:branchRevisionStatusData.diagrams[i],modified: false});
+                }
+                console.log("Diagrams: ");console.log($scope.diagrams);
                 $scope.activeDiagram = $scope.diagrams[0];
+                $scope.activeDiagramEditData =  angular.copy($scope.activeDiagram);
+
+
                 // ADD SCHEMAS to scope
                 setSchemasAndCreateDataToDisplay(branchRevisionStatusData, diagramElements);
                 console.log("Front diagram data:");
                 console.log($scope.diagramData);
             }
+
             function setSchemasAndCreateDataToDisplay(branchRevisionStatusData, diagramElements) {
                 // Load all data with project_state and then load diagram elements and bound the two together
                 $scope.schemasInfo = [];
@@ -194,6 +201,11 @@
                 try{
                 var branchRevisionId = $scope.branchRevisionId;
 
+                // save diagram data change
+                if($scope.activeDiagram.modified){
+                    diagramService.saveDiagramInfo(branchRevisionId,$scope.activeDiagram.data);
+                }
+
                 // save/update table
                 for (var i in $scope.diagramData.tables) {
                     var table = $scope.diagramData.tables[i];
@@ -255,6 +267,10 @@
                 }
             }
 
+            $scope.editDiagramButton = function(){
+                $scope.activeDiagramEditData.modified = true;
+                $scope.activeDiagram = angular.copy($scope.activeDiagramEditData);
+            }
 
             //$scope.$on('selectedTableEvent', function(scope, selectedTable){
             //    // when select the table this method is called
@@ -271,6 +287,8 @@
                 }
                 $scope.$apply();
             });
+
+
 
             // ********* ADD/EDIT COLUMN *********
             $scope.addColumn = function () {

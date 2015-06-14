@@ -37,10 +37,18 @@
 {#            <li class="nav-header">Project 1</li>#}
             <li class="nav-header">[[projectInfo.name]]</li>
 
-            <li class="active"><a href="#"> [[activeDiagram.name]]</a></li>
+            <li class="active"><a href="#"> [[activeDiagram.data.name]]</a></li>
 
             <li class="nav-header">Diagram</li>
-            <button ng-click="saveDiagramButton()">Save [[activeDiagram.name]]</button>
+            <button ng-click="saveDiagramButton()">Save diagram</button>
+            <form class="form-horizontal" role="form">
+                <div class="form-group">
+                    <div class="col-sm-4">
+                        <input class="form-control" id="inputName3" placeholder="Name" ng-model="activeDiagramEditData.data.name">
+                        <button type="submit" ng-click="editDiagramButton()" class="btn btn-success">Edit</button>
+                    </div>
+                </div>
+            </form>
 
             <li class="nav-header">Toolbar</li>
             <button onclick="changeState(fennecStates.new_table)">New table</button>
@@ -48,6 +56,7 @@
             <button onclick="changeState(fennecStates.new_link)">New link</button>
             <button onclick="changeState(fennecStates.delete_obj)">Delete</button>
             <button onclick="innerLayout.toggle('south')">toggle Property div</button>
+
         </ul>
     </div>
 </div>
