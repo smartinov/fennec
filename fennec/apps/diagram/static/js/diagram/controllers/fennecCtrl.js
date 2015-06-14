@@ -53,6 +53,7 @@
 
                 $scope.deletedTableElements = []; // for now only deleting table elements
                 $scope.deletedColumnsData = [];
+                $scope.deletedLinks = [];
 
                 //pythonCreateDiagramSave();
 //                console.log("start loading data");
@@ -97,7 +98,6 @@
                     //console.log("log loadBranchRevisionProjectStatefinally");
                 });
             }
-
             function prepareDiagramData(branchRevisionStatusData, diagramElements) {
                 console.log(branchRevisionStatusData);
                 console.log(diagramElements);
@@ -115,7 +115,6 @@
                 console.log("Front diagram data:");
                 console.log($scope.diagramData);
             }
-
             function setSchemasAndCreateDataToDisplay(branchRevisionStatusData, diagramElements) {
                 // Load all data with project_state and then load diagram elements and bound the two together
                 $scope.schemasInfo = [];
@@ -141,8 +140,8 @@
                                 var table = {
                                     data: dataTable,
                                     element: diagramElements.tableElements[k],
-                                    dataModified: 0,
-                                    elModified: 0
+                                    dataModified: false,
+                                    elModified: false
                                 };
 
                                 // ADD COLUMNS TO TABLE
@@ -150,7 +149,7 @@
                                 for (var j in dataTable.columns) {
                                     columns.push({
                                         cdata: dataTable.columns[j],
-                                        modified: 0
+                                        modified: false
                                     });
                                 }
                                 table.data.columns = columns;
@@ -164,8 +163,8 @@
                                             var link ={
                                                 fk_data: foreignKey,
                                                 element:relationElement,
-                                                dataModified: 0,
-                                                elModified: 0
+                                                dataModified: false,
+                                                elModified: false
                                             }
                                             $scope.diagramData.links.push(link);
                                             break;
@@ -201,7 +200,7 @@
                     }
 
                     for(var j in table.data.columns){
-                        var column = table.data.columns[j];
+                        var column = table.data.columns[(table.data.columns.length-1)-j]; // colak from back is saving columns to database
                         if(column.modified){
                             var success = diagramService.saveColumn(branchRevisionId,column.cdata);
                             column.modified = false; // reset it
@@ -248,7 +247,7 @@
             //    $scope.$apply();
             //});
             $scope.$on('deleteTableEvent', function (scope, deletedTable) {
-                deleteTable(deletedTable.data.id, $scope.diagramData.tables);
+                deleteTableElement(deletedTable.data.id, $scope.diagramData.tables);
 
                     // when select the table this method is called
                 if ($scope.selectedTable != null && $scope.selectedTable.id == deletedTable.id) {
@@ -350,7 +349,7 @@
                     return "Username 2 should be `awesome`";
                 }
             };
-            function deleteTable(tableId, tables) {
+            function deleteTableElement(tableId, tables) {
                 for (var i = 0; i < tables.length; i++) {
                     if (tables[i].data.id === tableId) {
                         console.log("ctrl -> table[" + tables[i].data.name + "] is deleted");
@@ -358,14 +357,16 @@
                         tables.splice(i, 1);
                     }
                 }
-                deleteTableLinks(tableId, $scope.diagramData.links);
+                deleteTableLinks(tableId,$scope.diagramData.links);
             }
 
-            function deleteTableLinks(tableId, links) {
-                for (var i = links.length - 1; i >= 0; i--) {
-                    if (links[i].source.tableId === tableId || links[i].target.tableId === tableId) {
-                        console.log("Ctrl-> Link[" + links[i].id + "] is deleted");
-                        links.splice(i, 1);
+            function deleteTableLinks(tableId, diagramLinks) {
+                for(var i = diagramLinks.length-1; i>=0;i--){
+                    var link = diagramLinks[i];  // contain fk_data, element and dataModified, elModified
+                    if (link.fk_data.tableRef == tableId || link.fk_data.referencedTableRef == tableId) {
+                        console.log("ctrl -> link[" + link.fk_data.name + "] is deleted");
+                        $scope.deletedLinks.push(link);
+                        diagramLinks.splice(i, 1);
                     }
                 }
             }

@@ -270,8 +270,8 @@ angular.module('myApp.services')
                       "onDelete":3,
                       "sourceColumn":"Tenant_RefID",
                       "referencedColumn":"TenantID",
-                      "tableRef":"bc5d4f7d-a9df-f88b-a3bf-ba88fa08f5d7",            //id from table element
-                      "referencedTableRef": "b5f6a3ff-75fe-dbb8-d018-90815beef1d6" //id from table element
+                      "tableRef":"bc5d4f7d-a9df-f88b-a3bf-ba88fa08f5d7",            // id from table data
+                      "referencedTableRef": "b5f6a3ff-75fe-dbb8-d018-90815beef1d6"  // id from table data
                  },
 //              Relationship element
                  element:{

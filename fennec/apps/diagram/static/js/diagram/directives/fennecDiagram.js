@@ -23,8 +23,7 @@
 
             scope.$watch('data.tables', function() {
               //console.log(tablesData[0].data.columns);
-              console.log("changes occur on directive table data:");
-              console.log(tablesData);
+              console.log("directive-> changes occur on directive table data:"); console.log(tablesData);
               restart(true);
             },true);
 
@@ -45,7 +44,7 @@
             var svg;
             initSvgDiagram();
             function initSvgDiagram(){
-              console.log("Init svg diagram");
+              console.log("diagram -> init svg diagram");
               svg = d3.select(".diagram")
                   .style("outline","1px solid black")
                   .style("width","100%")
@@ -234,7 +233,7 @@
               tmpTargetTableLink= null;
             }
 
-            // MOUSE EVENTS
+            // ********* MOUSE EVENTS *********
             function mouseClick(d) {
               d3.event.stopPropagation();
               var dragTarget = d3.select(this);
@@ -280,7 +279,7 @@
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
                   if(tableData != undefined){
-                    console.log("directive-> table is deleting: "+tableData.data.name);
+                    console.log("directive-> table["+tableData.data.name+"] is deleting");
                     scope.$emit('deleteTableEvent', tableData );
                   }
                 }
@@ -381,7 +380,7 @@
               return linkCoordinate;
             }
 
-            // TABLE MOVE
+            // *********  TABLE MOVE *********
             var relativeMovePosX=0;
             var relativeMovePosY=0;
             function move(){
@@ -435,7 +434,6 @@
               }
             }
 
-            // TODO: updateLinkPosition ima podatak o jednoj tabeli, findLinkTables ne treba nam,jer imam jedan a drugi mogu naci na osnovu id
             function updateLinkData(link){
               var linkTables = findLinkTables(link.fk_data.tableRef,link.fk_data.referencedTableRef);
               var sourceTableColumn = getColumnForId(linkTables.sourceTable.data.columns,link.fk_data.sourceColumn);
@@ -488,7 +486,8 @@
                     }
                 }
             }
-            // TABLE RESIZE
+
+            // *********  TABLE RESIZE *********
             var resizeRectXPos ;
             var resizeRectYPos;
             function dragResize(){
@@ -586,9 +585,8 @@
               return childOffset;
             }
 
-// Moje dodato
-            var lastKeyDown;
 
+            var lastKeyDown;
             function keydown() {
               d3.event.preventDefault();
 
@@ -651,7 +649,7 @@
                 //.on('keydown', keydown)
                 //.on('keyup', keyup);
 
-// *************** HELPER FUNCTIONS **************************
+            // *********  HELPER FUNCTIONS *********
             function getLinkForTableId(movingTableObject){
               // TODO: this is not good , need to set like in add links part
               var table = movingTableObject.node().__data__;
