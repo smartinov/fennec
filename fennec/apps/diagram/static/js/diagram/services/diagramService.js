@@ -99,7 +99,7 @@ angular.module('myApp.services')
             console.log(data);
             $http.post(projectsRoot, data).
                 success(function () {
-                    console.log("Table element with id:" + tableElementContent.id + " saved successfully");
+                    console.log("Table element[" + tableElementContent.id + "] saved successfully");
                 }).error(function () {
                     var msg = "Saving table element with id:" + tableElementContent.id + " failed";
                     console.log(msg);
@@ -190,7 +190,7 @@ angular.module('myApp.services')
             console.log(data);
             $http.post(projectsRoot, data).
                 success(function () {
-                    console.log("Table element with id:" + tableElementContent.id + " is deleted successfully");
+                    console.log("Table element[" + tableElementContent.id + "] deleted successfully");
                 }).error(function () {
                     var msg = "Deleting table element with id:" + tableElementContent.id + " failed";
                     console.log(msg);
@@ -214,6 +214,47 @@ angular.module('myApp.services')
                     console.log("Column["+columnContent.name +", "+ columnContent.id +"] deleted successfully");
                 }).error(function () {
                     var msg = "Deleting column["+columnContent.name +", "+ columnContent.id +"] failed";
+                    console.log(msg);
+                    throw msg;
+                });
+        }
+        this.deleteTableForeignKey = function (branchRevisionId, foreignKeyContent) {
+            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var data = {
+                "content": foreignKeyContent,
+                "objectType": "ForeignKey",
+                "objectCode": foreignKeyContent.id,
+                "changeType": 2,
+                "isUIChange": false,
+                "made_by": loggedUserId
+            }
+            console.log("Deleting foreignkey: ");console.log(data);
+            $http.post(projectsRoot, data).
+                success(function () {
+                    console.log("ForeignKey ["+foreignKeyContent.name +", "+ foreignKeyContent.id +"] deleted successfully");
+                }).error(function () {
+                    var msg = "Deleting column["+foreignKeyContent.name +", "+ foreignKeyContent.id +"] failed";
+                    console.log(msg);
+                    throw msg;
+                });
+        }
+        this.deleteRelationshipElement = function (branchRevisionId, relationshipElementContent) {
+            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var data = {
+                "content": relationshipElementContent,
+                "objectType": "RelationshipElement",
+                "objectCode": relationshipElementContent.id,
+                "changeType": 2,
+                "isUIChange": true,
+                "made_by": loggedUserId
+            }
+            console.log("Deleting relationship element: ");console.log(data);
+
+            $http.post(projectsRoot, data).
+                success(function () {
+                    console.log("Relationship element["+ relationshipElementContent.id +"] deleted successfully");
+                }).error(function () {
+                    var msg = "Deleting relationship element["+relationshipElementContent.id +"] failed";
                     console.log(msg);
                     throw msg;
                 });

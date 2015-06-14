@@ -51,9 +51,7 @@
                 $scope.activeDiagram = {};
                 $scope.branchRevisionId = 1; // read from URL
 
-                $scope.deletedTableElements = []; // for now only deleting table elements
-                $scope.deletedColumnsData = [];
-                $scope.deletedLinks = [];
+               clearDeletedScopes();
 
                 //pythonCreateDiagramSave();
 //                console.log("start loading data");
@@ -67,6 +65,12 @@
 
                 //var diagramId = "f199449d-357e-4f6e-8190-8d0446216c3f";
                 loadBranchRevisionProjectAndDiagram($scope.branchRevisionId);
+            }
+            function clearDeletedScopes(){
+                console.log("ctrl -> clearing deleted scopes");
+                $scope.deletedTableElements = []; // for now only deleting table elements
+                $scope.deletedColumnsData = [];
+                $scope.deletedLinks = [];
             }
 
             // ******* LOAD FUNCTIONS *******
@@ -186,6 +190,7 @@
                 if(confirm("You are going to save diagram ["+$scope.activeDiagram.name+"], are you sure?") == false) {return;}
 
                 console.log("Saving diagram["+$scope.activeDiagram.name+"] be patient..");
+                var success = true;
                 try{
                 var branchRevisionId = $scope.branchRevisionId;
 
@@ -202,11 +207,12 @@
                     for(var j in table.data.columns){
                         var column = table.data.columns[(table.data.columns.length-1)-j]; // colak from back is saving columns to database
                         if(column.modified){
-                            var success = diagramService.saveColumn(branchRevisionId,column.cdata);
+                            diagramService.saveColumn(branchRevisionId,column.cdata);
                             column.modified = false; // reset it
                         }
                     }
                 }
+
                 // save/update foreignKeys and relationElements
                 for(var i in $scope.diagramData.links){
                     var link = $scope.diagramData.links[i];
@@ -232,10 +238,19 @@
                     diagramService.deleteColumn(branchRevisionId, delColumnData);
                 }
 
+                for(var i in $scope.deletedLinks){
+                    var link = $scope.deletedLinks[i];
+                    diagramService.deleteTableForeignKey(branchRevisionId, link.fk_data);
+                    diagramService.deleteRelationshipElement(branchRevisionId, link.element);
+                }
 
-                console.log("Diagram["+$scope.activeDiagram.name+"] saved successfully");
                 }catch (err){
+                    success = false;
                     console.log("Saving diagram["+$scope.activeDiagram.name+"] failed with msg:"+err);
+                }
+                if(success){
+                    console.log("Diagram["+$scope.activeDiagram.name+"] saved successfully");
+                    clearDeletedScopes();
                 }
             }
 
