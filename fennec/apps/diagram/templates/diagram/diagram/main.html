@@ -68,8 +68,8 @@
 
         <div role="tabpanel">
 			<ul class="nav nav-tabs" role="tablist">
-				<li role="presentation" ng-repeat="tab in tabs" ng-click="selectTab($index)" ng-class="{'active':selectedTab == $index}">
-					<a data-target="#tab" aria-controls="home" role="tab" data-toggle="tab">Tab [[tab.id]] <span ng-click="deleteTab($index)"><i class="icon-remove"></i></span></a>
+				<li role="presentation" ng-repeat="tab in diagrams" ng-click="selectTab($index)" ng-class="{'active':selectedTab == $index}">
+					<a data-target="#tab" aria-controls="home" role="tab" data-toggle="tab">[[tab.data.name]] <span ng-click="deleteTab($index)"><i class="icon-remove"></i></span></a>
 				</li>
 				<li role="presentation" ng-click="addTab()">
 					<a aria-controls="home" role="tab" data-toggle="tab">( + )</a>

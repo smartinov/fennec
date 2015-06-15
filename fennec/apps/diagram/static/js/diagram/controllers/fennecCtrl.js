@@ -7,31 +7,38 @@
     var module = angular.module('myApp.controllers')
         .controller('DiagramController', function ($scope, $filter, $http, diagramService) {
 
-            $scope.tabs = [
-                {
-                    id: 1,
-                    content: 'This is a default tab on load'
-                }
-            ]
-
-            $scope.counter = 1;
-            /** Function to add a new tab **/
+            // ****** TAB HANDLER ******
+            $scope.selectedTab = 0; //set selected tab to the 1st by default.
             $scope.addTab = function () {
-                $scope.counter++;
-                $scope.tabs.push({id: $scope.counter, content: 'Any Content'});
-                $scope.selectedTab = $scope.tabs.length - 1; //set the newly added tab active.
-            }
+//                if(confirm("You are going to create new diagram, save changes on ["+$scope.activeDiagram.data.name+"] diagram") == true) {
+//                    // save current diagram
+//                    $scope.saveDiagramButton();
+//                }
+                var extNewDiagramInfo = {data:{id:genGuid(),name:"new diagram",description:"description",url:""},modified:true};
 
-            /** Function to delete a tab **/
+
+//                $scope.$emit('deleteTableEvent',  $scope.diagramData.tables[0] );
+//                $scope.$emit('deleteTableEvent',  $scope.diagramData.tables[0] );
+//                $scope.$emit('deleteTableEvent',  $scope.diagramData.tables[0] );
+
+                $scope.diagrams.push(extNewDiagramInfo);
+                $scope.selectedTab = $scope.diagrams.length - 1; //set the newly added tab active.
+
+                //loadBranchRevisionProjectAndDiagram($scope.branchRevisionId, extNewDiagramInfo.data.id);
+                // clear scopes from previous diagram and set new diagram to active
+             //  clearDiagramSpecificsScopes();
+
+                $scope.activeDiagram = angular.copy(extNewDiagramInfo);
+                $scope.activeDiagramEditData = angular.copy(extNewDiagramInfo); // for edit form
+
+            }
             $scope.deleteTab = function (index) {
                 $scope.tabs.splice(index, 1); //remove the object from the array based on index
             }
-
-            $scope.selectedTab = 0; //set selected tab to the 1st by default.
-
-            /** Function to set selectedTab **/
             $scope.selectTab = function (index) {
                 $scope.selectedTab = index;
+                loadBranchRevisionProjectAndDiagram($scope.branchRevisionId, $scope.diagrams[index].data.id);
+
             }
 
             // TODO: get from url branchRevisionId
@@ -41,31 +48,38 @@
 
             init();
             function init() {
-                console.log("ctrl-> fetching data from python service");
-                $scope.diagramData = {tables: [], links: []};
+                console.log("ctrl-> fetching data from server");
 
+                //clearDiagramSpecificsScopes();
+                $scope.orig = {tables: [], links: []};
+                $scope.diagramData= angular.copy($scope.orig);
                 $scope.selectedTable = {};
+//                $scope.activeDiagram = {};
+//                $scope.activeDiagramEditData = {};  // for edit form
+
                 $scope.projectInfo = {};
                 $scope.schemasInfo = [];
                 $scope.diagrams = [];
-                $scope.activeDiagram = {};
-                $scope.activeDiagramEditData = {};  // for edit form
+                clearDeletedScopes();
+
                 $scope.branchRevisionId = 1; // read from URL
 
-               clearDeletedScopes();
 
-                //pythonCreateDiagramSave();
-//                console.log("start loading data");
-//                getBranchRevisionProjectState(1);
-//                var millisecondsToWait = 1000;
-//               setTimeout(function() {
-//                    console.log($scope.brState);
-//                }, millisecondsToWait);
-//                console.log("end loading data");
-//                testLoad(1);
-
-                //var diagramId = "f199449d-357e-4f6e-8190-8d0446216c3f";
                 loadBranchRevisionProjectAndDiagram($scope.branchRevisionId);
+            }
+
+            function clearDiagramSpecificsScopes() {
+                console.log("ctrl-> clearing diagram specifics scopes");
+
+                $scope.diagramData= angular.copy($scope.orig);
+                $scope.selectedTable = {};
+                $scope.activeDiagram = {};
+                $scope.activeDiagramEditData = {};  // for edit form
+
+                console.log($scope.diagramData);
+                console.log($scope.selectedTable);
+                console.log($scope.activeDiagram);
+                console.log($scope.activeDiagramEditData);
             }
             function clearDeletedScopes(){
                 console.log("ctrl -> clearing deleted scopes");
@@ -82,17 +96,11 @@
                     if (diagramId == undefined) {
                         if (brState.diagrams.length > 0) {
                             diagramId = brState.diagrams[0].id;
-                            //  console.log("Setting default diagram id:");
-                            //    console.log(diagramId);
                         }
                     }
                     var diagramRequest = diagramService.loadDiagramElements(branchRevisionId, diagramId);
                     diagramRequest.then(function (diagramElements) {
-                        //console.log(diagramResult);
-                        //var diagramData = diagramResult;
-                        //console.log($scope.brState);
-
-                        prepareDiagramData(brState, diagramElements);
+                        prepareDiagramData(brState, diagramElements,diagramId);
                     });
                 });
                 projectStateRequest.catch(function (nesto) {
@@ -103,7 +111,7 @@
                     //console.log("log loadBranchRevisionProjectStatefinally");
                 });
             }
-            function prepareDiagramData(branchRevisionStatusData, diagramElements) {
+            function prepareDiagramData(branchRevisionStatusData, diagramElements,diagramId) {
                 console.log(branchRevisionStatusData);
                 console.log(diagramElements);
                 // ADD PROJECT INFO to scope
@@ -113,12 +121,20 @@
 
                 // ADD DIAGRAMS to scope
                 for(var i in branchRevisionStatusData.diagrams){
-                    $scope.diagrams.push({data:branchRevisionStatusData.diagrams[i],modified: false});
+                    var extDiagram = {data:branchRevisionStatusData.diagrams[i],modified: false};
+                    $scope.diagrams.push(extDiagram);
+
+                    if(diagramId == branchRevisionStatusData.diagrams[i].id){
+                        $scope.activeDiagram = extDiagram;
+                        $scope.activeDiagramEditData = angular.copy(extDiagram);
+                    }
                 }
                 console.log("Diagrams: ");console.log($scope.diagrams);
-                $scope.activeDiagram = $scope.diagrams[0];
-                $scope.activeDiagramEditData =  angular.copy($scope.activeDiagram);
 
+                if(diagramId == undefined){
+                    $scope.activeDiagram = $scope.diagrams[0];
+                    $scope.activeDiagramEditData =  angular.copy($scope.activeDiagram);
+                }
 
                 // ADD SCHEMAS to scope
                 setSchemasAndCreateDataToDisplay(branchRevisionStatusData, diagramElements);
@@ -194,7 +210,7 @@
 
             // ******* SAVE DIAGRAM ON BUTTON *******
             $scope.saveDiagramButton = function () {
-                if(confirm("You are going to save diagram ["+$scope.activeDiagram.name+"], are you sure?") == false) {return;}
+                if(confirm("You are going to save diagram ["+$scope.activeDiagram.data.name+"], are you sure?") == false) {return;}
 
                 console.log("Saving diagram["+$scope.activeDiagram.name+"] be patient..");
                 var success = true;
@@ -259,10 +275,10 @@
 
                 }catch (err){
                     success = false;
-                    console.log("Saving diagram["+$scope.activeDiagram.name+"] failed with msg:"+err);
+                    console.log("Saving diagram["+$scope.activeDiagram.data.name+"] failed with msg:"+err);
                 }
                 if(success){
-                    console.log("Diagram["+$scope.activeDiagram.name+"] saved successfully");
+                    console.log("Diagram["+$scope.activeDiagram.data.name+"] saved successfully");
                     clearDeletedScopes();
                 }
             }
@@ -287,7 +303,6 @@
                 }
                 $scope.$apply();
             });
-
 
 
             // ********* ADD/EDIT COLUMN *********
@@ -425,7 +440,7 @@
                         return i;
                     }
                 }
-                console.log("Table not found for id: " + tableId);
+                    console.log("Table not found for id: " + tableId);
                 return null;
             }
 
@@ -450,7 +465,6 @@
                 var possible = "abcdef";
                 var hexLetter = possible.charAt(Math.floor(Math.random() * possible.length))
                 id = hexLetter + id;
-                console.log(id);
                 return id;
             }
         });
