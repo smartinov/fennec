@@ -6,7 +6,7 @@
       return {
         restrict: 'EA',
         scope: {
-           data: "=",
+            data: "=",
           stable: "="
         },
         template:"<div class='diagram'  ></div>",
@@ -21,10 +21,15 @@
             var modelDefaultHeight = 1500;
             var resizeRectSize = 16;
 
-            scope.$watch('data.tables', function() {
-              //console.log(tablesData[0].data.columns);
-              console.log("directive-> changes occur on directive table data:"); console.log(tablesData);
-              restart(true);
+            scope.$watch('data.tables', function(newValue,OldValue) {
+             console.log("directive-> changes occur on directive table data:"); console.log(tablesData);
+             if(newValue !== OldValue){
+                 // for now i don't get why when i set in controller that $scope.diagramData={tables: [], links: []} why don't take efects here on creating new tab
+                 // this is workaround
+                 tablesData =  newValue;
+                 linksData = newValue;
+             }
+             restart(true);
             },true);
 
             var drag = d3.behavior.drag()
@@ -88,7 +93,9 @@
             }
 
             function restart(redrawAll){
+
               if(redrawAll){
+                  console.log("Restart fucking diagram");
                 d3.select(".diagram").selectAll("*").remove();
                 initSvgDiagram();
               }
@@ -211,6 +218,7 @@
               d3.select(".diagram").selectAll("g.link").remove();
 
               var svgLinks = svg.selectAll("g.link").data(linksData);
+             console.log("Redrawlines:");console.log(linksData);
               var link = svgLinks.enter().append("g").classed("link", true);
               link.append("svg:line").classed("link",true).attr("id", function(d) { return d.element.id});
               link.selectAll("line.link")

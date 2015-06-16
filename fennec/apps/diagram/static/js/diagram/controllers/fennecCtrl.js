@@ -7,79 +7,56 @@
     var module = angular.module('myApp.controllers')
         .controller('DiagramController', function ($scope, $filter, $http, diagramService) {
 
-            // ****** TAB HANDLER ******
-            $scope.selectedTab = 0; //set selected tab to the 1st by default.
-            $scope.addTab = function () {
-//                if(confirm("You are going to create new diagram, save changes on ["+$scope.activeDiagram.data.name+"] diagram") == true) {
-//                    // save current diagram
-//                    $scope.saveDiagramButton();
-//                }
-                var extNewDiagramInfo = {data:{id:genGuid(),name:"new diagram",description:"description",url:""},modified:true};
-
-
-//                $scope.$emit('deleteTableEvent',  $scope.diagramData.tables[0] );
-//                $scope.$emit('deleteTableEvent',  $scope.diagramData.tables[0] );
-//                $scope.$emit('deleteTableEvent',  $scope.diagramData.tables[0] );
-
-                $scope.diagrams.push(extNewDiagramInfo);
-                $scope.selectedTab = $scope.diagrams.length - 1; //set the newly added tab active.
-
-                //loadBranchRevisionProjectAndDiagram($scope.branchRevisionId, extNewDiagramInfo.data.id);
-                // clear scopes from previous diagram and set new diagram to active
-             //  clearDiagramSpecificsScopes();
-
-                $scope.activeDiagram = angular.copy(extNewDiagramInfo);
-                $scope.activeDiagramEditData = angular.copy(extNewDiagramInfo); // for edit form
-
-            }
-            $scope.deleteTab = function (index) {
-                $scope.tabs.splice(index, 1); //remove the object from the array based on index
-            }
-            $scope.selectTab = function (index) {
-                $scope.selectedTab = index;
-                loadBranchRevisionProjectAndDiagram($scope.branchRevisionId, $scope.diagrams[index].data.id);
-
-            }
-
-            // TODO: get from url branchRevisionId
-            // TODO: 1. load project_state(diagram,schemas) this is data
-            //       2. Load the selected diagram elements(symbols)
-            //       3. Copy the data to angular scope
-
             init();
             function init() {
-                console.log("ctrl-> fetching data from server");
-
-                //clearDiagramSpecificsScopes();
-                $scope.orig = {tables: [], links: []};
-                $scope.diagramData= angular.copy($scope.orig);
-                $scope.selectedTable = {};
-//                $scope.activeDiagram = {};
-//                $scope.activeDiagramEditData = {};  // for edit form
-
                 $scope.projectInfo = {};
                 $scope.schemasInfo = [];
                 $scope.diagrams = [];
+                $scope.branchRevisionId = 1; // read from URL             // TODO: get from url branchRevisionId
+                clearDiagramSpecificsScopes();
                 clearDeletedScopes();
 
-                $scope.branchRevisionId = 1; // read from URL
-
-
+                console.log("ctrl-> fetching data from server for brevision:" + $scope.branchRevisionId);
                 loadBranchRevisionProjectAndDiagram($scope.branchRevisionId);
+            }
+
+
+            // ****** TAB HANDLER ******
+            $scope.selectedDiagram = 0; //set selected tab to the 1st by default.
+            $scope.addDiagram = function () {
+                if(confirm("You are going to create new diagram, save changes on ["+$scope.activeDiagram.data.name+"] diagram") == true) {
+                    // save current diagram
+                    $scope.saveDiagramButton();
+                }
+                var extNewDiagramInfo = {data:{id:genGuid(),name:"new diagram",description:"description",url:""},modified:true};
+                $scope.diagrams.push(extNewDiagramInfo);
+                $scope.selectedDiagram = $scope.diagrams.length - 1; //set the newly added tab active.
+
+                // clear scopes from previous diagram and set new diagram to active
+                clearDiagramSpecificsScopes();
+                $scope.activeDiagram = angular.copy(extNewDiagramInfo);
+                $scope.activeDiagramEditData = angular.copy(extNewDiagramInfo); // for edit form
+            }
+            $scope.closeDiagram = function (index) {
+                $scope.diagrams.splice(index, 1); //remove the object from the array based on index
+                clearDiagramSpecificsScopes();
+
+                loadBranchRevisionProjectAndDiagram($scope.branchRevisionId, $scope.diagrams[index].data.id);
+            }
+            $scope.selectDiagram = function (index) {
+                $scope.selectedDiagram = index;
+                clearDiagramSpecificsScopes();
+
+                loadBranchRevisionProjectAndDiagram($scope.branchRevisionId, $scope.diagrams[index].data.id);
             }
 
             function clearDiagramSpecificsScopes() {
                 console.log("ctrl-> clearing diagram specifics scopes");
 
-                $scope.diagramData= angular.copy($scope.orig);
+                $scope.diagramData= {tables: [], links: []};
                 $scope.selectedTable = {};
-                $scope.activeDiagram = {};
+//                $scope.activeDiagram = {};
                 $scope.activeDiagramEditData = {};  // for edit form
-
-                console.log($scope.diagramData);
-                console.log($scope.selectedTable);
-                console.log($scope.activeDiagram);
-                console.log($scope.activeDiagramEditData);
             }
             function clearDeletedScopes(){
                 console.log("ctrl -> clearing deleted scopes");
@@ -87,6 +64,7 @@
                 $scope.deletedColumnsData = [];
                 $scope.deletedLinks = [];
             }
+
 
             // ******* LOAD FUNCTIONS *******
             function loadBranchRevisionProjectAndDiagram(branchRevisionId, diagramId) {
@@ -120,16 +98,21 @@
                 console.log($scope.projectInfo);
 
                 // ADD DIAGRAMS to scope
-                for(var i in branchRevisionStatusData.diagrams){
-                    var extDiagram = {data:branchRevisionStatusData.diagrams[i],modified: false};
-                    $scope.diagrams.push(extDiagram);
 
-                    if(diagramId == branchRevisionStatusData.diagrams[i].id){
-                        $scope.activeDiagram = extDiagram;
-                        $scope.activeDiagramEditData = angular.copy(extDiagram);
+                    for(var i in branchRevisionStatusData.diagrams){
+                        // load diagrams on page refresh(on tab change don't load)
+                        var extDiagram = {data: branchRevisionStatusData.diagrams[i], modified: false};
+                        if($scope.diagrams.length<branchRevisionStatusData.diagrams.length) {
+                            $scope.diagrams.push(extDiagram);
+                        }
+                        console.log("Current processing diagram name:"+branchRevisionStatusData.diagrams[i].name);
+                        if(diagramId == branchRevisionStatusData.diagrams[i].id){
+                            console.log("Active diagram:"+extDiagram.data.name);
+                            $scope.activeDiagram = extDiagram;
+                            $scope.activeDiagramEditData = angular.copy(extDiagram);
+                        }
                     }
-                }
-                console.log("Diagrams: ");console.log($scope.diagrams);
+                    console.log("Diagrams: ");console.log($scope.diagrams);
 
                 if(diagramId == undefined){
                     $scope.activeDiagram = $scope.diagrams[0];
@@ -141,7 +124,6 @@
                 console.log("Front diagram data:");
                 console.log($scope.diagramData);
             }
-
             function setSchemasAndCreateDataToDisplay(branchRevisionStatusData, diagramElements) {
                 // Load all data with project_state and then load diagram elements and bound the two together
                 $scope.schemasInfo = [];
@@ -288,12 +270,6 @@
                 $scope.activeDiagram = angular.copy($scope.activeDiagramEditData);
             }
 
-            //$scope.$on('selectedTableEvent', function(scope, selectedTable){
-            //    // when select the table this method is called
-            //    console.log("Ctrl-> table selected: "+selectedTable.id);
-            //    $scope.selectedTable = selectedTable;
-            //    $scope.$apply();
-            //});
             $scope.$on('deleteTableEvent', function (scope, deletedTable) {
                 deleteTableElement(deletedTable.data.id, $scope.diagramData.tables);
 
