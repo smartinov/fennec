@@ -7,7 +7,8 @@
         restrict: 'EA',
         scope: {
             data: "=",
-          stable: "="
+          stable: "=",
+            adiagram: "="
         },
         template:"<div class='diagram'  ></div>",
         link: function(scope, iElement, iAttrs) {
@@ -95,7 +96,6 @@
             function restart(redrawAll){
 
               if(redrawAll){
-                  console.log("Restart fucking diagram");
                 d3.select(".diagram").selectAll("*").remove();
                 initSvgDiagram();
               }
@@ -218,7 +218,6 @@
               d3.select(".diagram").selectAll("g.link").remove();
 
               var svgLinks = svg.selectAll("g.link").data(linksData);
-             console.log("Redrawlines:");console.log(linksData);
               var link = svgLinks.enter().append("g").classed("link", true);
               link.append("svg:line").classed("link",true).attr("id", function(d) { return d.element.id});
               link.selectAll("line.link")
@@ -254,6 +253,7 @@
               //console.log("mouseClick on x:"+mouseClickX+" y: "+mouseClickY);
               if(actionStates == fennecStates.new_table){
                 var tableDataId = genGuid();
+                  console.log("directive->activediagram:"); console.log(scope.adiagram);
                 tablesData.push(
                   { data:{
                       id:tableDataId, name:"Table "+(tablesData.length+1),"comment":"no comment","collation":"utf-8",namespaceRef:"",
@@ -261,7 +261,7 @@
                   },
                    element:{
                       id:genGuid(),positionX:mouseClickX,positionY:mouseClickY,width:tableDefaultWidth, height:tableDefaultHeight, tableRef: tableDataId,
-                      diagramRef:"f199449d-357e-4f6e-8190-8d0446216c3f", color:"#FFFFFF",collapsed:false
+                      diagramRef:scope.adiagram.id, color:"#FFFFFF",collapsed:false
                   },
                     dataModified: true,
                     elModified: true
@@ -335,7 +335,7 @@
                               "drawStyle":0,
                               "cardinality":1,  // 0-one-to-one,1- one-to-many,2- many-to-one,3- many-to-many
                               "foreignKeyRef":fk_data_id,
-                              "diagramRef":tmpSourceTableLink.table.element.diagramRef
+                              "diagramRef":scope.adiagram
                           },
                           dataModified: true,
                           elModified: true
