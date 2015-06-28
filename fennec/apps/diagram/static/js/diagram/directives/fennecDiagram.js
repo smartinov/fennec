@@ -106,7 +106,7 @@
               // Create table with attributes
               var svgTables = svg.selectAll("g.table").data(tablesData);
               var table = svgTables.enter().append("g").classed("table", true).attr("id", function(d,i) { return "table"+i})
-              table.append("rect").classed("table", true).on("click", mouseClick);
+              table.append("rect").classed("fennec_table", true).on("click", mouseClick);
               var t = table.append("rect").classed("titleBox", true).call(drag);
               table.append("text").classed("name", true).data(tablesData);
 
@@ -114,7 +114,7 @@
               var attribute = attributes.enter().append("text").classed("attribute", true).attr("id", function(d,i) { return "attribute"+i}).on("click", mouseClick);
               table.append("rect").classed("resize-icon", true).call(resize);
 
-              table.selectAll("rect.table")
+              table.selectAll("rect.fennec_table")
                   .attr({
                     x: function(t) { return t.element.positionX; },
                     y: function(t) { return t.element.positionY; },
