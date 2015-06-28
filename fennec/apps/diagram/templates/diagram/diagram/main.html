@@ -14,16 +14,18 @@
     <script src="{% static "js/angular/angular.js" %}"></script>
     <script src="{% static "js/angular/angular-route.js" %}"></script>
     <script src="{% static "js/angular/xeditable.js" %}"></script>
+    <script src="{% static "js/spinjs/spin.js" %}"></script>
 
     <!--Javascript to the end for performance -->
     <script src="{% static "js/diagram/app.js" %}"></script>
     <script src="{% static "js/diagram/services/d3.js" %}"></script>
     <script src="{% static "js/diagram/services/diagramService.js" %}"></script>
+    <script src="{% static "js/diagram/services/spinnerService.js" %}"></script>
     <script src="{% static "js/diagram/controllers/fennecCtrl.js" %}"></script>
     <script src="{% static "js/diagram/directives/fennecDiagram.js" %}"></script>
 
-
     <script src="{% static "js/diagram/state-machine.js" %}"></script>
+
 
 {% endblock %}
 {% block  ng-controller %}DiagramController{% endblock %}
@@ -34,7 +36,6 @@
 <div class="fennec-sidebar">
     <div class="well sidebar-nav">
         <ul class="nav nav-list">
-{#            <li class="nav-header">Project 1</li>#}
             <li class="nav-header">[[projectInfo.name]]</li>
 
             <li class="active"><a href="#"> [[activeDiagram.data.name]]</a></li>

@@ -4,7 +4,7 @@ var projectsRoot = '/api/branch-revisions/1/change/';
 var branchRevisionRoot = '/api/branch-revisions/';
 
 angular.module('myApp.services')
-    .service('diagramService', function ($http, $q) {
+    .service('diagramService', function ($http) {
 
         // ****** LOAD FUNCTIONS ******
         this.loadBranchRevisionProjectState = function (branchRevisionId) {

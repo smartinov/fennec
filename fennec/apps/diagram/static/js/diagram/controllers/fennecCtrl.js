@@ -5,10 +5,13 @@
     // $scope.fennecProject - using in d3
 
     var module = angular.module('myApp.controllers')
-        .controller('DiagramController', function ($scope, $filter, $http, diagramService) {
+        .controller('DiagramController', function ($scope, $filter, $http, diagramService, spinnerService) {
+
+
 
             init();
             function init() {
+
                 $scope.projectInfo = {};
                 $scope.schemasInfo = [];
                 $scope.diagrams = [];
@@ -68,6 +71,7 @@
 
             // ******* LOAD FUNCTIONS *******
             function loadBranchRevisionProjectAndDiagram(branchRevisionId, diagramId) {
+                spinnerService.showSpinner();
                 var projectStateRequest = diagramService.loadBranchRevisionProjectState(branchRevisionId);
                 projectStateRequest.then(function (brState) {  // this is only run after $http completes
                     //console.log(result);
@@ -79,6 +83,7 @@
                     var diagramRequest = diagramService.loadDiagramElements(branchRevisionId, diagramId);
                     diagramRequest.then(function (diagramElements) {
                         prepareDiagramData(brState, diagramElements,diagramId);
+                        spinnerService.hideSpinner();
                     });
                 });
                 projectStateRequest.catch(function (nesto) {
@@ -443,6 +448,11 @@
                 id = hexLetter + id;
                 return id;
             }
+
+
+
+
+
         });
 
 }());
