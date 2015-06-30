@@ -7,8 +7,9 @@
         restrict: 'EA',
         scope: {
             data: "=",
-          stable: "=",
-            adiagram: "="
+            stable: "=",
+            adiagram: "=",
+            activeSchema: "="
         },
         template:"<div class='diagram'  ></div>",
         link: function(scope, iElement, iAttrs) {
@@ -254,10 +255,11 @@
               if(actionStates == fennecStates.new_table){
                 var tableDataId = genGuid();
                   console.log("directive->activediagram:"); console.log(scope.adiagram);
+                  console.log(scope.activeSchema);
                 tablesData.push(
                   { data:{
                       id:tableDataId, name:"Table "+(tablesData.length+1),"comment":"no comment","collation":"utf-8",namespaceRef:"",
-                      columns: [],indexes: [],foreignKeys: [],schemaRef:"642c3eae-bdd9-4b80-aed1-15614d34021e"
+                      columns: [],indexes: [],foreignKeys: [],schemaRef:scope.activeSchema.id
                   },
                    element:{
                       id:genGuid(),positionX:mouseClickX,positionY:mouseClickY,width:tableDefaultWidth, height:tableDefaultHeight, tableRef: tableDataId,

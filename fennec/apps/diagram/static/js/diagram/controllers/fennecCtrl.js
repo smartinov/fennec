@@ -7,15 +7,14 @@
     var module = angular.module('myApp.controllers')
         .controller('DiagramController', function ($scope, $filter, $http, diagramService, spinnerService) {
 
-
-
             init();
             function init() {
-
                 $scope.projectInfo = {};
-                $scope.schemasInfo = [];
+                $scope.schemas = [];
+                $scope.activeSchema = {};
                 $scope.diagrams = [];
                 $scope.branchRevisionId = 1; // read from URL             // TODO: get from url branchRevisionId
+                $scope.newSchema = {id:"",databaseName:"",collation:""};
                 clearDiagramSpecificsScopes();
                 clearDeletedScopes();
 
@@ -27,7 +26,7 @@
             // ****** TAB HANDLER ******
             $scope.selectedDiagram = 0; //set selected tab to the 1st by default.
             $scope.addDiagram = function () {
-                if(confirm("You are going to create new diagram, save changes on ["+$scope.activeDiagram.data.name+"] diagram") == true) {
+                if($scope.activeDiagram!=undefined && confirm("You are going to create new diagram, save changes on ["+$scope.activeDiagram.data.name+"] diagram") == true) {
                     // save current diagram
                     $scope.saveDiagramButton();
                 }
@@ -131,17 +130,19 @@
             }
             function setSchemasAndCreateDataToDisplay(branchRevisionStatusData, diagramElements) {
                 // Load all data with project_state and then load diagram elements and bound the two together
-                $scope.schemasInfo = [];
+                $scope.schemas = [];
 
                 for (var i in branchRevisionStatusData.schemas) {
                     // SET SCHEMAS
-                    $scope.schemasInfo.push({
-                        id: branchRevisionStatusData.schemas[i].id,
-                        databaseName: branchRevisionStatusData.schemas[i].databaseName,
-                        comment: branchRevisionStatusData.schemas[i].comment,
-                        collation: branchRevisionStatusData.schemas[i].collation,
-                        namespaces: branchRevisionStatusData.schemas[i].namespaces
-                    });
+                    var schema = {data:{
+                                        id: branchRevisionStatusData.schemas[i].id,
+                                        databaseName: branchRevisionStatusData.schemas[i].databaseName,
+                                        comment: branchRevisionStatusData.schemas[i].comment,
+                                        collation: branchRevisionStatusData.schemas[i].collation,
+                                        namespaces: branchRevisionStatusData.schemas[i].namespaces
+                                    },
+                                    modified: false };
+                    $scope.schemas.push(schema);
 
                     // SET DIAGRAM TABLES
                     for (var j in branchRevisionStatusData.schemas[i].tables) {
@@ -193,16 +194,28 @@
                         }
                     }
                 }
+                if($scope.schemas.length>0){
+                    $scope.activeSchema = $scope.schemas[0].data;
+                }
             }
+
+
 
             // ******* SAVE DIAGRAM ON BUTTON *******
             $scope.saveDiagramButton = function () {
                 if(confirm("You are going to save diagram ["+$scope.activeDiagram.data.name+"], are you sure?") == false) {return;}
 
-                console.log("Saving diagram["+$scope.activeDiagram.name+"] be patient..");
+                console.log("Saving diagram["+$scope.activeDiagram.data.name+"] be patient..");
                 var success = true;
                 try{
                 var branchRevisionId = $scope.branchRevisionId;
+
+                // save new schemas
+                for(var i in $scope.schemas){
+                    if($scope.schemas[i].modified){
+                        diagramService.saveSchema(branchRevisionId,$scope.schemas[i].data);
+                    }
+                }
 
                 // save diagram data change
                 if($scope.activeDiagram.modified){
@@ -212,10 +225,13 @@
                 // save/update table
                 for (var i in $scope.diagramData.tables) {
                     var table = $scope.diagramData.tables[i];
-                    var tableDataPostSuccess = diagramService.saveTableData(branchRevisionId, table.data);
 
+                    if (table.dataModified) {
+                        diagramService.saveTableData(branchRevisionId, table.data);
+                        table.dataModified = false; // reset it
+                    }
                     if (table.elModified) {
-                        var tableElementPostSuccess = diagramService.saveTableElement(branchRevisionId, table.element);
+                        diagramService.saveTableElement(branchRevisionId, table.element);
                         table.elModified = false; // reset it
                     }
 
@@ -265,7 +281,7 @@
                     console.log("Saving diagram["+$scope.activeDiagram.data.name+"] failed with msg:"+err);
                 }
                 if(success){
-                    console.log("Diagram["+$scope.activeDiagram.data.name+"] saved successfully");
+                    console.log("Diagram["+$scope.activeDiagram.data.name+"] content saved successfully");
                     clearDeletedScopes();
                 }
             }
@@ -273,8 +289,15 @@
             $scope.editDiagramButton = function(){
                 $scope.activeDiagramEditData.modified = true;
                 $scope.activeDiagram = angular.copy($scope.activeDiagramEditData);
+                for(var i in $scope.diagrams){
+                    if($scope.diagrams[i].data.id == $scope.activeDiagram.data.id){
+                        $scope.diagrams[i].data.name = $scope.activeDiagram.data.name;
+                    }
+                }
             }
-
+            $scope.setTableToModified = function(selectedTable){
+                selectedTable.dataModified = true;
+            }
             $scope.$on('deleteTableEvent', function (scope, deletedTable) {
                 deleteTableElement(deletedTable.data.id, $scope.diagramData.tables);
 
@@ -412,7 +435,21 @@
             }
 
 
-
+            // ********* CREATE SCHEMA *********
+            $scope.isCreateSchemaPopupShown = false;
+            $scope.showCreateSchemaPopup = function(){
+                $scope.isCreateSchemaPopupShown = true;
+            }
+            $scope.createSchemaOk = function(){
+                $scope.newSchema.id = genGuid();
+                $scope.schemas.push({data:$scope.newSchema,modified: true});
+                $scope.newSchema = {id:"",databaseName:"",collation:""};
+                $scope.isCreateSchemaPopupShown = false;
+            }
+            $scope.createSchemaCancel = function(){
+                $scope.isCreateSchemaPopupShown = false;
+                $scope.newSchema = {id:"",databaseName:"",collation:""};
+            }
 
             // ******** THIS CONTROLLER UTIL FUNCTION ********
             function findTablePositionInArray(tableId, tables) {

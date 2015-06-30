@@ -34,7 +34,6 @@ angular.module('myApp.services')
 
         this.showSpinner = function(){
             $("#divProgressSpinner").css("display", "block");
-            console.log("show spinner");
         }
 
         this.hideSpinner = function() {

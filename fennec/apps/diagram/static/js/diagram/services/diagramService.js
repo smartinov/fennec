@@ -47,30 +47,28 @@ angular.module('myApp.services')
                     throw msg;
                 });
         }
-        this.pythonCreateDiagramSave = function () {
-            var saveBranchRevisionURL = projectsRoot;
+        this.saveSchema = function(branchRevisionId, schemaContent){
+            var url = branchRevisionRoot + branchRevisionId + "/change/";
 
-            var postStaf = {
-                "content": {
-                    "url": "",
-                    "id": "83654a30-c082-42db-9c27-0b6ff5460c0b",
-                    "name": "Diagram from fucking angular",
-                    "description": "Diagram from fucking angular"
-                },
-                "objectType": "Diagram",
-                "objectCode": "83654a30-c082-42db-9c27-0b6ff5460c0b",
+            var data = {
+                "content": schemaContent,
+                "objectType": "Schema",
+                "objectCode": schemaContent.id,
                 "changeType": 0,
-                "isUIChange": true,
-                "made_by": "1"
+                "isUIChange": false,
+                "made_by": loggedUserId
             }
-
-            $http.post(projectsRoot, postStaf).
+            console.log("Saving schema data data: ");console.log(data);
+            $http.post(projectsRoot, data).
                 success(function () {
-                    console.log("POST success");
+                    console.log("Schema["+schemaContent.databaseName +", "+ schemaContent.id +"] saved successfully");
                 }).error(function () {
-                    console.log("POST failed")
+                    var msg = "Saving schema["+diagramContent.databaseName +", "+ schemaContent.id +"] failed";
+                    console.log(msg);
+                    throw msg;
                 });
-        };
+        }
+
         this.saveTableData = function (branchRevisionId, tableDataContent) {
             var url = branchRevisionRoot + branchRevisionId + "/change/";
             console.log("save table data url: " + url);

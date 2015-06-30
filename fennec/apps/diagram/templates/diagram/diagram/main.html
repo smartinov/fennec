@@ -58,6 +58,15 @@
             <button onclick="changeState(fennecStates.delete_obj)">Delete</button>
             <button onclick="innerLayout.toggle('south')">toggle Property div</button>
 
+            <li class="nav-header" style="margin-top: 15px;">Schemas</li>
+            <select data-ng-options="s.data as s.data.databaseName for s in schemas" data-ng-model="activeSchema"></select>
+            <form class="form-horizontal" role="form">
+                <div class="form-group">
+                    <div class="col-sm-4">
+                        <button type="submit" ng-click="showCreateSchemaPopup()" class="btn btn-success">Add</button>
+                    </div>
+                </div>
+            </form>
         </ul>
     </div>
 </div>
@@ -79,14 +88,14 @@
 		</div>
         <div class="tab-content">
 				<div role="tabpanel" class="tab-pane active" id="tab">
-					 <fennec-diagram adiagram="activeDiagram.data" data="diagramData" stable="selectedTable" ></fennec-diagram>
+					 <fennec-diagram adiagram="activeDiagram.data" active-schema="activeSchema" data="diagramData" stable="selectedTable" ></fennec-diagram>
 				</div>
 		</div>
 
   {#        TABLE COLUMNS PROPERTIES#}
 
           <div class="property">
-                Table Name: <input data-ng-model="selectedTable.data.name" type="text" placeholder="Table name">
+                Table Name: <input data-ng-model="selectedTable.data.name" type="text" placeholder="Table name" ng-change="setTableToModified(selectedTable)">
 
 {#                 {% verbatim %}#}
                 <table class="table table-bordered table-hover table-condensed">
@@ -138,6 +147,7 @@
             </div>
 
     </div>
+    <div ng-if="isCreateSchemaPopupShown" ng-include="'{% static 'partials/SchemaPopup.html' %}'"></div>
 </div>
 
 {% endblock %}
