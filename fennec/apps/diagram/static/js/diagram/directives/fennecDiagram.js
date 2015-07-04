@@ -23,13 +23,13 @@
             var modelDefaultHeight = 1500;
             var resizeRectSize = 16;
 
-            scope.$watch('data.tables', function(newValue,OldValue) {
+            scope.$watch('data', function(newValue,oldValue) {
              console.log("directive-> changes occur on directive table data:"); console.log(tablesData);
-             if(newValue !== OldValue){
+             if(newValue !== oldValue){
                  // for now i don't get why when i set in controller that $scope.diagramData={tables: [], links: []} why don't take efects here on creating new tab
                  // this is workaround
-                 tablesData =  newValue;
-                 linksData = newValue;
+                 tablesData =  newValue.tables;
+                 linksData = newValue.links;
              }
              restart(true);
             },true);
@@ -337,7 +337,7 @@
                               "drawStyle":0,
                               "cardinality":1,  // 0-one-to-one,1- one-to-many,2- many-to-one,3- many-to-many
                               "foreignKeyRef":fk_data_id,
-                              "diagramRef":scope.adiagram
+                              "diagramRef":scope.adiagram.id
                           },
                           dataModified: true,
                           elModified: true
