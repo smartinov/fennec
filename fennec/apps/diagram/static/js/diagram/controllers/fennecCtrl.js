@@ -46,6 +46,11 @@
                 loadBranchRevisionProjectAndDiagram($scope.branchRevisionId, $scope.diagrams[index].data.id);
             }
             $scope.selectDiagram = function (index) {
+                if($scope.activeDiagram!=undefined && confirm("You are going to create new diagram, save changes on ["+$scope.activeDiagram.data.name+"] diagram") == true) {
+                    // save current diagram
+                    $scope.saveDiagramButton();
+                }
+
                 $scope.selectedDiagram = index;
                 clearDiagramSpecificsScopes();
 

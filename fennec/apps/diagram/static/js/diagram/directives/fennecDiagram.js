@@ -503,7 +503,7 @@
             function dragResize(){
               var resizeIconObject = d3.select(this);                 // [[rect.resize-icon]]
               var resizeTableObject = d3.select(this.parentNode);     // [[g#table0.table]]
-              var resizeTableArrays = resizeTableObject.select("rect.table");                // [[rect.table]]
+              var resizeTableArrays = resizeTableObject.select("rect.fennec_table");                // [[rect.fennec_table]]
               var resizeTableTitleArrays = resizeTableObject.select("rect.titleBox");        // [[rect.titleBox.drag]]
 
               var selectedTableDataWithElement = resizeTableArrays.node().__data__;
