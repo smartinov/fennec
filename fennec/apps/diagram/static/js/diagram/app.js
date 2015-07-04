@@ -24,7 +24,7 @@
     // setup dependency injection
     angular.module('d3', []);
     angular.module('myApp.services', []);
-    angular.module('myApp.controllers', ["xeditable"]);
+    angular.module('myApp.controllers', ["xeditable",'ui.bootstrap']);
     angular.module('myApp.directives', ['d3']);
 
     app.config(['$httpProvider', '$interpolateProvider', function ($httpProvider, $interpolateProvider) {

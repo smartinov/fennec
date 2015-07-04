@@ -78,13 +78,6 @@ rect.unselected {
     fill-opacity: 0.1;
 }
 
-/* THIS MOVE WHEN EDITING DATA GRID */
-/*select {*/
-    /*position: absolute;*/
-    /*x: 200px;*/
-    /*top: 30px;*/
-/*}*/
-
 .axis path,
 .axis line {
     fill: none;
@@ -111,14 +104,4 @@ h1{
 #a {
     x: 200;
     y: 30px;
-}
-
-.spinner{
-    background : url('../images/popup_bg_transparent.png');
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    z-index: 9999999;
 }
