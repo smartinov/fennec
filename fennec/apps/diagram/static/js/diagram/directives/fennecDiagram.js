@@ -83,6 +83,40 @@
                   .append('svg:path')
                   .attr('d', 'M10,-5L0,0L10,5')
                   .attr('fill', '#000');
+
+                // GRID ON DIAGRAM
+                svg.append('svg:defs').append('svg:pattern')
+                  .attr('id', 'smallGrid')
+                  .attr('patternUnits', 'userSpaceOnUse')
+                  .attr('width', "8")
+                  .attr('height', "8")
+                  .append('svg:path')
+                  .attr('d','M 8 0 L 0 0 0 8')
+                  .attr('fill','none')
+                .attr('stroke','gray')
+                .attr('stroke-width','0.5');
+
+                var grid = svg.append('svg:defs').append('svg:pattern')
+                  .attr('id', 'grid')
+                  .attr('patternUnits', 'userSpaceOnUse')
+                  .attr('width', "80")
+                  .attr('height', "80");
+
+                grid.append('svg:rect')
+                   .attr('width', "80")
+                  .attr('height', "80")
+                  .attr('fill','url(#smallGrid)');
+
+                grid.append('svg:path')
+                  .attr('d','M 80 0 L 0 0 0 80')
+                  .attr('fill','none')
+                .attr('stroke','gray')
+                .attr('stroke-width','1');
+
+                svg.append('rect')
+                    .attr('width', '100%')
+                  .attr('height', '100%')
+                 .attr('fill', 'url(#grid)');
             }
             var selected_table = null,
                 selected_link = null,

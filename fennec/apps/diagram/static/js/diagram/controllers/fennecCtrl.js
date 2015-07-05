@@ -35,31 +35,6 @@
                 $scope.deletedLinks = [];
             }
 
-            // ****** FOREIGN KEY TAB ******
-            $scope.showForeignKeyColumns = function(selectedForeignKeyData){
-                //selectedForeignKeyData {data:foreignKey, table:table};
-                $scope.selectedTableForeignKeyColumns=[{column:"",refColumn:"",refIndexColumns:[]}];// refIndexColumns - it contain only columns which are indexed
-
-                var sourceTable = getTableForId(selectedForeignKeyData.data.tableRef);
-                var column= getColumnForId(selectedForeignKeyData.data.sourceColumn, sourceTable.data.columns);
-                var refColumn= getColumnForId(selectedForeignKeyData.data.referencedColumn, selectedForeignKeyData.table.data.columns);
-                // TODO: get indexes for referenced table and then found columns
-                // TODO: for now show all column
-                var referencedTableIndexColumns = selectedForeignKeyData.table.data.columns;
-
-                $scope.selectedTableForeignKeyColumns = [{column:column, refColumn:refColumn,comment:"", refIndexColumns:referencedTableIndexColumns}];
-                console.log( $scope.selectedTableForeignKeyColumns);
-//                console.log(column.cdata.name);
-//                console.log(refColumn.cdata.name);
-            }
-            $scope.showReferencedColumnName = function (column) {
-                if(column == undefined){
-                    return "Not selected";
-                }
-                return column.cdata.name;
-            };
-
-
 
             // ****** TAB HANDLER ******
             $scope.selectedDiagram = 0; //set selected tab to the 1st by default.
@@ -94,8 +69,6 @@
 
                 loadBranchRevisionProjectAndDiagram($scope.branchRevisionId, $scope.diagrams[index].data.id);
             }
-
-
 
 
             // ******* LOAD FUNCTIONS *******
@@ -233,7 +206,6 @@
             }
 
 
-
             // ******* SAVE DIAGRAM ON BUTTON *******
             $scope.saveDiagramButton = function () {
                 if(confirm("You are going to save diagram ["+$scope.activeDiagram.data.name+"], are you sure?") == false) {return;}
@@ -340,6 +312,34 @@
                 }
                 $scope.$apply();
             });
+
+
+            // ****** FOREIGN KEY TAB ******
+            $scope.editForeignKeyName = function(data,id){
+                    console.log($scope.inserted);
+            }
+            $scope.showForeignKeyColumns = function(selectedForeignKeyData){
+                //selectedForeignKeyData {data:foreignKey, table:table};
+                $scope.selectedTableForeignKeyColumns=[{column:"",refColumn:"",refIndexColumns:[]}];// refIndexColumns - it contain only columns which are indexed
+
+                var sourceTable = getTableForId(selectedForeignKeyData.data.tableRef);
+                var column= getColumnForId(selectedForeignKeyData.data.sourceColumn, sourceTable.data.columns);
+                var refColumn= getColumnForId(selectedForeignKeyData.data.referencedColumn, selectedForeignKeyData.table.data.columns);
+                // TODO: get indexes for referenced table and then found columns
+                // TODO: for now show all column
+                var referencedTableIndexColumns = selectedForeignKeyData.table.data.columns;
+
+                $scope.selectedTableForeignKeyColumns = [{column:column, refColumn:refColumn,comment:"", refIndexColumns:referencedTableIndexColumns}];
+                console.log( $scope.selectedTableForeignKeyColumns);
+//                console.log(column.cdata.name);
+//                console.log(refColumn.cdata.name);
+            }
+            $scope.showReferencedColumnName = function (column) {
+                if(column == undefined){
+                    return "Not selected";
+                }
+                return column.cdata.name;
+            };
 
 
             // ********* ADD/EDIT COLUMN *********

@@ -1,9 +1,9 @@
 <div id="foreignKeyFirstDiv" style="float: left; margin-right: 10px;">
 <table class="table table-bordered table-hover table-condensed" >
     <tr style="font-weight: bold">
-        <td style="width:50%">Foreign Key Name</td>
-        <td style="width:5\0%">Referenced Table</td>
-        <td style="width:20%">Edit</td>
+        <td >Foreign Key Name</td>
+        <td >Referenced Table</td>
+        <td >Edit</td>
     </tr>
 
     <tr ng-repeat="foreignKey in selectedTableForeignKeys">
@@ -18,7 +18,7 @@
 
         <td style="white-space: nowrap">
             <!-- form -->
-            <form editable-form name="fkForm" onbeforesave="saveColumn($data, column.id)"
+            <form editable-form name="fkForm" onbeforesave="editForeignKeyName($data, foreignKey.data.id)"
                   ng-show="fkForm.$visible" class="form-buttons form-inline"
                   shown="inserted == foreignKey">
                 <button type="submit" ng-disabled="fkForm.$waiting" class="btn btn-primary">
