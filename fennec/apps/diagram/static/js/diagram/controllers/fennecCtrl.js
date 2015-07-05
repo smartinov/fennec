@@ -317,6 +317,7 @@
             // ****** FOREIGN KEY TAB ******
             $scope.editForeignKeyName = function(data,id){
                     console.log($scope.inserted);
+
             }
             $scope.showForeignKeyColumns = function(selectedForeignKeyData){
                 //selectedForeignKeyData {data:foreignKey, table:table};

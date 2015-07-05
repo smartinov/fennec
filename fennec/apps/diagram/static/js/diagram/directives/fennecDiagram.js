@@ -19,14 +19,14 @@
             var tablesData = scope.data.tables;
             var linksData = scope.data.links;
 
-            var tableDefaultWidth = 300;
-            var tableDefaultHeight = 150;
+            var tableDefaultWidth = 220;
+            var tableDefaultHeight = 100;
             var modelDefaultWidth = 2500;
             var modelDefaultHeight = 1500;
-            var resizeRectSize = 16;
+            var resizeRectSize = 12;
 
             scope.$watch('data', function(newValue,oldValue) {
-             console.log("directive-> changes occur on directive table data:"); console.log(tablesData);
+             console.log("directive-> redrawing diagram"); //console.log(tablesData);
              if(newValue !== oldValue){
                  // for now i don't get why when i set in controller that $scope.diagramData={tables: [], links: []} why don't take efects here on creating new tab
                  // this is workaround
@@ -397,15 +397,6 @@
                 redrawLines();
               }
             }
-        function getTableForId(id) {
-            for (var i = 0; i < tablesData.length; i++) {
-                if (id == tablesData[i].data.id) {
-                    return tablesData[i];
-                }
-            }
-            return null;
-        }
-
             function calculateLinkPosition(sourceTableLink,targetTableLink){
               if(sourceTableLink.table.element.positionX < targetTableLink.table.element.positionX){
                 var linkCoord = getLinkPosition(sourceTableLink.table, sourceTableLink.attr,true);
@@ -521,6 +512,7 @@
               link.element.startPositionY = linkPosition.sourceTableLink.y;
               link.element.endPositionX =linkPosition.targetTableLink.x;
               link.element.endPositionY = linkPosition.targetTableLink.y;
+              link.elModified = true;
             }
             function findLinkTables(sourceTableId, targetTableId){
               var result = {
@@ -779,7 +771,14 @@
               }
               return -1;
             }
-
+            function getTableForId(id) {
+            for (var i = 0; i < tablesData.length; i++) {
+                if (id == tablesData[i].data.id) {
+                    return tablesData[i];
+                }
+            }
+            return null;
+        }
 
           });
         }
