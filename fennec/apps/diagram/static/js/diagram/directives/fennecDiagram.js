@@ -8,6 +8,8 @@
         scope: {
             data: "=",
             stable: "=",
+            stableForeignKeys: "=",
+            stableIndexes: "=",
             adiagram: "=",
             activeSchema: "="
         },
@@ -279,6 +281,19 @@
                   if(tableData != undefined){
                     console.log("directive-> table selected: "+tableData.data.name);
                     scope.stable = tableData;
+                    console.log(scope.stableForeignKeys);
+
+                    // foreign keys
+                    var fk = [];
+                    for(var i in tableData.data.foreignKeys){
+                        var foreignKey = tableData.data.foreignKeys[i];
+                        var fk_data = {data:foreignKey, table:getTableForId(foreignKey.referencedTableRef)};
+                        fk.push(fk_data);
+                    }
+                    scope.stableForeignKeys = fk;
+
+
+                    scope.stableIndexes = tableData.data.indexes;
                     scope.$apply();
                     //passing value to controller if this directive will be private (zatvoren)
                     //scope.$emit('selectedTableEvent', tableData );
@@ -348,6 +363,15 @@
                 redrawLines();
               }
             }
+        function getTableForId(id) {
+            for (var i = 0; i < tablesData.length; i++) {
+                if (id == tablesData[i].data.id) {
+                    return tablesData[i];
+                }
+            }
+            return null;
+        }
+
             function calculateLinkPosition(sourceTableLink,targetTableLink){
               if(sourceTableLink.table.element.positionX < targetTableLink.table.element.positionX){
                 var linkCoord = getLinkPosition(sourceTableLink.table, sourceTableLink.attr,true);

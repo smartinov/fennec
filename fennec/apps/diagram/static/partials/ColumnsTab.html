@@ -1,0 +1,51 @@
+Table Name:
+<input data-ng-model="selectedTable.data.name" type="text" placeholder="Table name"
+       ng-change="setTableToModified(selectedTable)">
+
+<table class="table table-bordered table-hover table-condensed">
+    <tr style="font-weight: bold">
+        <td style="width:35%">Column</td>
+        <td style="width:20%">Column Type</td>
+        <td style="width:25%">Edit</td>
+    </tr>
+
+    <!--FOR FOR FOR FOR FOR default select first table-->
+
+    <tr ng-repeat="column in selectedTable.data.columns">
+        <td>
+            <!-- editable column (text with validation) -->
+                            <span editable-text="column.cdata.name" e-name="name" e-form="rowform"
+                                  onbeforesave="checkName($data, column.id)"
+                                  e-required>
+                                [[ column.cdata.name || 'empty' ]]
+                            </span>
+        </td>
+        <td style="white-space: nowrap">
+            <!-- editable Type (select-local) -->
+                            <span editable-select="column.cdata.column_type" e-name="column_type" e-form="rowform"
+                                  e-ng-options="s.value as s.text for s in dataTypes"> [[ showColumnType(column) ]]
+                            </span>
+        </td>
+
+        <td style="white-space: nowrap">
+            <!-- form -->
+            <form editable-form name="rowform" onbeforesave="saveColumn($data, column.cdata.id)"
+                  ng-show="rowform.$visible" class="form-buttons form-inline"
+                  shown="inserted == column">
+                <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary">
+                    save
+                </button>
+                <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()"
+                        class="btn btn-default">
+                    cancel
+                </button>
+            </form>
+            <div class="buttons" ng-show="!rowform.$visible">
+                <button class="btn btn-primary" ng-click="rowform.$show()">edit</button>
+                <button class="btn btn-danger" ng-click="removeTableColumn($index)">del</button>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<button class="btn btn-default" ng-click="addColumn()">Add column</button>

@@ -1,9 +1,6 @@
 ﻿(function () {
     'use strict';
 
-    // $scope.selectedTable - this is reading from grid
-    // $scope.fennecProject - using in d3
-
     var module = angular.module('myApp.controllers')
         .controller('DiagramController', function ($scope, $filter, $http, diagramService, spinnerService) {
 
@@ -21,6 +18,47 @@
                 console.log("ctrl-> fetching data from server for brevision:" + $scope.branchRevisionId);
                 loadBranchRevisionProjectAndDiagram($scope.branchRevisionId);
             }
+            function clearDiagramSpecificsScopes() {
+                console.log("ctrl-> clearing diagram specifics scopes");
+
+                $scope.diagramData= {tables: [], links: []};
+                $scope.selectedTable = {};
+                $scope.selectedTableForeignKeys = [];
+                $scope.selectedTableForeignKeyColumns=[]; // refIndexColumns - it contain only columns which are indexed
+                $scope.selectedTableIndexes = [];
+                $scope.activeDiagramEditData = {};  // for edit form
+            }
+            function clearDeletedScopes(){
+                console.log("ctrl -> clearing deleted scopes");
+                $scope.deletedTableElements = []; // for now only deleting table elements
+                $scope.deletedColumnsData = [];
+                $scope.deletedLinks = [];
+            }
+
+            // ****** FOREIGN KEY TAB ******
+            $scope.showForeignKeyColumns = function(selectedForeignKeyData){
+                //selectedForeignKeyData {data:foreignKey, table:table};
+                $scope.selectedTableForeignKeyColumns=[{column:"",refColumn:"",refIndexColumns:[]}];// refIndexColumns - it contain only columns which are indexed
+
+                var sourceTable = getTableForId(selectedForeignKeyData.data.tableRef);
+                var column= getColumnForId(selectedForeignKeyData.data.sourceColumn, sourceTable.data.columns);
+                var refColumn= getColumnForId(selectedForeignKeyData.data.referencedColumn, selectedForeignKeyData.table.data.columns);
+                // TODO: get indexes for referenced table and then found columns
+                // TODO: for now show all column
+                var referencedTableIndexColumns = selectedForeignKeyData.table.data.columns;
+
+                $scope.selectedTableForeignKeyColumns = [{column:column, refColumn:refColumn,comment:"", refIndexColumns:referencedTableIndexColumns}];
+                console.log( $scope.selectedTableForeignKeyColumns);
+//                console.log(column.cdata.name);
+//                console.log(refColumn.cdata.name);
+            }
+            $scope.showReferencedColumnName = function (column) {
+                if(column == undefined){
+                    return "Not selected";
+                }
+                return column.cdata.name;
+            };
+
 
 
             // ****** TAB HANDLER ******
@@ -57,20 +95,7 @@
                 loadBranchRevisionProjectAndDiagram($scope.branchRevisionId, $scope.diagrams[index].data.id);
             }
 
-            function clearDiagramSpecificsScopes() {
-                console.log("ctrl-> clearing diagram specifics scopes");
 
-                $scope.diagramData= {tables: [], links: []};
-                $scope.selectedTable = {};
-//                $scope.activeDiagram = {};
-                $scope.activeDiagramEditData = {};  // for edit form
-            }
-            function clearDeletedScopes(){
-                console.log("ctrl -> clearing deleted scopes");
-                $scope.deletedTableElements = []; // for now only deleting table elements
-                $scope.deletedColumnsData = [];
-                $scope.deletedLinks = [];
-            }
 
 
             // ******* LOAD FUNCTIONS *******
@@ -199,8 +224,11 @@
                         }
                     }
                 }
+
                 if($scope.schemas.length>0){
-                    $scope.activeSchema = $scope.schemas[0].data;
+                    showCurrentSchemaInDropDown($scope.schemas[0].data);
+                }else{
+                    $scope.showCreateSchemaPopup();
                 }
             }
 
@@ -450,10 +478,16 @@
                 $scope.schemas.push({data:$scope.newSchema,modified: true});
                 $scope.newSchema = {id:"",databaseName:"",collation:""};
                 $scope.isCreateSchemaPopupShown = false;
+                if($scope.schemas.length == 1){
+                    showCurrentSchemaInDropDown($scope.schemas[0].data);
+                }
             }
             $scope.createSchemaCancel = function(){
                 $scope.isCreateSchemaPopupShown = false;
                 $scope.newSchema = {id:"",databaseName:"",collation:""};
+            }
+            function showCurrentSchemaInDropDown(schemaData) {
+                  $scope.activeSchema = schemaData; // select first schema in dropdown
             }
 
             // ******** THIS CONTROLLER UTIL FUNCTION ********
@@ -491,7 +525,14 @@
                 return id;
             }
 
-
+            function getTableForId(id) {
+            for (var i = 0; i < $scope.diagramData.tables.length; i++) {
+                if (id == $scope.diagramData.tables[i].data.id) {
+                    return $scope.diagramData.tables[i];
+                }
+            }
+            return null;
+        }
 
 
 
