@@ -32,7 +32,7 @@
             <div class="buttons" ng-show="!fkForm.$visible">
                 <button class="btn btn-info" ng-click="showForeignKeyColumns(foreignKey)">select</button>
                 <button class="btn btn-primary" ng-click="fkForm.$show()">edit</button>
-                <button class="btn btn-danger" ng-click="removeTableColumn($index)">del</button>
+                <button class="btn btn-danger" ng-click="deleteReferencedKey(foreignKey,selectedTableForeignKeys)">del</button>
             </div>
         </td>
     </tr>

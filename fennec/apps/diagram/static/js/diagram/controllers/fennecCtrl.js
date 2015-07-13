@@ -275,6 +275,7 @@
                     diagramService.deleteColumn(branchRevisionId, delColumnData);
                 }
 
+                // delete foreign keys
                 for(var i in $scope.deletedLinks){
                     var link = $scope.deletedLinks[i];
                     diagramService.deleteTableForeignKey(branchRevisionId, link.fk_data);
@@ -341,7 +342,41 @@
                 }
                 return column.cdata.name;
             };
+            $scope.deleteReferencedKey = function(foreignKeyData,foreignKeys){
+                console.log("Delete referenced key with name:"+foreignKeyData.data.name);
+                // delete foreign key from links
+                deleteColumnLink(foreignKeyData.data.sourceColumn, $scope.diagramData.links);
 
+                // delete
+                foreignKeys.splice(0,1);
+            }
+
+
+             // ********* REMOVE TABLE *********
+            function deleteTableElement(tableId, tables) {
+                for (var i = 0; i < tables.length; i++) {
+                    if (tables[i].data.id === tableId) {
+                        console.log("ctrl -> table[" + tables[i].data.name + "] is deleted");
+                        $scope.deletedTableElements.push(tables[i].element);
+                        tables.splice(i, 1);
+                    }
+                }
+                deleteTableLinks(tableId,$scope.diagramData.links);
+            }
+            function deleteTableLinks(tableId, diagramLinks) {
+                for(var i = diagramLinks.length-1; i>=0;i--){
+                    var link = diagramLinks[i];  // contain fk_data, element and dataModified, elModified
+                    if (link.fk_data.tableRef == tableId || link.fk_data.referencedTableRef == tableId) {
+                        console.log("ctrl -> link[" + link.fk_data.name + "] is deleted");
+                        var exists = checkIfForeignKeyExistsOnBack(link.fk_data.tableRef,link.fk_data.id);
+                        if(exists) {
+                            console.log("FK exist on server add to delete");
+                            $scope.deletedLinks.push(link);
+                        }
+                        diagramLinks.splice(i, 1);
+                    }
+                }
+            }
 
             // ********* ADD/EDIT COLUMN *********
             $scope.addColumn = function () {
@@ -411,25 +446,18 @@
                     var link = diagramLinks[i];  // contain fk_data, element and dataModified, elModified
                     if (link.fk_data.sourceColumn == columnId  || link.fk_data.referencedColumn == columnId) {
                         console.log("ctrl -> link[" + link.fk_data.name + "] is deleted");
-                        $scope.deletedLinks.push(link);
+
+                        var exists = checkIfForeignKeyExistsOnBack(link.fk_data.tableRef,link.fk_data.id);
+                        if(exists) {
+                            console.log("FK exist on server add to delete");
+                            $scope.deletedLinks.push(link); //if not exists on back no need to send delete request to the back
+                        }
                         diagramLinks.splice(i, 1);
                     }
                 }
             }
 
-            $scope.dataTypes = [
-                {value: 1, text: 'ID'},
-                {value: 2, text: 'RefID'},
-                {value: 3, text: 'TEXT'},
-                {value: 4, text: 'INT'},
-                {value: 5, text: 'BIGINT'},
-                {value: 6, text: 'DECIMAL'},
-                {value: 7, text: 'DOUBLE'},
-                {value: 8, text: 'FLOAT'},
-                {value: 9, text: 'TINYINT'},
-                {value: 10, text: 'BOOL'},
-                {value: 11, text: 'BOOLEAN'}
-            ];
+
             $scope.showColumnType = function (column) {
                 var selected = [];
                 if (column.cdata.column_type) {
@@ -440,33 +468,13 @@
                 }
                 return selected.length ? selected[0].text : 'Not set';
             };
-
             $scope.checkName = function (data, id) {
                 if (id === 2 && data !== 'awesome') {
                     return "Username 2 should be `awesome`";
                 }
             };
-            function deleteTableElement(tableId, tables) {
-                for (var i = 0; i < tables.length; i++) {
-                    if (tables[i].data.id === tableId) {
-                        console.log("ctrl -> table[" + tables[i].data.name + "] is deleted");
-                        $scope.deletedTableElements.push(tables[i].element);
-                        tables.splice(i, 1);
-                    }
-                }
-                deleteTableLinks(tableId,$scope.diagramData.links);
-            }
 
-            function deleteTableLinks(tableId, diagramLinks) {
-                for(var i = diagramLinks.length-1; i>=0;i--){
-                    var link = diagramLinks[i];  // contain fk_data, element and dataModified, elModified
-                    if (link.fk_data.tableRef == tableId || link.fk_data.referencedTableRef == tableId) {
-                        console.log("ctrl -> link[" + link.fk_data.name + "] is deleted");
-                        $scope.deletedLinks.push(link);
-                        diagramLinks.splice(i, 1);
-                    }
-                }
-            }
+
 
 
             // ********* CREATE SCHEMA *********
@@ -501,6 +509,19 @@
                     console.log("Table not found for id: " + tableId);
                 return null;
             }
+            $scope.dataTypes = [
+                {value: 1, text: 'ID'},
+                {value: 2, text: 'RefID'},
+                {value: 3, text: 'TEXT'},
+                {value: 4, text: 'INT'},
+                {value: 5, text: 'BIGINT'},
+                {value: 6, text: 'DECIMAL'},
+                {value: 7, text: 'DOUBLE'},
+                {value: 8, text: 'FLOAT'},
+                {value: 9, text: 'TINYINT'},
+                {value: 10, text: 'BOOL'},
+                {value: 11, text: 'BOOLEAN'}
+            ];
 
             // *************** UTIL FUNCTIONS **************************
             var guid = (function () {
@@ -525,7 +546,21 @@
                 id = hexLetter + id;
                 return id;
             }
-
+            function checkIfForeignKeyExistsOnBack(sourceTableId, foreignKeyId){
+                // it will check the source table fks
+                var table = getTableForId(sourceTableId);
+                if(table == null){
+                    console.log("Could not found table for id:"+sourceTableId);
+                    return false;
+                }
+                for(var i=0;i<table.data.foreignKeys.length;i++){
+                    var fkData =table.data.foreignKeys[i];
+                    if(fkData.id == foreignKeyId){
+                        return true;
+                    }
+                }
+                return false;
+            }
             function getTableForId(id) {
             for (var i = 0; i < $scope.diagramData.tables.length; i++) {
                 if (id == $scope.diagramData.tables[i].data.id) {
