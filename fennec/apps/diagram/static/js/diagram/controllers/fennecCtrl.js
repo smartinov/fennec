@@ -347,8 +347,14 @@
                 // delete foreign key from links
                 deleteColumnLink(foreignKeyData.data.sourceColumn, $scope.diagramData.links);
 
-                // delete
-                foreignKeys.splice(0,1);
+                // foreign key tab has own list delete from it
+                for(var i in foreignKeys){
+                    var fk = foreignKeys[i];
+                    if(fk.id == foreignKeyData.id){
+                        foreignKeys.splice(i,1);
+                        break;
+                    }
+                }
             }
 
 

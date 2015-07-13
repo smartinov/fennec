@@ -319,10 +319,12 @@
 
                     // foreign keys
                     var fk = [];
-                    for(var i in tableData.data.foreignKeys){
-                        var foreignKey = tableData.data.foreignKeys[i];
-                        var fk_data = {data:foreignKey, table:getTableForId(foreignKey.referencedTableRef)};
-                        fk.push(fk_data);
+                    for(var i in linksData){
+                        var currentLink = linksData[i];
+                        if(currentLink.fk_data.tableRef == tableData.data.id){
+                            var fk_data = {data:currentLink.fk_data, table:getTableForId(currentLink.fk_data.referencedTableRef)};
+                            fk.push(fk_data);
+                        }
                     }
                     scope.stableForeignKeys = fk;
 
