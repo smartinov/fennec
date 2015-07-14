@@ -8,8 +8,8 @@
 
     <tr ng-repeat="foreignKey in selectedTableForeignKeys">
         <td>
-                            <span editable-text="foreignKey.data.name" e-name="fkName" e-form="fkForm">
-                                [[ foreignKey.data.name || 'empty' ]]
+                            <span editable-text="foreignKey.data.fk_data.name" e-name="fkName" e-form="fkForm">
+                                [[ foreignKey.data.fk_data.name || 'empty' ]]
                             </span>
         </td>
         <td style="white-space: nowrap">
@@ -18,7 +18,7 @@
 
         <td style="white-space: nowrap">
             <!-- form -->
-            <form editable-form name="fkForm" onbeforesave="editForeignKeyName($data, foreignKey.data.id)"
+            <form editable-form name="fkForm" onbeforesave="editForeignKeyName($data, foreignKey)"
                   ng-show="fkForm.$visible" class="form-buttons form-inline"
                   shown="inserted == foreignKey">
                 <button type="submit" ng-disabled="fkForm.$waiting" class="btn btn-primary">

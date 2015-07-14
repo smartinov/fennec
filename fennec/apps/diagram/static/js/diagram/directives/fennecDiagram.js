@@ -322,7 +322,7 @@
                     for(var i in linksData){
                         var currentLink = linksData[i];
                         if(currentLink.fk_data.tableRef == tableData.data.id){
-                            var fk_data = {data:currentLink.fk_data, table:getTableForId(currentLink.fk_data.referencedTableRef)};
+                            var fk_data = {data:currentLink, table:getTableForId(currentLink.fk_data.referencedTableRef)};
                             fk.push(fk_data);
                         }
                     }
