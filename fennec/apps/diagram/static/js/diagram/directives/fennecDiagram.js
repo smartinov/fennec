@@ -11,7 +11,8 @@
             stableForeignKeys: "=",
             stableIndexes: "=",
             adiagram: "=",
-            activeSchema: "="
+            activeSchema: "=",
+            recal: "="
         },
         template:"<div class='diagram'  ></div>",
         link: function(scope, iElement, iAttrs) {
@@ -34,6 +35,14 @@
                  linksData = newValue.links;
              }
              restart(true);
+            },true);
+
+            scope.$watch('recal', function(newValue,oldValue) {
+                 console.log("directive-> referencedColumn changed"); //console.log(tablesData);
+                if(newValue!=""){
+                 updateLinkPositionForTable(newValue);
+                    }
+                scope.recal = "";
             },true);
 
             var drag = d3.behavior.drag()
@@ -322,7 +331,7 @@
                     for(var i in linksData){
                         var currentLink = linksData[i];
                         if(currentLink.fk_data.tableRef == tableData.data.id){
-                            var fk_data = {data:currentLink, table:getTableForId(currentLink.fk_data.referencedTableRef)};
+                            var fk_data = {data:currentLink, refTable:getTableForId(currentLink.fk_data.referencedTableRef)};
                             fk.push(fk_data);
                         }
                     }
@@ -474,26 +483,31 @@
               }
             }
             function updateLinkPosition(movingTableObject){
-              var redraw = false;
               var movingTable = movingTableObject.node().__data__;
-              for(var i=0;i<linksData.length;i++){
-                if(linksData[i].fk_data.tableRef == movingTable.data.id){
-                  var tableLink = linksData[i];
-                  //console.log("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
-                  updateLinkData(tableLink);
-                  redraw = true;
-                }
-                if(linksData[i].fk_data.referencedTableRef == movingTable.data.id){
-                  var tableLink = linksData[i];
-                  // console.log("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
-                  updateLinkData(tableLink);
-                  redraw = true;
-                }
-              }
-              if(redraw) {
-                redrawLines();
-              }
+              updateLinkPositionForTable(movingTable);
             }
+            function updateLinkPositionForTable(movingTable) {
+                  var redraw = false;
+                  for (var i = 0; i < linksData.length; i++) {
+                      if (linksData[i].fk_data.tableRef == movingTable.data.id) {
+                          var tableLink = linksData[i];
+                          //console.log("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
+                          updateLinkData(tableLink);
+                          redraw = true;
+                      }
+                      if (linksData[i].fk_data.referencedTableRef == movingTable.data.id) {
+                          var tableLink = linksData[i];
+                          // console.log("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
+                          updateLinkData(tableLink);
+                          redraw = true;
+                      }
+                  }
+                  if (redraw) {
+                      redrawLines();
+                  }
+            }
+
+
 
             function updateLinkData(link){
               var linkTables = findLinkTables(link.fk_data.tableRef,link.fk_data.referencedTableRef);

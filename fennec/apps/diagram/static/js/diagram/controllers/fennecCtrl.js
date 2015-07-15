@@ -322,26 +322,21 @@
             }
             $scope.showForeignKeyColumns = function(selectedForeignKey){
                 //selectedForeignKey {data:foreignKey, table:table};
-                $scope.selectedTableForeignKeyColumns=[{column:"",refColumn:"",refIndexColumns:[]}];// refIndexColumns - it contain only columns which are indexed
+                $scope.selectedTableForeignKeyColumns=[{foreignKey:{}, sourceColumn:{},refIndexColumns:[]}];// refIndexColumns - it contain only columns which are indexed
 
                 var sourceTable = getTableForId(selectedForeignKey.data.fk_data.tableRef);
                 var column= getColumnForId(selectedForeignKey.data.fk_data.sourceColumn, sourceTable.data.columns);
-                var refColumn= getColumnForId(selectedForeignKey.data.fk_data.referencedColumn, selectedForeignKey.table.data.columns);
+//                var refColumn= getColumnForId(selectedForeignKey.data.fk_data.referencedColumn, selectedForeignKey.table.data.columns);
+
                 // TODO: get indexes for referenced table and then found columns
                 // TODO: for now show all column
-                var referencedTableIndexColumns = selectedForeignKey.table.data.columns;
+                var referencedTableIndexColumns = selectedForeignKey.refTable.data.columns;
 
-                $scope.selectedTableForeignKeyColumns = [{column:column, refColumn:refColumn,comment:"", refIndexColumns:referencedTableIndexColumns}];
+                $scope.selectedTableForeignKeyColumns = [{foreignKey:selectedForeignKey.data, sourceColumn:column,refTable:selectedForeignKey.refTable, refIndexColumns:referencedTableIndexColumns}];
                 console.log( $scope.selectedTableForeignKeyColumns);
 //                console.log(column.cdata.name);
 //                console.log(refColumn.cdata.name);
             }
-            $scope.showReferencedColumnName = function (column) {
-                if(column == undefined){
-                    return "Not selected";
-                }
-                return column.cdata.name;
-            };
             $scope.deleteReferencedKey = function(foreignKey,foreignKeys){
                 console.log("Delete referenced key with name:"+foreignKey.data.fk_data.name);
                 // delete foreign key from links
@@ -357,8 +352,27 @@
                 }
             }
             // ****** FOREIGN KEY TAB - SELECTED DETAILS ******
+            $scope.showReferencedColumnName = function (refColumnId,refIndexColumns) {
+                if(refColumnId == undefined){
+                    return "Not selected";
+                }
+                for(var a in refIndexColumns){
+                    var column = refIndexColumns[a];
+                    if(refColumnId == column.cdata.id){
+                        return column.cdata.name;
+                    }
+                }
+                return "Not selected";
+            };
 
-            
+            $scope.recal = "";
+            $scope.saveReferencedKeyDetails = function(data,fkDetails){
+                fkDetails.foreignKey.dataModified = true;
+                fkDetails.foreignKey.elModified = true;
+                fkDetails.foreignKey.fk_data.comment = data.comment;
+                $scope.recal = fkDetails.refTable;
+            }
+
 
              // ********* REMOVE TABLE *********
             function deleteTableElement(tableId, tables) {
@@ -424,7 +438,7 @@
                     var selectedTableColumns = $scope.diagramData.tables[tableIndex].data.columns;
                     var column = getColumnForId(id, selectedTableColumns);
                     column.cdata.column_type = selected[0].text;
-                    column.modified = 1;
+                    column.modified = true;
                 }
                 console.log("Column successfully saved")
                 return [200, {status: 'ok'}];

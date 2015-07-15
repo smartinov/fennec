@@ -1,84 +1,88 @@
 <div id="foreignKeyFirstDiv" style="float: left; margin-right: 10px;">
-<table class="table table-bordered table-hover table-condensed" >
-    <tr style="font-weight: bold">
-        <td >Foreign Key Name</td>
-        <td >Referenced Table</td>
-        <td >Edit</td>
-    </tr>
+    <table class="table table-bordered table-hover table-condensed">
+        <tr style="font-weight: bold">
+            <td>Foreign Key Name</td>
+            <td>Referenced Table</td>
+            <td>Edit</td>
+        </tr>
 
-    <tr ng-repeat="foreignKey in selectedTableForeignKeys">
-        <td>
+        <tr ng-repeat="foreignKey in selectedTableForeignKeys">
+            <td>
                             <span editable-text="foreignKey.data.fk_data.name" e-name="fkName" e-form="fkForm">
                                 [[ foreignKey.data.fk_data.name || 'empty' ]]
                             </span>
-        </td>
-        <td style="white-space: nowrap">
-            [[ foreignKey.table.data.name || 'empty' ]]
-        </td>
+            </td>
+            <td style="white-space: nowrap">
+                [[ foreignKey.refTable.data.name || 'empty' ]]
+            </td>
 
-        <td style="white-space: nowrap">
-            <!-- form -->
-            <form editable-form name="fkForm" onbeforesave="editForeignKeyName($data, foreignKey)"
-                  ng-show="fkForm.$visible" class="form-buttons form-inline"
-                  shown="inserted == foreignKey">
-                <button type="submit" ng-disabled="fkForm.$waiting" class="btn btn-primary">
-                    save
-                </button>
-                <button type="button" ng-disabled="fkForm.$waiting" ng-click="fkForm.$cancel()"
-                        class="btn btn-default">
-                    cancel
-                </button>
-            </form>
-            <div class="buttons" ng-show="!fkForm.$visible">
-                <button class="btn btn-info" ng-click="showForeignKeyColumns(foreignKey)">select</button>
-                <button class="btn btn-primary" ng-click="fkForm.$show()">edit</button>
-                <button class="btn btn-danger" ng-click="deleteReferencedKey(foreignKey,selectedTableForeignKeys)">del</button>
-            </div>
-        </td>
-    </tr>
-</table>
+            <td style="white-space: nowrap">
+                <!-- form -->
+                <form editable-form name="fkForm" onbeforesave="editForeignKeyName($data, foreignKey)"
+                      ng-show="fkForm.$visible" class="form-buttons form-inline"
+                      shown="inserted == foreignKey">
+                    <button type="submit" ng-disabled="fkForm.$waiting" class="btn btn-primary">
+                        save
+                    </button>
+                    <button type="button" ng-disabled="fkForm.$waiting" ng-click="fkForm.$cancel()"
+                            class="btn btn-default">
+                        cancel
+                    </button>
+                </form>
+                <div class="buttons" ng-show="!fkForm.$visible">
+                    <button class="btn btn-info" ng-click="showForeignKeyColumns(foreignKey)">select</button>
+                    <button class="btn btn-primary" ng-click="fkForm.$show()">edit</button>
+                    <button class="btn btn-danger" ng-click="deleteReferencedKey(foreignKey,selectedTableForeignKeys)">
+                        del
+                    </button>
+                </div>
+            </td>
+        </tr>
+    </table>
 </div>
 
 
-<div id="foreignKeySecondDiv"  style="float: left; margin-left: 10px;">
-<table class="table table-bordered table-hover table-condensed">
-    <tr style="font-weight: bold">
-        <td >Column</td>
-        <td >Referenced Column</td>
-        <td >Comment</td>
-        <td >Edit</td>
-    </tr>
+<div id="foreignKeySecondDiv" style="float: left; margin-left: 10px;">
+    <table class="table table-bordered table-hover table-condensed">
+        <tr style="font-weight: bold">
+            <td>Column</td>
+            <td>Referenced Column</td>
+            <td>Comment</td>
+            <td>Edit</td>
+        </tr>
 
-    <tr ng-repeat="column in selectedTableForeignKeyColumns">
-        <td>
-            [[ column.column.cdata.name || 'empty' ]]
-        </td>
-        <td style="white-space: nowrap">
-             <span editable-select="column.refColumn.cdata" e-name="referenced_column" e-form="rowform"
-                     e-ng-options="s.cdata as s.cdata.name for s in column.refIndexColumns"> [[ showReferencedColumnName(column.refColumn) ]]
+        <tr ng-repeat="fkDetails in selectedTableForeignKeyColumns">
+            <td>
+                [[ fkDetails.sourceColumn.cdata.name || 'empty' ]]
+            </td>
+            <td style="white-space: nowrap">
+             <span editable-select="fkDetails.foreignKey.fk_data.referencedColumn" e-name="referenced_column"
+                   e-form="rowform"
+                   e-ng-options="s.cdata.id as s.cdata.name for s in fkDetails.refIndexColumns"> [[ showReferencedColumnName(fkDetails.foreignKey.fk_data.referencedColumn,fkDetails.refIndexColumns) ]]
              </span>
-        </td>
-        <td>
-              <span editable-textarea="column.comment" e-rows="5" e-cols="40" e-name="fkName" e-form="rowform">
-                  [[ column.comment || 'empty'  ]]
+            </td>
+            <td>
+              <span editable-textarea="fkDetails.foreignKey.fk_data.comment" e-rows="5" e-cols="40" e-name="comment"
+                    e-form="rowform">
+                  [[ fkDetails.foreignKey.fk_data.comment || 'no comment'  ]]
                   </span>
-        </td>
-        <td style="white-space: nowrap">
-            <form editable-form name="rowform" onbeforesave="saveColumn($data, column.cdata.id)"
-                  ng-show="rowform.$visible" class="form-buttons form-inline"
-                  shown="inserted == column">
-                <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary">
-                    save
-                </button>
-                <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()"
-                        class="btn btn-default">
-                    cancel
-                </button>
-            </form>
-            <div class="buttons" ng-show="!rowform.$visible">
-                <button class="btn btn-primary" ng-click="rowform.$show()">edit</button>
-            </div>
-        </td>
-    </tr>
-</table>
+            </td>
+            <td style="white-space: nowrap">
+                <form editable-form name="rowform" onbeforesave="saveReferencedKeyDetails($data, fkDetails)"
+                      ng-show="rowform.$visible" class="form-buttons form-inline"
+                      shown="inserted == fkDetails">
+                    <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary">
+                        save
+                    </button>
+                    <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()"
+                            class="btn btn-default">
+                        cancel
+                    </button>
+                </form>
+                <div class="buttons" ng-show="!rowform.$visible">
+                    <button class="btn btn-primary" ng-click="rowform.$show()">edit</button>
+                </div>
+            </td>
+        </tr>
+    </table>
 </div>
