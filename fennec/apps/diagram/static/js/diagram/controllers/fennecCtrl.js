@@ -2,7 +2,7 @@
     'use strict';
 
     var module = angular.module('myApp.controllers')
-        .controller('DiagramController', function ($scope, $filter, $http, diagramService, spinnerService) {
+        .controller('DiagramController', function ($scope, $filter, $http,$location, diagramService, spinnerService) {
 
             init();
             function init() {
@@ -10,8 +10,11 @@
                 $scope.schemas = [];
                 $scope.activeSchema = {};
                 $scope.diagrams = [];
-                $scope.branchRevisionId = 1; // read from URL             // TODO: get from url branchRevisionId
                 $scope.newSchema = {id:"",databaseName:"",collation:""};
+
+                var absoluteURL = $location.$$absUrl;
+                var branchRevisionId = absoluteURL.substr(absoluteURL.lastIndexOf('/') + 1);
+                $scope.branchRevisionId = branchRevisionId;  // app/diagram/branches/1/revisions/1
                 clearDiagramSpecificsScopes();
                 clearDeletedScopes();
 
@@ -88,10 +91,14 @@
                         spinnerService.hideSpinner();
                     });
                 });
-                projectStateRequest.catch(function (nesto) {
-                    console.log("log loadBranchRevisionProjectState error");
+                projectStateRequest.catch(function (error) {
+                    console.log("ERROR: LoadBranchRevisionProjectState");
+                    var errorMsg = "ERROR: LoadBranchRevisionProjectState->Loading diagram (branchRevisionId:'"+branchRevisionId+"') Status: "+error.status+" msg :"+error.data.detail+" (requested url:"+error.config.url+")";
+                    console.log(errorMsg);
+                    alert("Error loading diagram! \n\nStatus: "+error.status+" Msg :"+error.data.detail+"\n\nClick to redirect on dashboard");
+                    var dashboardURL = window.location.protocol+"//"+window.location.host+"/app/dashboard";
+                    window.location.replace(dashboardURL);
                 });
-
                 projectStateRequest.finally(function (nesto) {
                     //console.log("log loadBranchRevisionProjectStatefinally");
                 });
