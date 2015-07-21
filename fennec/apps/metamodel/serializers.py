@@ -43,9 +43,9 @@ class IndexSerializer(serializers.Serializer):
     id = serializers.CharField()
     name = serializers.CharField()
     comment = serializers.CharField(required=False)
-    storageType = serializers.CharField(source='storage_type')
+    type = serializers.CharField(source='type') #INDEX, PRIMARY, UNIQUE
+    storageType = serializers.CharField(required=False, source='storage_type')
     columns = serializers.CharField(required=False)
-
     tableRef = serializers.CharField(source='table_ref')
 
     def restore_object(self, attrs, instance=None):

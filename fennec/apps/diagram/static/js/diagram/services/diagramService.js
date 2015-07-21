@@ -150,6 +150,28 @@ angular.module('myApp.services')
                 });
         }
 
+        this.saveIndex = function (branchRevisionId, indexContent){
+            var url = branchRevisionRoot + branchRevisionId + "/change/";
+
+            var data = {
+                "content": indexContent,
+                "objectType": "Index",
+                "objectCode": indexContent.id,
+                "changeType": 0,
+                "isUIChange": false,
+                "made_by": loggedUserId
+            }
+            console.log("Saving index data: "); console.log(data);
+            $http.post(projectsRoot, data).
+                success(function () {
+                    console.log("Index ["+indexContent.name +", "+ indexContent.id +"] saved successfully");
+                }).error(function () {
+                    var msg = "Saving index ["+indexContent.name +", "+ indexContent.id +"] failed";
+                    console.log(msg);
+                    throw msg;
+                });
+        }
+
         this.saveColumn = function (branchRevisionId, columnContent) {
             var url = branchRevisionRoot + branchRevisionId + "/change/";
             var data = {
@@ -383,6 +405,24 @@ angular.module('myApp.services')
 
             return frontDiagrams;
         }
+
+//        var tableIndexes = [
+//            {
+//                table: "id",
+//                extendedIndexes:[ {
+//                        data: {
+//                            "id": genGuid(),
+//                            "name": "index 1",
+//                            "comment": "no comment",
+//                            "type": "INDEX",
+//                            "columns": ["b3dd63ad-4236-52a0-52f7-46ddf7c981dc"],
+//                            "tableRef": "cf5e82da-d9e6-a8d3-789c-a97a4f9a7ecc"
+//                        },
+//                        modified: true
+//                    }
+//                ]
+//            }];
+//        $scope.indexes.push(tableIndexes);
 
         // ********** HELPER METHODS ****************
 

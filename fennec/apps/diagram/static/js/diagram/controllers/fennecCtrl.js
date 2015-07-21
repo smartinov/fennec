@@ -11,6 +11,7 @@
                 $scope.activeSchema = {};
                 $scope.diagrams = [];
                 $scope.newSchema = {id:"",databaseName:"",collation:""};
+                $scope.indexes = [];
 
                 var absoluteURL = $location.$$absUrl;
                 var branchRevisionId = absoluteURL.substr(absoluteURL.lastIndexOf('/') + 1);
@@ -197,6 +198,22 @@
                                     }
                                 }
 
+                                // Indexes
+                                if (dataTable.indexes.length > 0) {
+                                    var tableIndexes = {
+                                        table: dataTable.id,
+                                        extendedIndexes: []
+                                    };
+                                    for (var j in dataTable.indexes) {
+                                        var indexData = dataTable.indexes[j];
+                                        var extendedIndex = {
+                                            data: indexData,
+                                            modified: false
+                                        };
+                                        tableIndexes.extendedIndexes.push(extendedIndex);
+                                    }
+                                    $scope.indexes.push(tableIndexes);
+                                }
                                 // add to scope
                                 $scope.diagramData.tables.push(table);
                                 break;
@@ -204,7 +221,7 @@
                         }
                     }
                 }
-
+                var indexes = $scope.indexes;
                 if($scope.schemas.length>0){
                     showCurrentSchemaInDropDown($scope.schemas[0].data);
                 }else{
@@ -267,6 +284,15 @@
                     if(link.elModified){
                         diagramService.saveRelationshipElement(branchRevisionId,link.element);
                         link.elModified = false;
+                    }
+                }
+
+                // save indexes
+                for(var i in $scope.indexes){
+                    var index = $scope.indexes[i];
+                    if(index.modified){
+                        diagramService.saveIndex(branchRevisionId,index.data);
+                        index.modified = false;
                     }
                 }
 

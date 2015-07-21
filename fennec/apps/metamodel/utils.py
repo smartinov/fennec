@@ -75,6 +75,7 @@ class Index(object):
         """
         self.id = kwargs.get('id')
         self.name = kwargs.get('name')
+        self.type = kwargs.get('type')
         self.storage_type = kwargs.get('storage_type')
         self.comment = kwargs.get('comment')
         self.columns = kwargs.get('columns') if kwargs.get('columns') else []
