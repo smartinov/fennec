@@ -1,0 +1,44 @@
+<div id="index-left-div" style="float: left; margin-right: 10px;">
+    <table class="table table-bordered table-hover table-condensed">
+        <tr style="font-weight: bold">
+            <td>Index Name</td>
+            <td>Type</td>
+            <td>Edit</td>
+        </tr>
+
+        <tr ng-repeat="extendedIndex in selectedTableIndexes">
+            <td>
+                            <span editable-text="extendedIndex.data.name" e-name="fkName" e-form="indexForm">
+                                [[ extendedIndex.data.name || 'empty' ]]
+                            </span>
+            </td>
+            <td style="white-space: nowrap">
+                 <span editable-select="extendedIndex.data.type" e-name="index_type" e-form="indexForm"
+                                  e-ng-options="s for s in indexTypes"> [[ extendedIndex.data.type ]]
+                 </span>
+            </td>
+
+            <td style="white-space: nowrap">
+                <!-- form -->
+                <form editable-form name="indexForm" ng-show="indexForm.$visible" class="form-buttons form-inline"
+                      shown="inserted == extendedIndex">
+                    <button type="submit" ng-disabled="indexForm.$waiting" class="btn btn-primary">
+                        save
+                    </button>
+                    <button type="button" ng-disabled="indexForm.$waiting" ng-click="indexForm.$cancel()"
+                            class="btn btn-default">
+                        cancel
+                    </button>
+                </form>
+                <div class="buttons" ng-show="!indexForm.$visible">
+                    <button class="btn btn-info" ng-click="showForeignKeyColumns(extendedIndex)">select</button>
+                    <button class="btn btn-primary" ng-click="indexForm.$show()">edit</button>
+                    <button class="btn btn-danger" ng-click="deleteIndex(extendedIndex,selectedTableIndexes)">
+                        del
+                    </button>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <button class="btn btn-default" ng-click="addIndex()">Add</button>
+</div>

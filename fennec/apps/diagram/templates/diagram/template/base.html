@@ -119,8 +119,9 @@
 
     <!--my internal stylesheets-->
     <link href="{% static 'css/app.css' %}" rel="stylesheet">
+    <link href="{% static 'css/popup.css' %}" rel="stylesheet">
 </head>
-<body>
+<body ng-controller="DiagramController">
 
 <!--Menu-->
 <div class="ui-layout-north">
@@ -148,6 +149,11 @@
 
 {% block custom-javascript %}{% endblock %}
 {#<script type="application/javascript"></script>#}
+
+<!-- Spinner -->
+<div class="spinner" id="divProgressSpinner" style="display: none;"></div>
+
+
 
 </body>
 </html>

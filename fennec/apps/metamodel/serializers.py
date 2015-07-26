@@ -43,9 +43,9 @@ class IndexSerializer(serializers.Serializer):
     id = serializers.CharField()
     name = serializers.CharField()
     comment = serializers.CharField(required=False)
-    storageType = serializers.CharField(source='storage_type')
+    type = serializers.CharField(source='type') #INDEX, PRIMARY, UNIQUE
+    storageType = serializers.CharField(required=False, source='storage_type')
     columns = serializers.CharField(required=False)
-
     tableRef = serializers.CharField(source='table_ref')
 
     def restore_object(self, attrs, instance=None):
@@ -71,6 +71,7 @@ class ForeignKeySerializer(serializers.Serializer):
     referencedColumn = serializers.CharField(required=False, source='referenced_column')
 
     tableRef = serializers.CharField(source='table_ref')
+    referencedTableRef = serializers.CharField(source='referenced_table_ref')
 
     def restore_object(self, attrs, instance=None):
         foreign_key = ForeignKey(**attrs)
@@ -175,8 +176,9 @@ class RelationshipElementSerializer(serializers.Serializer):
     startPositionX = serializers.FloatField(source='start_position_x')
     startPositionY = serializers.FloatField(source='start_position_y')
     endPositionX = serializers.FloatField(source='end_position_x')
-    endPositionX = serializers.FloatField(source='end_position_y')
+    endPositionY = serializers.FloatField(source='end_position_y')
     drawStyle = serializers.IntegerField(source='draw_style')
+    cardinality = serializers.IntegerField(source='cardinality')
     foreignKeyRef = serializers.CharField(source='foreign_key_ref')
 
     diagramRef = serializers.CharField(source='diagram_ref')
