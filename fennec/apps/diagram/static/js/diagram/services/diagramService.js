@@ -301,6 +301,28 @@ angular.module('myApp.services')
                     throw msg;
                 });
         }
+        this.deleteIndex = function (branchRevisionId, indexContent) {
+            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var data = {
+                "content": indexContent,
+                "objectType": "Index",
+                "objectCode": indexContent.id,
+                "changeType": 2,
+                "isUIChange": false,
+                "made_by": loggedUserId
+            }
+            console.log("Deleting index: ");
+            console.log(data);
+            $http.post(projectsRoot, data).
+                success(function () {
+                    console.log("Index[" + indexContent.id + "] deleted successfully");
+                }).error(function () {
+                    var msg = "Deleting index with id:" + indexContent.id + " failed";
+                    console.log(msg);
+                    throw msg;
+                });
+        }
+
 
         //var tables = [{data:{...}, element:{..}, dataModified, elModified }]			dataModified, elModified = true, false
         this.getTablesData = function () {

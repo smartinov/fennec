@@ -11,7 +11,6 @@
                 $scope.activeSchema = {};
                 $scope.diagrams = [];
                 $scope.newSchema = {id:"",databaseName:"",collation:""};
-                $scope.indexes = [];
 
                 var absoluteURL = $location.$$absUrl;
                 var branchRevisionId = absoluteURL.substr(absoluteURL.lastIndexOf('/') + 1);
@@ -29,6 +28,7 @@
                 $scope.selectedTable = {};
                 $scope.selectedTableForeignKeys = [];
                 $scope.selectedTableForeignKeyColumns=[]; // refIndexColumns - it contain only columns which are indexed
+
                 $scope.selectedTableIndexes = [];
                 $scope.activeDiagramEditData = {};  // for edit form
             }
@@ -37,6 +37,7 @@
                 $scope.deletedTableElements = []; // for now only deleting table elements
                 $scope.deletedColumnsData = [];
                 $scope.deletedLinks = [];
+                $scope.deletedIndexes = [];
             }
 
 
@@ -200,20 +201,20 @@
 
                                 // Indexes
                                 if (dataTable.indexes.length > 0) {
-                                    var tableIndexes = {
-                                        table: dataTable.id,
-                                        extendedIndexes: []
-                                    };
+                                    var tableExtendedIndexes = [];
                                     for (var j in dataTable.indexes) {
                                         var indexData = dataTable.indexes[j];
+                                        indexData.columns = JSON.parse(indexData.columns); // need to convert to list i got it like string from server
                                         var extendedIndex = {
                                             data: indexData,
-                                            modified: false
+                                            modified: false,
+                                            new: false
                                         };
-                                        tableIndexes.extendedIndexes.push(extendedIndex);
+                                        tableExtendedIndexes.push(extendedIndex);
                                     }
-                                    $scope.indexes.push(tableIndexes);
+                                    table.data.indexes=tableExtendedIndexes;
                                 }
+
                                 // add to scope
                                 $scope.diagramData.tables.push(table);
                                 break;
@@ -221,7 +222,7 @@
                         }
                     }
                 }
-                var indexes = $scope.indexes;
+
                 if($scope.schemas.length>0){
                     showCurrentSchemaInDropDown($scope.schemas[0].data);
                 }else{
@@ -272,6 +273,15 @@
                             column.modified = false; // reset it
                         }
                     }
+
+                    // save indexes
+                    for(var i in table.data.indexes){
+                        var index = table.data.indexes[i];
+                        if(index.modified){
+                            diagramService.saveIndex(branchRevisionId,index.data);
+                            index.modified = false;
+                        }
+                    }
                 }
 
                 // save/update foreignKeys and relationElements
@@ -287,14 +297,6 @@
                     }
                 }
 
-                // save indexes
-                for(var i in $scope.indexes){
-                    var index = $scope.indexes[i];
-                    if(index.modified){
-                        diagramService.saveIndex(branchRevisionId,index.data);
-                        index.modified = false;
-                    }
-                }
 
                 // delete table elements
                 for(var i in $scope.deletedTableElements){
@@ -313,6 +315,12 @@
                     var link = $scope.deletedLinks[i];
                     diagramService.deleteTableForeignKey(branchRevisionId, link.fk_data);
                     diagramService.deleteRelationshipElement(branchRevisionId, link.element);
+                }
+
+                // delete indexes
+                for(var i in $scope.deletedIndexes){
+                    var index = $scope.deletedIndexes[i];
+                    diagramService.deleteIndex(branchRevisionId, index.data);
                 }
 
                 }catch (err){
@@ -346,6 +354,45 @@
                 }
                 $scope.$apply();
             });
+
+            // ****** INDEX TAB - LEFT ******
+            $scope.indexTypes =["INDEX","UNIQUE"];
+            $scope.addIndex = function () {
+                var tableDataId = $scope.selectedTable.data.id;
+                $scope.inserted = {
+                    data: {
+                        id: genGuid(),
+                        name: "index",
+                        comment: "",
+                        type: "INDEX",
+                        columns: [],
+                        tableRef: tableDataId
+                    },
+                    modified: true,
+                    new: true
+                };
+                var tableIndex = findTablePositionInArray(tableDataId, $scope.diagramData.tables);
+                if (tableIndex != null) {
+                    $scope.diagramData.tables[tableIndex].data.indexes.push($scope.inserted);
+                }
+                console.log("ctrl-> new index initialized");
+            };
+            $scope.deleteIndex = function(deletedExtendedIndex, selectedTableIndexes){
+                for(var i in selectedTableIndexes){
+                    var index = selectedTableIndexes[i];
+                    if(deletedExtendedIndex.data.id == index.data.id){
+                        selectedTableIndexes.splice(i,1);
+                        if(deletedExtendedIndex.new == false){
+                            $scope.deletedIndexes.push(deletedExtendedIndex);
+                        }
+                        break;
+                    }
+                }
+                console.log("index successfully deleted");
+            }
+
+            // ****** INDEX TAB - RIGHT ******
+
 
 
             // ****** FOREIGN KEY TAB - LEFT ******
@@ -397,7 +444,6 @@
                 }
                 return "Not selected";
             };
-
             $scope.recal = "";
             $scope.saveReferencedKeyDetails = function(data,fkDetails){
                 fkDetails.foreignKey.dataModified = true;
@@ -405,6 +451,7 @@
                 fkDetails.foreignKey.fk_data.comment = data.comment;
                 $scope.recal = fkDetails.refTable;
             }
+
 
 
              // ********* REMOVE TABLE *********

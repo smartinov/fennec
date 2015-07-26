@@ -1,3 +1,5 @@
+import ast
+import json
 from fennec.apps.metamodel.services import convert_change_to_object
 
 from fennec.apps.repository.models import Sandbox, Branch, BranchRevision, SandboxChange, \
@@ -348,6 +350,8 @@ def build_state_metadata(schemas, new_changes):
     for index_change in index_changes:
         change_obj = convert_change_to_object(index_change)
 
+        # columns need to be json list on front not string
+        change_obj.columns = json.dumps(ast.literal_eval(change_obj.columns))
         table_parent = None
         for schema in schemas:
             for table in schema.tables:

@@ -36,7 +36,6 @@
              }
              restart(true);
             },true);
-
             scope.$watch('recal', function(newValue,oldValue) {
                  console.log("directive-> referencedColumn changed"); //console.log(tablesData);
                 if(newValue!=""){
@@ -324,7 +323,7 @@
                   if(tableData != undefined){
                     console.log("directive-> table selected: "+tableData.data.name);
                     scope.stable = tableData;
-                    console.log(scope.stableForeignKeys);
+                    // console.log(scope.stableForeignKeys);
 
                     // foreign keys
                     var fk = [];
@@ -337,7 +336,7 @@
                     }
                     scope.stableForeignKeys = fk;
 
-
+                    // indexes
                     scope.stableIndexes = tableData.data.indexes;
                     scope.$apply();
                     //passing value to controller if this directive will be private (zatvoren)
