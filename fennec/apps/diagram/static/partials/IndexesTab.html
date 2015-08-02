@@ -14,7 +14,7 @@
             </td>
             <td style="white-space: nowrap">
                  <span editable-select="extendedIndex.data.type" e-name="index_type" e-form="indexForm"
-                                  e-ng-options="s for s in indexTypes"> [[ extendedIndex.data.type ]]
+                       e-ng-options="s for s in indexTypes"> [[ extendedIndex.data.type ]]
                  </span>
             </td>
 
@@ -31,7 +31,7 @@
                     </button>
                 </form>
                 <div class="buttons" ng-show="!indexForm.$visible">
-                    <button class="btn btn-info" ng-click="showForeignKeyColumns(extendedIndex)">select</button>
+                    <button class="btn btn-info" ng-click="showIndexColumns(extendedIndex)">select</button>
                     <button class="btn btn-primary" ng-click="indexForm.$show()">edit</button>
                     <button class="btn btn-danger" ng-click="deleteIndex(extendedIndex,selectedTableIndexes)">
                         del
@@ -41,4 +41,32 @@
         </tr>
     </table>
     <button class="btn btn-default" ng-click="addIndex()">Add</button>
+</div>
+
+
+<div style="float: left; ">
+    <form id="frmIndexColumns">
+        <div style="float: left; ">
+        <table class="table table-bordered table-hover table-condensed">
+            <tr style="font-weight: bold">
+                <td>Column</td>
+            </tr>
+
+            <tr ng-repeat="indexColumn in indexColumns.columns">
+                <td>
+                    <input type="checkbox" ng-model="indexColumn.selected"> [[ indexColumn.name]]
+                </td>
+                <td style="white-space: nowrap">
+                    [[ extendedIndex.data.type ]]
+                </td>
+            </tr>
+        </table>
+        </div>
+        <div class="indexComment" style="float: left; margin-left: 10px;">
+            <textarea ng-model="selectedIndexComment"></textarea>
+            <button id="btnOk" ng-click="saveChangesOnIndexColumns(indexColumns.extendedIndex,selectedIndexComment)">Save</button>
+        </div>
+
+    </form>
+
 </div>

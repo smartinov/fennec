@@ -390,9 +390,47 @@
                 }
                 console.log("index successfully deleted");
             }
+            $scope.showIndexColumns = function(extendedIndex){
+                console.log(extendedIndex);
+                $scope.selectedIndexComment = extendedIndex.data.comment;
+
+                var table = getTableForId(extendedIndex.data.tableRef);
+                $scope.indexColumns = {extendedIndex:extendedIndex,columns:[]};
+                for(var i in table.data.columns){
+                    var column = table.data.columns[i];
+                    var indexColumn = {id: column.cdata.id, name: column.cdata.name, selected: false};
+                    if(extendedIndex.data.columns.length>0) {
+                        for (var j in extendedIndex.data.columns) {
+                            if(extendedIndex.data.columns[j] == column.cdata.id){
+                                 indexColumn.selected = true;
+                            }
+                        }
+                    }
+                    $scope.indexColumns.columns.push(indexColumn);
+                }
+            }
 
             // ****** INDEX TAB - RIGHT ******
+            $scope.saveChangesOnIndexColumns = function(extendedIndex,selectedIndexComment){
+                for(var i in $scope.indexColumns.columns){
+                    var column = $scope.indexColumns.columns[i];
+                    if(column.selected){
+                        extendedIndex.data.columns.push(column.id);
+                    }else{
+                        // remove if not selected
+                        for(var i = extendedIndex.data.columns.length-1; i>=0;i--){
+                            var columnId = extendedIndex.data.columns[i];
+                            if(columnId == column.id){
+                                extendedIndex.data.columns.splice(i, 1);
+                            }
+                        }
+                    }
+                    extendedIndex.modified = true;
+                }
 
+                extendedIndex.data.comment= selectedIndexComment;
+                console.log(extendedIndex);
+            }
 
 
             // ****** FOREIGN KEY TAB - LEFT ******
