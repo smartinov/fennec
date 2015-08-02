@@ -2,7 +2,7 @@
     'use strict';
 
     var module = angular.module('myApp.controllers')
-        .controller('DiagramController', function ($scope, $filter, $http,$location, diagramService, spinnerService) {
+        .controller('DiagramController', function ($scope, $filter, $http,$location, diagramService, spinnerService,Notification) {
 
             init();
             function init() {
@@ -326,10 +326,12 @@
                 }catch (err){
                     success = false;
                     console.log("Saving diagram["+$scope.activeDiagram.data.name+"] failed with msg:"+err);
+                    Notification.error("Saving diagram["+$scope.activeDiagram.data.name+"] failed with msg:"+err);
                 }
                 if(success){
                     console.log("Diagram["+$scope.activeDiagram.data.name+"] content saved successfully");
                     clearDeletedScopes();
+                    Notification.success("Diagram["+$scope.activeDiagram.data.name+"] content saved successfully");
                 }
             }
 
@@ -429,7 +431,7 @@
                 }
 
                 extendedIndex.data.comment= selectedIndexComment;
-                console.log(extendedIndex);
+                Notification.success("Index column changed successfully");
             }
 
 
