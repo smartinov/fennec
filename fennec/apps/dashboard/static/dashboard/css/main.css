@@ -43,6 +43,17 @@
     transition: all 0.5s ease;
 }
 
+#sidebar-wrapper-top{
+    margin-top: 1%;
+    z-index: 1000;
+    position: fixed;
+    width: 100%;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+
 
  #sidebar-wrapper-rigth.toggled {
     width: 30%;
@@ -52,7 +63,8 @@
 #page-content-wrapper {
     width: 50%;
     position: absolute;
-
+    margin-top: 5%;
+    height: 100%;
 }
 
 /* Sidebar Styles */
@@ -216,4 +228,78 @@ li.li-img{
     float: right;
     margin-top: 11px;
     margin-right: 20px;
+}
+
+.search-form .form-group {
+  float: left !important;
+  transition: all 0.35s, border-radius 0s;
+  width: 32px;
+  height: 32px;
+  background-color: #fff;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+  border-radius: 25px;
+  border: 1px solid #ccc;
+}
+.search-form .form-group input.form-control {
+  padding-right: 20px;
+  border: 0 none;
+  background: transparent;
+  box-shadow: none;
+  display:block;
+}
+.search-form .form-group input.form-control::-webkit-input-placeholder {
+  display: none;
+}
+.search-form .form-group input.form-control:-moz-placeholder {
+  /* Firefox 18- */
+  display: none;
+}
+.search-form .form-group input.form-control::-moz-placeholder {
+  /* Firefox 19+ */
+  display: none;
+}
+.search-form .form-group input.form-control:-ms-input-placeholder {
+  display: none;
+}
+.search-form .form-group:hover,
+.search-form .form-group.hover {
+  width: 100%;
+  border-radius: 4px 25px 25px 4px;
+}
+.search-form .form-group span.form-control-feedback {
+  position: absolute;
+  top: -1px;
+  right: -2px;
+  z-index: 2;
+  display: block;
+  width: 34px;
+  height: 34px;
+  line-height: 34px;
+  text-align: center;
+  color: #3596e0;
+  left: initial;
+  font-size: 14px;
+}
+
+.form-group label {
+    float: left;
+    text-align: left;
+    font-weight: normal;
+}
+
+.form-group select {
+    display: inline-block;
+    width: auto;
+    vertical-align: middle;
+}
+
+.sidebar-left-first{
+  margin-bottom: 16%;
+  margin-top: 10%;
+}
+
+.project-title{
+  margin-left: 5%;
+  color: whitesmoke;
+  font-size: x-large;
 }

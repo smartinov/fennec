@@ -1,0 +1,117 @@
+.icon{
+    /*background-image: url(icon_resize.gif);*/
+    cursor: nw-resize;
+
+}
+.drag {
+    cursor:move
+}
+rect.drop, rect.drop1{
+    fill: lightgrey;
+    /*fill-opacity: 0.2;*/
+}
+
+text.drop1{
+    pointer-events: none;
+}
+
+text.comp {
+    text-anchor: end;
+}
+
+.hidden {visibility:hidden;}
+
+.bar rect{
+    fill: steelblue;
+
+}
+
+rect.bgd {
+    fill: #ececec;
+    stroke: black;
+    stroke-width: 0.1;
+}
+
+rect.fennec_table {
+    fill: white;
+    stroke: black;
+    stroke-width: "0.5";
+    overflow:auto;
+    resize:both;
+}
+
+text{
+    font: 12px sans-serif;
+}
+
+text.name {
+    font-weight: bold;
+    font-size: 14pt;
+}
+
+.bar text{
+    /*text-anchor: end;*/
+    pointer-events: none;
+}
+
+text.value{
+    text-anchor: start;
+    /* stroke: "black";
+     stroke-width: "0.5";*/
+    width: 167;
+    fill: #000000;
+    pointer-events: none;
+}
+
+text.unselected {
+    /*fill-opacity: 0.2;*/
+    fill: #b9acac;
+    text-anchor: start;
+    /* stroke: "black";
+     stroke-width: "0.5";*/
+    width: 167;
+
+    pointer-events: none;
+}
+
+rect.unselected {
+    fill-opacity: 0.1;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.x.axis path {
+    display: none;
+}
+
+h1{
+    font-family:   sans-serif;
+    position:absolute;
+    left:100px;
+    top:0px;
+}
+
+.dummy{
+    height: 30px;
+    width: 100%;
+}
+
+#a {
+    x: 200;
+    y: 30px;
+}
+
+.spinner{
+    background : url('../images/popup_bg_transparent.png');
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 9999999;
+}

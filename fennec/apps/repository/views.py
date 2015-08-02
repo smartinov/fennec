@@ -1,3 +1,5 @@
+import ast
+import json
 from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action, link
@@ -7,10 +9,10 @@ from fennec.apps.constants import MASTER_BRANCH_NAME, MASTER_BRANCH_TYPE, MASTER
 from fennec.apps.metamodel.serializers import SchemaSerializer, DiagramSerializer, SandboxBasicInfoSerializer, \
     ChangeSerializer
 from fennec.apps.repository import utils
-from fennec.apps.repository.models import Project, Branch, BranchRevision, SandboxChange
+from fennec.apps.repository.models import Project, ProjectMember, Branch, BranchRevision, SandboxChange
 from fennec.apps.repository.serializers import BranchRevisionSerializer
 from fennec.apps.repository.utils import SandboxState
-from fennec.apps.repository.serializers import ProjectSerializer, BranchSerializer, GroupSerializer, UserSerializer
+from fennec.apps.repository.serializers import ProjectSerializer, ProjectMemberSerializer, BranchSerializer, GroupSerializer, UserSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -31,7 +33,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.DjangoFilterBackend,)
     filter_fields = ('created_by',)
 
-
     def post_save(self, obj, created=False):
         """
         After saving of new project create new 'master' branch and its zero revision.
@@ -44,13 +45,18 @@ class ProjectViewSet(viewsets.ModelViewSet):
             revision_zero.save()
 
 
+class ProjectMemberViewSet(viewsets.ModelViewSet):
+    queryset = ProjectMember.objects.all()
+    serializer_class = ProjectMemberSerializer
+    lookup_field = 'id'
+
+
 class BranchViewSet(viewsets.ModelViewSet):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
     lookup_field = 'id'
     filter_backends = (filters.DjangoFilterBackend,)
     filter_fields = ('project_ref',)
-
 
     def post_save(self, obj, created=False):
         """
@@ -103,6 +109,7 @@ class BranchRevisionViewSet(viewsets.ModelViewSet):
 
             change = serializer.object
             change.made_by = request.user
+            change.content = json.dumps(ast.literal_eval(change.content))  # convert unicode 'change.content' to json
             change.save()
             sandbox_change = SandboxChange()
             sandbox_change.change_ref = change
@@ -169,7 +176,7 @@ class BranchRevisionViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-    @action()
+    @link()
     def diagram(self, request, id=None):
         """
         Builds and returns single diagram.

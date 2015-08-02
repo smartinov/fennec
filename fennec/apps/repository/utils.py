@@ -1,3 +1,5 @@
+import ast
+import json
 from fennec.apps.metamodel.services import convert_change_to_object
 
 from fennec.apps.repository.models import Sandbox, Branch, BranchRevision, SandboxChange, \
@@ -223,6 +225,7 @@ class SandboxState(object):
         for diagram in self.diagrams:
             ret_val.append({
                 'id': diagram.id,
+                'name': diagram.name,
                 'description': diagram.description,
                 'url': diagram.id
             })
@@ -347,6 +350,8 @@ def build_state_metadata(schemas, new_changes):
     for index_change in index_changes:
         change_obj = convert_change_to_object(index_change)
 
+        # columns need to be json list on front not string
+        change_obj.columns = json.dumps(ast.literal_eval(change_obj.columns))
         table_parent = None
         for schema in schemas:
             for table in schema.tables:
@@ -480,8 +485,8 @@ def build_state_symbols(diagrams, new_changes):
         rel_el = rel_el[0] if rel_el else None
 
         if rel_el_change.change_type == 0:
-            diagram_parent.relationship_elements.append(rel_el)
-        elif rel_el_change.change_type == 0:
+            diagram_parent.relationship_elements.append(change_obj)
+        elif rel_el_change.change_type == 1:
             if rel_el is None:
                 continue
             rel_el.start_position_x = change_obj.start_position_x

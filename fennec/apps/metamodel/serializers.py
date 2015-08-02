@@ -43,14 +43,13 @@ class IndexSerializer(serializers.Serializer):
     id = serializers.CharField()
     name = serializers.CharField()
     comment = serializers.CharField(required=False)
-    storageType = serializers.CharField(source='storage_type')
-    columns = ColumnSerializer(required=False, many=True)
-
+    type = serializers.CharField(source='type') #INDEX, PRIMARY, UNIQUE
+    storageType = serializers.CharField(required=False, source='storage_type')
+    columns = serializers.CharField(required=False)
     tableRef = serializers.CharField(source='table_ref')
 
     def restore_object(self, attrs, instance=None):
         index = Index(**attrs)
-        index.columns = []
         return index
 
 
@@ -68,15 +67,14 @@ class ForeignKeySerializer(serializers.Serializer):
     comment = serializers.CharField(required=False)
     onUpdate = serializers.IntegerField(source='on_update_referential_action')
     onDelete = serializers.IntegerField(source='on_delete_referential_action')
-    sourceColumns = ColumnSerializer(required=False, source='source_columns', many=True)
-    referencedColumns = ColumnSerializer(required=False, source='referenced_columns', many=True)
+    sourceColumn = serializers.CharField(required=False, source='source_column')
+    referencedColumn = serializers.CharField(required=False, source='referenced_column')
 
     tableRef = serializers.CharField(source='table_ref')
+    referencedTableRef = serializers.CharField(source='referenced_table_ref')
 
     def restore_object(self, attrs, instance=None):
         foreign_key = ForeignKey(**attrs)
-        foreign_key.source_columns = []
-        foreign_key.referenced_columns = []
         return foreign_key
 
 
@@ -178,8 +176,9 @@ class RelationshipElementSerializer(serializers.Serializer):
     startPositionX = serializers.FloatField(source='start_position_x')
     startPositionY = serializers.FloatField(source='start_position_y')
     endPositionX = serializers.FloatField(source='end_position_x')
-    endPositionX = serializers.FloatField(source='end_position_y')
+    endPositionY = serializers.FloatField(source='end_position_y')
     drawStyle = serializers.IntegerField(source='draw_style')
+    cardinality = serializers.IntegerField(source='cardinality')
     foreignKeyRef = serializers.CharField(source='foreign_key_ref')
 
     diagramRef = serializers.CharField(source='diagram_ref')
