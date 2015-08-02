@@ -100,7 +100,7 @@ class WorkbenchParser():
         index_type = index_element.find('.value[@key="indexType"]').text
         column_elements = index_element.findall('.value[@key="columns"]/value[@struct-name="db.mysql.IndexColumn"]')
         columns = [el.find('.link[@key="referencedColumn"]').text.strip('{}').lower() for el in column_elements]
-        return Index(name=name, storage_type=index_type, columns=columns, id=index_id)
+        return Index(name=name,type=index_type, storage_type=index_type, columns=columns, id=index_id)
 
     def __get_column(self, column_element, ordinal=sys.maxint):
         column_id = column_element.get('id').strip('{}').lower()
