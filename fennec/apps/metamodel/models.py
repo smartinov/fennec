@@ -12,7 +12,7 @@ CHANGE_TYPE = (
 
 class Change(models.Model):
     id = models.AutoField(primary_key=True)
-    content = models.CharField(max_length=255, help_text="change content containing the object of the change")
+    content = models.CharField(max_length=32768, help_text="change content containing the object of the change")
     object_type = models.CharField(max_length=25, help_text="type of object being changed")
     object_code = models.CharField(max_length=36, help_text="guid, references a concret object being changed")
     change_type = models.IntegerField(choices=CHANGE_TYPE, help_text="defines type of a change")

@@ -75,6 +75,7 @@ class Index(object):
         """
         self.id = kwargs.get('id')
         self.name = kwargs.get('name')
+        self.type = kwargs.get('type')
         self.storage_type = kwargs.get('storage_type')
         self.comment = kwargs.get('comment')
         self.columns = kwargs.get('columns') if kwargs.get('columns') else []
@@ -96,6 +97,7 @@ class ForeignKey(object):
         self.referenced_column = kwargs.get('referenced_column')
 
         self.table_ref = kwargs.get('table_ref')
+        self.referenced_table_ref = kwargs.get('referenced_table_ref')
 
 
 class Diagram(object):
@@ -144,6 +146,7 @@ class RelationshipElement(object):
         self.end_position_x = kwargs.get('end_position_x')
         self.end_position_y = kwargs.get('end_position_y')
         self.draw_style = kwargs.get('draw_style')
+        self.cardinality = kwargs.get('cardinality')
         self.foreign_key_ref = kwargs.get('foreign_key_ref')
 
         self.diagram_ref = kwargs.get('diagram_ref')

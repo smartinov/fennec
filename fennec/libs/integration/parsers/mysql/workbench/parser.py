@@ -1,4 +1,5 @@
 import sys
+from uuid import uuid4
 
 __author__ = 'stefan.martinov@danulabs.com'
 
@@ -99,7 +100,7 @@ class WorkbenchParser():
         index_type = index_element.find('.value[@key="indexType"]').text
         column_elements = index_element.findall('.value[@key="columns"]/value[@struct-name="db.mysql.IndexColumn"]')
         columns = [el.find('.link[@key="referencedColumn"]').text.strip('{}').lower() for el in column_elements]
-        return Index(name=name, storage_type=index_type, columns=columns, id=index_id)
+        return Index(name=name,type=index_type, storage_type=index_type, columns=columns, id=index_id)
 
     def __get_column(self, column_element, ordinal=sys.maxint):
         column_id = column_element.get('id').strip('{}').lower()
@@ -140,10 +141,11 @@ class WorkbenchParser():
         source_column = column_element.find('.link').text.strip('{}').lower()
         ref_column_element = fk_element.findall('.value[@key="referencedColumns"]')[0] if fk_element.findall('.value[@key="referencedColumns"]') else None
         ref_column = ref_column_element.find('.link').text.strip('{}').lower()
+        referencedTableRef = str(uuid4()).lower()
 
         return ForeignKey(name=name, id=fk_id, comment=comment,
                           on_delete_referential_action=delete_rule, on_update_referential_action=update_rule,
-                          source_column=source_column, referenced_column=ref_column)
+                          source_column=source_column, referenced_column=ref_column, referenced_table_ref=referencedTableRef)
 
     @staticmethod
     def __parse_simple_type(column_element):

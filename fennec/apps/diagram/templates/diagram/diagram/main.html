@@ -14,17 +14,19 @@
     <script src="{% static "js/angular/angular.js" %}"></script>
     <script src="{% static "js/angular/angular-route.js" %}"></script>
     <script src="{% static "js/angular/xeditable.js" %}"></script>
+    <script src="{% static "js/spinjs/spin.js" %}"></script>
+    <script src="{% static "js/plugins/angular-ui-notification.min.js" %}"></script>
 
     <!--Javascript to the end for performance -->
     <script src="{% static "js/diagram/app.js" %}"></script>
     <script src="{% static "js/diagram/services/d3.js" %}"></script>
     <script src="{% static "js/diagram/services/diagramService.js" %}"></script>
+    <script src="{% static "js/diagram/services/spinnerService.js" %}"></script>
     <script src="{% static "js/diagram/controllers/fennecCtrl.js" %}"></script>
     <script src="{% static "js/diagram/directives/fennecDiagram.js" %}"></script>
 
-
     <script src="{% static "js/diagram/state-machine.js" %}"></script>
-
+    <script src="http://angular-ui.github.com/bootstrap/ui-bootstrap-tpls-0.4.0.js"></script>
 {% endblock %}
 {% block  ng-controller %}DiagramController{% endblock %}
 {% block content %}
@@ -34,8 +36,20 @@
 <div class="fennec-sidebar">
     <div class="well sidebar-nav">
         <ul class="nav nav-list">
-            <li class="nav-header">Project 1</li>
-            <li class="active"><a href="#"> Diagram 1</a></li>
+            <li class="nav-header">[[projectInfo.name]]</li>
+
+            <li class="active"><a href="#"> [[activeDiagram.data.name]]</a></li>
+
+            <li class="nav-header">Diagram</li>
+            <button ng-click="saveDiagramButton()">Save diagram</button>
+            <form class="form-horizontal" role="form">
+                <div class="form-group">
+                    <div class="col-sm-4">
+                        <input class="form-control" id="inputName3" placeholder="Name" ng-model="activeDiagramEditData.data.name">
+                        <button type="submit" ng-click="editDiagramButton()" class="btn btn-success">Edit</button>
+                    </div>
+                </div>
+            </form>
 
             <li class="nav-header">Toolbar</li>
             <button onclick="changeState(fennecStates.new_table)">New table</button>
@@ -43,6 +57,16 @@
             <button onclick="changeState(fennecStates.new_link)">New link</button>
             <button onclick="changeState(fennecStates.delete_obj)">Delete</button>
             <button onclick="innerLayout.toggle('south')">toggle Property div</button>
+
+            <li class="nav-header" style="margin-top: 15px;">Schemas</li>
+            <select ng-init="activeSchema=schemas[0].data" data-ng-options="s.data as s.data.databaseName for s in schemas" data-ng-model="activeSchema"></select>
+            <form class="form-horizontal" role="form">
+                <div class="form-group">
+                    <div class="col-sm-4">
+                        <button type="submit" ng-click="showCreateSchemaPopup()" class="btn btn-success">Add</button>
+                    </div>
+                </div>
+            </form>
         </ul>
     </div>
 </div>
@@ -50,61 +74,36 @@
 <!-- Diagram -->
 <div class="outer-center">
 
-    <div class="middle-center" ng-controller="DiagramController" >
+    <div class="middle-center" style="background-color: #F8F8F8;" >
 
-            <fennec-diagram data="diagramData" stable="selectedTable"></fennec-diagram>
-            <div class="property">
-                Table Name: <input data-ng-model="selectedTable.title" type="text" placeholder="Table name">
+        <div role="tabpanel">
+			<ul class="nav nav-tabs" role="tablist">
+				<li role="presentation" ng-repeat="tab in diagrams" ng-click="selectDiagram($index)" ng-class="{'active':selectedDiagram == $index}">
+					<a data-target="#tab" aria-controls="home" role="tab" data-toggle="tab">[[tab.data.name]] <span ng-click="closeDiagram($index)"><i class="icon-remove"></i></span></a>
+				</li>
+				<li role="presentation" ng-click="addDiagram()">
+					<a aria-controls="home" role="tab" data-toggle="tab">( + )</a>
+				</li>
+			</ul>
+		</div>
+        <div class="tab-content">
+				<div role="tabpanel" class="tab-pane active" id="tab">
+					 <fennec-diagram adiagram="activeDiagram.data" active-schema="activeSchema" data="diagramData"
+                        stable="selectedTable" stable-foreign-keys="selectedTableForeignKeys" stable-indexes="selectedTableIndexes" recal="recal"></fennec-diagram>
+				</div>
+		</div>
 
-                 {% verbatim %}
-                <table class="table table-bordered table-hover table-condensed">
-                    <tr style="font-weight: bold">
-                        <td style="width:35%">Column</td>
-                        <td style="width:20%">DataType</td>
-                        <td style="width:25%">Edit</td>
-                    </tr>
+  {#        TABLE COLUMNS PROPERTIES#}
+        <div class="property" style="background-color: #F8F8F8;">
+          <tabset class="nav nav-tabs">
+              <tab heading="Columns"> <div ng-include="'{% static 'partials/ColumnsTab.html' %}'"> </div></tab>
+              <tab heading="Indexes"> <div ng-include="'{% static 'partials/IndexesTab.html' %}'"> </div></tab>
+              <tab heading="Foreign Keys"><div ng-include="'{% static 'partials/ForeignKeysTab.html' %}'"></div></tab>
+            </tabset>
+        </div>
 
-                    <!--FOR FOR FOR FOR FOR default select first table-->
-
-                    <tr ng-repeat="user in selectedTable.attrs">
-                        <td>
-                            <!-- editable column (text with validation) -->
-                            <span editable-text="user.name" e-name="name" e-form="rowform" onbeforesave="checkName($data, user.id)"
-                                  e-required>
-                                {{ user.name || 'empty' }}
-                            </span>
-                        </td>
-                        <td style="white-space: nowrap">
-                            <!-- editable Type (select-local) -->
-                            <span editable-select="user.dataType" e-name="dataType" e-form="rowform"
-                                  e-ng-options="s.value as s.text for s in dataTypes"> {{ showDataType(user) }}
-                            </span>
-                        </td>
-
-                        <td style="white-space: nowrap">
-                            <!-- form -->
-                            <form editable-form name="rowform" onbeforesave="saveTable($data, user.id)"
-                                  ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == user">
-                                <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary">
-                                    save
-                                </button>
-                                <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()"
-                                        class="btn btn-default">
-                                    cancel
-                                </button>
-                            </form>
-                            <div class="buttons" ng-show="!rowform.$visible">
-                                <button class="btn btn-primary" ng-click="rowform.$show()">edit</button>
-                                <button class="btn btn-danger" ng-click="removeTableColumn($index)">del</button>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
-                {% endverbatim %}
-
-                <button class="btn btn-default" ng-click="addTable()">Add row</button>
-            </div>
     </div>
+    <div ng-if="isCreateSchemaPopupShown" ng-include="'{% static 'partials/SchemaPopup.html' %}'"></div>
 </div>
 
 {% endblock %}

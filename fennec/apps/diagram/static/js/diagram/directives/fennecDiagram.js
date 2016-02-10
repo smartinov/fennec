@@ -2,13 +2,17 @@
   'use strict';
 
   angular.module('myApp.directives')
-    //.directive('d3Bars',  ['d3Service','$compile', function(d3Service,$compile) {
     .directive('fennecDiagram',  ['d3Service','$compile', function(d3Service,$compile) {
       return {
         restrict: 'EA',
         scope: {
-           data: "=",
-          stable: "="
+            data: "=",
+            stable: "=",
+            stableForeignKeys: "=",
+            stableIndexes: "=",
+            adiagram: "=",
+            activeSchema: "=",
+            recal: "="
         },
         template:"<div class='diagram'  ></div>",
         link: function(scope, iElement, iAttrs) {
@@ -16,17 +20,28 @@
             var tablesData = scope.data.tables;
             var linksData = scope.data.links;
 
-            var tableDefaultWidth = 300;
-            var tableDefaultHeight = 150;
+            var tableDefaultWidth = 220;
+            var tableDefaultHeight = 100;
             var modelDefaultWidth = 2500;
             var modelDefaultHeight = 1500;
-            var resizeRectSize = 16;
+            var resizeRectSize = 12;
 
-            scope.$watch('data.tables', function() {
-              //console.log(tablesData[0].attrs);
-              console.log("Dir-> changes occur on dir input table data: ");
-              console.log(tablesData);
-              restart(true);
+            scope.$watch('data', function(newValue,oldValue) {
+             console.log("directive-> redrawing diagram"); //console.log(tablesData);
+             if(newValue !== oldValue){
+                 // for now i don't get why when i set in controller that $scope.diagramData={tables: [], links: []} why don't take efects here on creating new tab
+                 // this is workaround
+                 tablesData =  newValue.tables;
+                 linksData = newValue.links;
+             }
+             restart(true);
+            },true);
+            scope.$watch('recal', function(newValue,oldValue) {
+                 console.log("directive-> referencedColumn changed"); //console.log(tablesData);
+                if(newValue!=""){
+                 updateLinkPositionForTable(newValue);
+                    }
+                scope.recal = "";
             },true);
 
             var drag = d3.behavior.drag()
@@ -46,7 +61,7 @@
             var svg;
             initSvgDiagram();
             function initSvgDiagram(){
-              console.log("Init svg diagram");
+              console.log("diagram -> init svg diagram");
               svg = d3.select(".diagram")
                   .style("outline","1px solid black")
                   .style("width","100%")
@@ -76,6 +91,40 @@
                   .append('svg:path')
                   .attr('d', 'M10,-5L0,0L10,5')
                   .attr('fill', '#000');
+
+                // GRID ON DIAGRAM
+                svg.append('svg:defs').append('svg:pattern')
+                  .attr('id', 'smallGrid')
+                  .attr('patternUnits', 'userSpaceOnUse')
+                  .attr('width', "8")
+                  .attr('height', "8")
+                  .append('svg:path')
+                  .attr('d','M 8 0 L 0 0 0 8')
+                  .attr('fill','none')
+                .attr('stroke','gray')
+                .attr('stroke-width','0.5');
+
+                var grid = svg.append('svg:defs').append('svg:pattern')
+                  .attr('id', 'grid')
+                  .attr('patternUnits', 'userSpaceOnUse')
+                  .attr('width', "80")
+                  .attr('height', "80");
+
+                grid.append('svg:rect')
+                   .attr('width', "80")
+                  .attr('height', "80")
+                  .attr('fill','url(#smallGrid)');
+
+                grid.append('svg:path')
+                  .attr('d','M 80 0 L 0 0 0 80')
+                  .attr('fill','none')
+                .attr('stroke','gray')
+                .attr('stroke-width','1');
+
+                svg.append('rect')
+                    .attr('width', '100%')
+                  .attr('height', '100%')
+                 .attr('fill', 'url(#grid)');
             }
             var selected_table = null,
                 selected_link = null,
@@ -89,83 +138,79 @@
               mousedown_link = null;
             }
 
-            //restart();
             function restart(redrawAll){
+
               if(redrawAll){
                 d3.select(".diagram").selectAll("*").remove();
                 initSvgDiagram();
               }
-
-              // Create table links
-              redrawLines();
-
+              redrawLines();// Create table links
               redrawTables();
             }
             function redrawTables(){
               // Create table with attributes
               var svgTables = svg.selectAll("g.table").data(tablesData);
               var table = svgTables.enter().append("g").classed("table", true).attr("id", function(d,i) { return "table"+i})
-              table.append("rect").classed("table", true).on("click", mouseClick);
+              table.append("rect").classed("fennec_table", true).on("click", mouseClick);
               var t = table.append("rect").classed("titleBox", true).call(drag);
-              table.append("text").classed("title", true).data(tablesData);
+              table.append("text").classed("name", true).data(tablesData);
 
-              var attributes =  table.append("g").classed("attributes",true).selectAll("attribute").data(function(d) { return d.attrs});
+              var attributes =  table.append("g").classed("attributes",true).selectAll("attribute").data(function(d) { return d.data.columns});
               var attribute = attributes.enter().append("text").classed("attribute", true).attr("id", function(d,i) { return "attribute"+i}).on("click", mouseClick);
               table.append("rect").classed("resize-icon", true).call(resize);
 
-              table.selectAll("rect.table")
+              table.selectAll("rect.fennec_table")
                   .attr({
-                    x: function(d) { return d.xPos; },
-                    y: function(d) { return d.yPos; },
-                    width: function(d) { return d.width; },
-                    height: function(d) { return d.height; }
+                    x: function(t) { return t.element.positionX; },
+                    y: function(t) { return t.element.positionY; },
+                    width: function(t) { return t.element.width; },
+                    height: function(t) { return t.element.height; }
                   })
 
               table.selectAll("rect.titleBox")
                   .classed("drag", true)
                   .attr({
-                    x: function(d) { return d.xPos; },
-                    y: function(d) { return d.yPos; },
-                    width: function(d) { return d.width; },
+                    x: function(t) { return t.element.positionX; },
+                    y: function(t) { return t.element.positionY; },
+                    width: function(t) { return t.element.width; },
                     height: 25,
                     fill: "#ADD8E6"
                   })
 
-              table.selectAll("text.title")
+              table.selectAll("text.name")
                   .attr({
-                    x: function(d) { return d.xPos + 10; },
-                    y: function(d) { return d.yPos+ 20; },
-                    width: function(d) { return d.width; },
+                    x: function(t) { return t.element.positionX + 10; },
+                    y: function(t) { return t.element.positionY + 20; },
+//                    width: function(t) { return t.element.width; }, text attribute don't need width
                     height: 25,
                     fill: "#ffffff"
                   })
-                  .text(function(d) {
-                    return d.title;
+                  .text(function(t) {
+                    return t.data.name;
                   })
 
               // TODO: find better way than using getAttributeTableMethod
               table.selectAll("text.attribute")
                   .attr({
                     x: function(d) {
-                      var table = getAttributeTable(d.id);
-                      return table.xPos + 10;
+                      var table = getAttributeTable(d.cdata.id);
+                      return table.element.positionX + 10;
                     },
                     y: function(d,i) {
-                      var table = getAttributeTable(d.id);
-                      return table.yPos+45+((i==0)?0:(20*i));
+                      var table = getAttributeTable(d.cdata.id);
+                      return table.element.positionY+45+((i==0)?0:(20*i));
                     },
-                    width: function(d) { return d.width; },
                     height: 25,
                     fill: "#999999"
                   })
                   .text(function(d) {
-                    return d.name+ " (" + getTypeNameForValue(d.dataType)+")";
+                    return d.cdata.name+ " (" + getTypeNameForValue(d.cdata.column_type)+")";
                   })
 
               table.selectAll("rect.resize-icon")
                   .attr({
-                    x: function(d) { return d.xPos + d.width-resizeRectSize; },
-                    y: function(d) { return d.yPos + d.height - resizeRectSize; },
+                    x: function(d) { return d.element.positionX + d.element.width-resizeRectSize; },
+                    y: function(d) { return d.element.positionY + d.element.height - resizeRectSize; },
                     width: resizeRectSize,
                     height: resizeRectSize,
                     fill: "#999999"
@@ -174,7 +219,7 @@
             }
 
             //TODO: find way to skip this and pass dataType as value
-            function getTypeNameForValue(dataTypeValue){
+            function getTypeNameForValue(columnType){
 
               var dataTypes =  [
                 {value: 1, text: 'ID'},
@@ -190,11 +235,11 @@
                 {value: 11, text: 'BOOLEAN'}
               ];
 
-              if(isNumber(dataTypeValue)== false){
-                return dataTypeValue;
+              if(isNumber(columnType)== false){
+                return columnType;
               }else{
                 for(var i =0;i<dataTypes.length;i++){
-                  if(dataTypes[i].value == dataTypeValue){
+                  if(dataTypes[i].value == columnType){
                     return dataTypes[i].text;
                   }
                 }
@@ -204,10 +249,11 @@
               return !isNaN(parseFloat(n)) && isFinite(n);
             }
             function getAttributeTable(attrId){
-              // TODO: latter extend to check all attr just in case
+              // TODO: latter extend to check all column just in case
               for(var i=0;i<tablesData.length;i++){
-                for(var j=0;j<tablesData[i].attrs.length;j++){
-                  if(tablesData[i].attrs[j].id == attrId){
+                for(var j=0;j<tablesData[i].data.columns.length;j++){
+                  var columnData = tablesData[i].data.columns[j].cdata;
+                  if(columnData.id == attrId){
                     return tablesData[i];
                   }
                 }
@@ -218,15 +264,15 @@
 
               var svgLinks = svg.selectAll("g.link").data(linksData);
               var link = svgLinks.enter().append("g").classed("link", true);
-              link.append("svg:line").classed("link",true).attr("id", function(d) { return d.id});
+              link.append("svg:line").classed("link",true).attr("id", function(d) { return d.element.id});
               link.selectAll("line.link")
                   .attr({
-                    x1: function(d) { return d.source.x; },
-                    y1: function(d) { return d.source.y; },
-                    x2: function(d) { return d.target.x; },
-                    y2: function(d) { return d.target.y; }
+                    x1: function(d) { return d.element.startPositionX; },
+                    y1: function(d) { return d.element.startPositionY; },
+                    x2: function(d) { return d.element.endPositionX; },
+                    y2: function(d) { return d.element.endPositionY; }
                   }).style("stroke", "rgb(6,120,155)").style("stroke-width", 3)
-                  .style('marker-start', function(d) { return (d.biDirection==true) ? 'url(#start-arrow)' : ''; })
+                  .style('marker-start', function(d) { return (d.element.cardinality==3) ? 'url(#start-arrow)' : ''; })
                   .style('marker-end', function(d) { return  'url(#end-arrow)'; });
               svgLinks.exit().remove();
             }
@@ -239,7 +285,7 @@
               tmpTargetTableLink= null;
             }
 
-            // MOUSE EVENTS
+            // ********* MOUSE EVENTS *********
             function mouseClick(d) {
               d3.event.stopPropagation();
               var dragTarget = d3.select(this);
@@ -251,13 +297,22 @@
               var mouseClickY = point[1];
               //console.log("mouseClick on x:"+mouseClickX+" y: "+mouseClickY);
               if(actionStates == fennecStates.new_table){
-                tablesData.push({id:tablesData.length+1,
-                  title:"Table"+(tablesData.length+1),
-                  xPos:mouseClickX,
-                  yPos:mouseClickY,
-                  height:tableDefaultHeight,
-                  width:tableDefaultWidth,
-                  attrs:[{id:genGuid(), name:"Attribute 2", dataType:"int" }]});
+                var tableDataId = genGuid();
+                  console.log("directive->activediagram:"); console.log(scope.adiagram);
+                  console.log(scope.activeSchema);
+                tablesData.push(
+                  { data:{
+                      id:tableDataId, name:"Table "+(tablesData.length+1),"comment":"no comment","collation":"utf-8",namespaceRef:"",
+                      columns: [],indexes: [],foreignKeys: [],schemaRef:scope.activeSchema.id
+                  },
+                   element:{
+                      id:genGuid(),positionX:mouseClickX,positionY:mouseClickY,width:tableDefaultWidth, height:tableDefaultHeight, tableRef: tableDataId,
+                      diagramRef:scope.adiagram.id, color:"#FFFFFF",collapsed:false
+                  },
+                    dataModified: true,
+                    elModified: true
+                }
+                );
                 restart(true);
                 innerLayout.close('south');
                 changeState(fennecStates.select);
@@ -266,8 +321,23 @@
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
                   if(tableData != undefined){
-                    console.log("Dir-> Table selected: "+tableData.id);
+                    console.log("directive-> table selected: "+tableData.data.name);
                     scope.stable = tableData;
+                    // console.log(scope.stableForeignKeys);
+
+                    // foreign keys
+                    var fk = [];
+                    for(var i in linksData){
+                        var currentLink = linksData[i];
+                        if(currentLink.fk_data.tableRef == tableData.data.id){
+                            var fk_data = {data:currentLink, refTable:getTableForId(currentLink.fk_data.referencedTableRef)};
+                            fk.push(fk_data);
+                        }
+                    }
+                    scope.stableForeignKeys = fk;
+
+                    // indexes
+                    scope.stableIndexes = tableData.data.indexes;
                     scope.$apply();
                     //passing value to controller if this directive will be private (zatvoren)
                     //scope.$emit('selectedTableEvent', tableData );
@@ -278,7 +348,7 @@
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
                   if(tableData != undefined){
-                    console.log("Dir-> Table deleted: "+tableData.id);
+                    console.log("directive-> table["+tableData.data.name+"] is deleting");
                     scope.$emit('deleteTableEvent', tableData );
                   }
                 }
@@ -289,13 +359,14 @@
                 var selectedAttributeArrays = d3.select(this);                       // [[text#attribute0.attribute]]
                 var tableOfAttrArrays = d3.select(this.parentNode.parentNode);               // [[g#table0.table]]
                 var tableData =tableOfAttrArrays.node().__data__;
-                var attrData = selectedAttributeArrays.node().__data__;  // console.log(attrData);
+                var columnData = selectedAttributeArrays.node().__data__;  // console.log(columnData);
+
                 if(tmpSourceTableLink == null ){
-                  tmpSourceTableLink = {x:0,y:0, table:tableData, attr:attrData};
+                  tmpSourceTableLink = {x:0,y:0, table:tableData, attr:columnData};
                   return;
                 }
                 if(tmpTargetTableLink == null){
-                  tmpTargetTableLink = {x:0,y:0, table:tableData, attr:attrData};
+                  tmpTargetTableLink = {x:0,y:0, table:tableData, attr:columnData};
                 }
 
                 var linkPosition= calculateLinkPosition(tmpSourceTableLink,tmpTargetTableLink);
@@ -303,17 +374,41 @@
                 tmpTargetTableLink = linkPosition.targetTableLink;
                 // console.log("Source("+tmpSourceTableLink.x+","+ tmpSourceTableLink.y+") Target("+tmpTargetTableLink.x+","+tmpTargetTableLink.y+")" );
 
-                linksData.push({id:genGuid(),
-                  source:{x:tmpSourceTableLink.x, y:tmpSourceTableLink.y, tableId:tmpSourceTableLink.table.id, attr:tmpSourceTableLink.attr},
-                  target:{x:tmpTargetTableLink.x, y:tmpTargetTableLink.y, tableId:tmpTargetTableLink.table.id, attr:tmpTargetTableLink.attr},
-                  biDirection:linkPosition.biDirection});
+                  var fk_data_id = genGuid();
+                  linksData.push(
+                      {
+                          fk_data: {
+                              "id":fk_data_id,
+                              "name":"fk_"+tmpSourceTableLink.attr.cdata.name+"_"+tmpTargetTableLink.attr.cdata.name+"1",
+                              "onUpdate":3,
+                              "onDelete":3,
+                              "sourceColumn": tmpSourceTableLink.attr.cdata.id,
+                              "referencedColumn":tmpTargetTableLink.attr.cdata.id,
+                              "tableRef":tmpSourceTableLink.table.data.id,
+                              "referencedTableRef": tmpTargetTableLink.table.data.id
+                          },
+                          element: {
+                              "id":genGuid(),
+                              "startPositionX":tmpSourceTableLink.x,
+                              "startPositionY":tmpSourceTableLink.y,
+                              "endPositionX":tmpTargetTableLink.x,
+                              "endPositionY":tmpTargetTableLink.y,
+                              "drawStyle":0,
+                              "cardinality":1,  // 0-one-to-one,1- one-to-many,2- many-to-one,3- many-to-many
+                              "foreignKeyRef":fk_data_id,
+                              "diagramRef":scope.adiagram.id
+                          },
+                          dataModified: true,
+                          elModified: true
+                      }
+                  );
                 clearTmpLinks();
                 changeState(fennecStates.select);
                 redrawLines();
               }
             }
             function calculateLinkPosition(sourceTableLink,targetTableLink){
-              if(sourceTableLink.table.xPos < targetTableLink.table.xPos){
+              if(sourceTableLink.table.element.positionX < targetTableLink.table.element.positionX){
                 var linkCoord = getLinkPosition(sourceTableLink.table, sourceTableLink.attr,true);
                 sourceTableLink.x = linkCoord.x;
                 sourceTableLink.y = linkCoord.y
@@ -335,26 +430,26 @@
               };
               return result;
             }
-
-            function getLinkPosition(tableData,attrData,isLinkStartOnTableRightSide){
+            function getLinkPosition(table,column,isLinkStartOnTableRightSide){
               // isLinkStartOnTableRightSide - link start from a table right side
-              var attrPositionInList = arrayObjectIndexOf(tableData.attrs,attrData.id,"id");
+              var columnPositionInList = getColumnPositionInList(table.data.columns,column.cdata.id,"id");
               // console.log("getLinkPosition() => "+attrPositionInList);
               var linkCoordinate
               if(isLinkStartOnTableRightSide){
                 linkCoordinate = {
-                  x: tableData.xPos + tableData.width,
-                  y: tableData.yPos + 45 + (attrPositionInList*20) - (20/2-1)
+                  x: table.element.positionX + table.element.width,
+                  y: table.element.positionY + 45 + (columnPositionInList*20) - (20/2-1)
                 }
               }else{
                 linkCoordinate = {
-                  x: tableData.xPos,
-                  y: tableData.yPos + 45 + (attrPositionInList*20) - (20/2-1)
+                  x: table.element.positionX,
+                  y: table.element.positionY + 45 + (columnPositionInList*20) - (20/2-1)
                 }
               }
               return linkCoordinate;
             }
 
+            // *********  TABLE MOVE *********
             var relativeMovePosX=0;
             var relativeMovePosY=0;
             function move(){
@@ -372,58 +467,67 @@
 
               movingTableObject.attr("transform", "translate(" + relativeMovePosX + "," + relativeMovePosY + ")");
               updateTablePosition(movingTableObject,startTableXPosition+relativeMovePosX, startTableYPosition+relativeMovePosY);
-              //var link = getLinkForTableId(movingTableObject);
-              //if(link != null){
-              //    var linkObjArrays = d3.select("#"+link.id);   //		[[line#id-from-link.link]]
-              //    console.log(linkObjArrays);
-              //    linkObjArrays.attr("transform", "translate(" + relativeMovePosX + "," + relativeMovePosY + ")");
-              //}
               updateLinkPosition(movingTableObject);
             };
             function updateTablePosition(movingTableObject,x,y) {
-              var tableId = movingTableObject.node().__data__.id;
+              var tableElemId = movingTableObject.node().__data__.element.id;
               for (var i in tablesData) {
-                if (tablesData[i].id == tableId) {
-                  tablesData[i].xPos = x;
-                  tablesData[i].yPos = y;
+                if (tablesData[i].element.id == tableElemId) {
+                  tablesData[i].element.positionX = x;
+                  tablesData[i].element.positionY = y;
                   //console.log("updateTablePosition() => x: "+x+" y: "+y);
+                  tablesData[i].elModified = 1;
                   break;
                 }
               }
             }
             function updateLinkPosition(movingTableObject){
-              var redraw = false;
-              var table = movingTableObject.node().__data__;
-              for(var i=0;i<linksData.length;i++){
-                if(linksData[i].source.tableId == table.id){
-                  var tableLink = linksData[i];
-                  //console.log("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
-                  updateLinkData(tableLink);
-                  redraw = true;
-                }
-                if(linksData[i].target.tableId == table.id){
-                  var tableLink = linksData[i];
-                  // console.log("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
-                  updateLinkData(tableLink);
-                  redraw = true;
-                }
-              }
-              if(redraw) {
-                redrawLines();
-              }
+              var movingTable = movingTableObject.node().__data__;
+              updateLinkPositionForTable(movingTable);
             }
+            function updateLinkPositionForTable(movingTable) {
+                  var redraw = false;
+                  for (var i = 0; i < linksData.length; i++) {
+                      if (linksData[i].fk_data.tableRef == movingTable.data.id) {
+                          var tableLink = linksData[i];
+                          //console.log("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
+                          updateLinkData(tableLink);
+                          redraw = true;
+                      }
+                      if (linksData[i].fk_data.referencedTableRef == movingTable.data.id) {
+                          var tableLink = linksData[i];
+                          // console.log("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
+                          updateLinkData(tableLink);
+                          redraw = true;
+                      }
+                  }
+                  if (redraw) {
+                      redrawLines();
+                  }
+            }
+
+
+
             function updateLinkData(link){
-              var linkTables = findLinkTables(link.source.tableId,link.target.tableId);
-              var sourceTableLink = {x:0,y:0, table:linkTables.sourceTable, attr:link.source.attr};
-              var targetTableLink = {x:0,y:0, table:linkTables.targetTable, attr:link.target.attr};
+              var linkTables = findLinkTables(link.fk_data.tableRef,link.fk_data.referencedTableRef);
+              var sourceTableColumn = getColumnForId(linkTables.sourceTable.data.columns,link.fk_data.sourceColumn);
+              var referencedTableColumn = getColumnForId(linkTables.targetTable.data.columns,link.fk_data.referencedColumn);
+                // attr -- ovo je ispod columnData
+                // attr -- ovo je ispod columnData
+                // attr -- ovo je ispod columnData
+                // attr -- ovo je ispod columnData
+
+              var sourceTableLink = {x:0,y:0, table:linkTables.sourceTable, attr:sourceTableColumn};
+              var targetTableLink = {x:0,y:0, table:linkTables.targetTable, attr:referencedTableColumn};
               var linkPosition= calculateLinkPosition(sourceTableLink,targetTableLink);
               //console.log("updateLinkData(link) => linkId: "+link.id);
               //console.log("updateLinkData(link) before => source("+link.source.x+","+link.source.y+"), target("+link.target.x+","+  link.target.y+")");
-              link.source.x = linkPosition.sourceTableLink.x;
-              link.source.y = linkPosition.sourceTableLink.y;
-              link.target.x = linkPosition.targetTableLink.x;
-              link.target.y = linkPosition.targetTableLink.y;
-              //console.log("updateLinkData(link) after update=> source("+link.source.x+","+link.source.y+"), target("+link.target.x+","+  link.target.y+")");
+
+              link.element.startPositionX = linkPosition.sourceTableLink.x;
+              link.element.startPositionY = linkPosition.sourceTableLink.y;
+              link.element.endPositionX =linkPosition.targetTableLink.x;
+              link.element.endPositionY = linkPosition.targetTableLink.y;
+              link.elModified = true;
             }
             function findLinkTables(sourceTableId, targetTableId){
               var result = {
@@ -431,7 +535,7 @@
                 targetTable:null
               };
               for(var i=0;i<tablesData.length;i++) {
-                if(tablesData[i].id == sourceTableId){
+                if(tablesData[i].data.id == sourceTableId){
                   result.sourceTable = tablesData[i];
                   if(result.targetTable == null){
                     continue;
@@ -439,7 +543,7 @@
                     break;
                   }
                 }
-                if(tablesData[i].id == targetTableId){
+                if(tablesData[i].data.id == targetTableId){
                   result.targetTable = tablesData[i];
                   if(result.sourceTable == null){
                     continue;
@@ -450,19 +554,26 @@
               }
               return result;
             }
+            function getColumnForId(columns, columnId){
+                for(var i in columns){
+                    if(columns[i].cdata.id == columnId){
+                        return columns[i];
+                    }
+                }
+            }
 
+            // *********  TABLE RESIZE *********
             var resizeRectXPos ;
             var resizeRectYPos;
             function dragResize(){
               var resizeIconObject = d3.select(this);                 // [[rect.resize-icon]]
               var resizeTableObject = d3.select(this.parentNode);     // [[g#table0.table]]
-              var resizeTableArrays = resizeTableObject.select("rect.table");                // [[rect.table]]
+              var resizeTableArrays = resizeTableObject.select("rect.fennec_table");                // [[rect.fennec_table]]
               var resizeTableTitleArrays = resizeTableObject.select("rect.titleBox");        // [[rect.titleBox.drag]]
 
-
-              var selectedTableData = resizeTableArrays.node().__data__;
-              var tableWidth = selectedTableData.width;
-              var tableHeight = selectedTableData.height;
+              var selectedTableDataWithElement = resizeTableArrays.node().__data__;
+              var tableWidth = selectedTableDataWithElement.element.width;
+              var tableHeight = selectedTableDataWithElement.element.height;
 
               var translateCoord = parseTranslateString(resizeTableObject.attr("transform"));
               // console.log("dragResize()=> translateCoord x: "+translateCoord.x +" , y: "+translateCoord.y);
@@ -486,8 +597,8 @@
               resizeTableArrays.attr("width", tableWidth).attr("height", tableHeight);
               resizeTableTitleArrays.attr("width", tableWidth);
 
-              hideAttributesOnResize(resizeTableObject,tableWidth, tableHeight,selectedTableData.attrs);       // console.log("dragResize()=> tableHeight: "+tableHeight+" tableWidth: "+tableWidth );
-              updateTableSize(selectedTableData,tableHeight,tableWidth);
+              hideAttributesOnResize(resizeTableObject,tableWidth, tableHeight,selectedTableDataWithElement.data.columns);       // console.log("dragResize()=> tableHeight: "+tableHeight+" tableWidth: "+tableWidth );
+              updateTableSize(selectedTableDataWithElement.element,tableHeight,tableWidth);
               updateLinkPosition(resizeTableObject);
             };
             function calculateResizeRectPosition(resizeTableArrays,translateCoord,tableWidth,tableHeight){
@@ -504,17 +615,17 @@
               //console.log("resizeRectXPos: "+resizeRectXPos+ " resizeRectYPos: "+resizeRectYPos);
               return {x:resizeRectXPos, y:resizeRectYPos};
             }
-            function updateTableSize(selectedTableData,tableHeight, tableWidth){
-              var tableId = selectedTableData.id;
+            function updateTableSize(selectedTableElement,tableHeight, tableWidth){
+              var tableId = selectedTableElement.id;
               for (var i in tablesData) {
-                if (tablesData[i].id == tableId) {
-                  tablesData[i].height = tableHeight;
-                  tablesData[i].width = tableWidth;
+                if (tablesData[i].element.id == tableId) {
+                  tablesData[i].element.height = tableHeight;
+                  tablesData[i].element.width = tableWidth;
+                  tablesData[i].elModified = 1;
                   break;
                 }
               }
             }
-
             function hideAttributesOnResize(resizeTableObject,tableWidth,tableHeight, tableAttributes){
               // TODO: find how to truncate text on resizing left
               // TODO: find way need to minus 100 from dragx , what is that 100 (-> (dragx-100))
@@ -522,7 +633,7 @@
               var attrNumber =tableAttributes.length;
               //attribute0, attribute1
               for (var i = attrNumber-1; i>= 0; i--) {
-                // Note: when select attribute(child element) from resizeTableObject, the data will be inherited from parent object in this case from table, we lose attribute data
+                 // Note: when select attribute(child element) from resizeTableObject, the data will be inherited from parent object in this case from table, we lose attribute data
                 // to fix this d3 logic :), add attribute data here ( this is how d3 work, it is build to inherit all data from parent to childs because of data consistency)
                 var attrObjArray = resizeTableObject.select("#attribute"+i).data($(tableAttributes[i]));
                 attributesObjectsFromPage.push(attrObjArray);
@@ -549,9 +660,8 @@
               return childOffset;
             }
 
-// Moje dodato
-            var lastKeyDown;
 
+            var lastKeyDown;
             function keydown() {
               d3.event.preventDefault();
 
@@ -614,12 +724,11 @@
                 //.on('keydown', keydown)
                 //.on('keyup', keyup);
 
-// *************** HELPER FUNCTIONS **************************
+            // *********  HELPER FUNCTIONS *********
             function getLinkForTableId(movingTableObject){
               // TODO: this is not good , need to set like in add links part
               var table = movingTableObject.node().__data__;
               for(var i=0;i<linksData.length;i++){
-                //{id:11111, source: { x:400, y:100, tableId:0, attrId:0, attrName: "Attribute 1"}, target: { x:600, y:100, tableId:1, attrId:2, attrName: "Attribute 2"}, biDirection: true }
                 if(linksData[i].source.tableId == table.id){
                   return linksData[i];
                 }
@@ -636,7 +745,6 @@
               var possible = "abcdef";
               var hexLetter = possible.charAt(Math.floor(Math.random() * possible.length))
               id = hexLetter+id;
-              console.log(id);
               return id;
             }
             function parseAllTransformation (a)
@@ -672,13 +780,20 @@
                     s4() + '-' + s4() + s4() + s4();
               };
             })();
-            function arrayObjectIndexOf(myArray, searchTerm, property) {
+            function getColumnPositionInList(myArray, searchTerm, property) {
               for(var i = 0, len = myArray.length; i < len; i++) {
-                if (myArray[i][property] === searchTerm) return i;
+                if (myArray[i].cdata[property] === searchTerm) return i;
               }
               return -1;
             }
-
+            function getTableForId(id) {
+            for (var i = 0; i < tablesData.length; i++) {
+                if (id == tablesData[i].data.id) {
+                    return tablesData[i];
+                }
+            }
+            return null;
+        }
 
           });
         }
