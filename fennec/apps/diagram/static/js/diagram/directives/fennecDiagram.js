@@ -23,7 +23,7 @@
             var tableDefaultWidth = 220;
             var tableDefaultHeight = 100;
             var modelDefaultWidth = 2500;
-            var modelDefaultHeight = 1500;
+            var modelDefaultHeight = 2500;
             var resizeRectSize = 12;
 
             scope.$watch('data', function(newValue,oldValue) {
@@ -316,6 +316,8 @@
                 restart(true);
                 innerLayout.close('south');
                 changeState(fennecStates.select);
+                //TODO: change css to rectangle
+
               }
               if(actionStates == fennecStates.select){
                 if(selected_table != null){

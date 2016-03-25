@@ -14,6 +14,11 @@ var actionStates = 'select';
 
 function changeState(state){
     this.actionStates = state;
+//     $('.diagram').css('cursor', "pointer");
+
+    if(state == fennecStates.new_table){
+        $('svg').css('cursor',"url(http://findicons.com/files/icons/1722/gnome_2_18_icon_theme/24/stock_draw_rectangle.png), auto");
+    }
 
     if(state == fennecStates.new_link){
         clearTmpLinks();
