@@ -67,7 +67,6 @@
                   .style("width","100%")
                   .style("height","100%")
                   .style("float","left")
-                  .style("overflow","auto")
                   .append("svg").attr('width', modelDefaultWidth).attr('height', modelDefaultHeight).on("click", mouseClick);
 
               svg.append('svg:defs').append('svg:marker')
