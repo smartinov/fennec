@@ -63,11 +63,13 @@
             function initSvgDiagram(){
               console.log("diagram -> init svg diagram");
               svg = d3.select(".diagram")
-                  .style("outline","1px solid black")
                   .style("width","100%")
                   .style("height","100%")
                   .style("float","left")
-                  .append("svg").attr('width', modelDefaultWidth).attr('height', modelDefaultHeight).on("click", mouseClick);
+                  .append("svg")
+                  .attr('width', modelDefaultWidth)
+                  .attr('height', modelDefaultHeight)
+                  .style("outline","1px solid black").on("click", mouseClick);
 
               svg.append('svg:defs').append('svg:marker')
                   .attr('id', 'end-arrow')
