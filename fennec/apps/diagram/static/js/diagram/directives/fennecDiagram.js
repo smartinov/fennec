@@ -2,7 +2,7 @@
   'use strict';
 
   angular.module('myApp.directives')
-    .directive('fennecDiagram',  ['d3Service','$compile', function(d3Service,$compile) {
+    .directive('fennecDiagram',  ['d3Service', function(d3Service) {
       return {
         restrict: 'EA',
         scope: {
@@ -287,6 +287,7 @@
             }
 
             // ********* MOUSE EVENTS *********
+            // ********* MOUSE EVENTS *********
             function mouseClick(d) {
               d3.event.stopPropagation();
               var dragTarget = d3.select(this);
@@ -303,7 +304,7 @@
                   console.log(scope.activeSchema);
                 tablesData.push(
                   { data:{
-                      id:tableDataId, name:"Table "+(tablesData.length+1),"comment":"no comment","collation":"utf-8",namespaceRef:"",
+                      id:tableDataId, name:"Table "+(tablesData.length+1),"comment":"no comment","collation":scope.activeSchema.collation,namespaceRef:"",
                       columns: [],indexes: [],foreignKeys: [],schemaRef:scope.activeSchema.id
                   },
                    element:{
@@ -317,8 +318,6 @@
                 restart(true);
                 innerLayout.close('south');
                 changeState(fennecStates.select);
-                //TODO: change css to rectangle
-
               }
               if(actionStates == fennecStates.select){
                 if(selected_table != null){

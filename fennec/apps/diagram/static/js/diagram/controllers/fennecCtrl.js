@@ -10,7 +10,7 @@
                 $scope.schemas = [];
                 $scope.activeSchema = {};
                 $scope.diagrams = [];
-                $scope.newSchema = {id:"",databaseName:"",collation:""};
+//                $scope.newSchema = {id:"",databaseName:"",collation:""};
 
                 var absoluteURL = $location.$$absUrl;
                 var branchRevisionId = absoluteURL.substr(absoluteURL.lastIndexOf('/') + 1);
@@ -80,7 +80,7 @@
             function loadBranchRevisionProjectAndDiagram(branchRevisionId, diagramId) {
                 spinnerService.showSpinner();
                 var projectStateRequest = diagramService.loadBranchRevisionProjectState(branchRevisionId);
-                projectStateRequest.then(function (brState) {  // this is only run after $http completes
+                projectStateRequest.then(function (brState) {
                     //console.log(result);
                     if (diagramId == undefined) {
                         if (brState.diagrams.length > 0) {
@@ -113,8 +113,7 @@
                 console.log("ProjectInfo: ");
                 console.log($scope.projectInfo);
 
-                // ADD DIAGRAMS to scope
-
+                    // ADD DIAGRAMS to scope
                     for(var i in branchRevisionStatusData.diagrams){
                         // load diagrams on page refresh(on tab change don't load)
                         var extDiagram = {data: branchRevisionStatusData.diagrams[i], modified: false};
@@ -146,14 +145,15 @@
 
                 for (var i in branchRevisionStatusData.schemas) {
                     // SET SCHEMAS
-                    var schema = {data:{
+                    var schema = {  data:{
                                         id: branchRevisionStatusData.schemas[i].id,
                                         databaseName: branchRevisionStatusData.schemas[i].databaseName,
                                         comment: branchRevisionStatusData.schemas[i].comment,
                                         collation: branchRevisionStatusData.schemas[i].collation,
                                         namespaces: branchRevisionStatusData.schemas[i].namespaces
                                     },
-                                    modified: false };
+                                    modified: false
+                                };
                     $scope.schemas.push(schema);
 
                     // SET DIAGRAM TABLES
@@ -179,7 +179,7 @@
                                         modified: false
                                     });
                                 }
-                                table.data.columns = columns;
+                                table.data.columns = sortTableColumns(columns);
 
                                 // IF foreignKeys EXISTS on table data CHECK ON DIAGRAM AND CREATE LINK
                                 for (var j in dataTable.foreignKeys) {
@@ -229,7 +229,13 @@
                     $scope.showCreateSchemaPopup();
                 }
             }
-
+            function sortTableColumns(columns){
+                return columns.sort(function(a, b) {
+                    var textA = a.cdata.ordinal;
+                    var textB = b.cdata.ordinal;
+                    return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+                });
+            }
 
             // ******* SAVE DIAGRAM ON BUTTON *******
             $scope.saveDiagramButton = function () {
@@ -523,6 +529,7 @@
             // ********* ADD/EDIT COLUMN *********
             $scope.addColumn = function () {
                 var tableDataId = $scope.selectedTable.data.id;
+                var tableCollation = $scope.selectedTable.data.collation;
                 console.log("Selected table id: " + tableDataId);
                 $scope.inserted = {
                     cdata: {
@@ -533,11 +540,11 @@
                         length: 150,
                         precision: 0.0,
                         default: "default",
-                        collation: "utf-8",
+                        collation: tableCollation,
                         ordinal: 0,
-                        primary: true,
-                        nullable: true,
-                        unique: true,
+                        primary: false,
+                        nullable: false,
+                        unique: false,
                         autoIncrement: false,
                         dictionary: false,
                         tableRef: tableDataId
@@ -623,11 +630,10 @@
             $scope.isCreateSchemaPopupShown = false;
             $scope.showCreateSchemaPopup = function(){
                 $scope.isCreateSchemaPopupShown = true;
+                $scope.newSchema = {id:genGuid(),databaseName:"",collation:""};
             }
             $scope.createSchemaOk = function(){
-                $scope.newSchema.id = genGuid();
                 $scope.schemas.push({data:$scope.newSchema,modified: true});
-                $scope.newSchema = {id:"",databaseName:"",collation:""};
                 $scope.isCreateSchemaPopupShown = false;
                 if($scope.schemas.length == 1){
                     showCurrentSchemaInDropDown($scope.schemas[0].data);
@@ -635,10 +641,16 @@
             }
             $scope.createSchemaCancel = function(){
                 $scope.isCreateSchemaPopupShown = false;
-                $scope.newSchema = {id:"",databaseName:"",collation:""};
             }
             function showCurrentSchemaInDropDown(schemaData) {
-                  $scope.activeSchema = schemaData; // select first schema in dropdown
+                  $scope.activeSchema = schemaData;
+            }
+
+            // ********* GET SCHEMA **************
+            $scope.getSchemaName = function(schemaId){
+                if(schemaId == undefined) return;
+                var schemaArray = $filter('filter')($scope.schemas, schemaId); // return array
+                return schemaArray.length ? schemaArray[0].data.databaseName : 'Not set';
             }
 
             // ******** THIS CONTROLLER UTIL FUNCTION ********
@@ -678,7 +690,6 @@
                         s4() + '-' + s4() + s4() + s4();
                 };
             })();
-
             function genGuid() {
                 //  id-s started with number is not recognized by d3.select function
                 var id = guid();
