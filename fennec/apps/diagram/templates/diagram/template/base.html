@@ -23,22 +23,24 @@
     <!--Settings for layouts ( toolbar and table properties close/open resize)-->
     <script type="text/javascript">
         // whole page
-        var outerLayoutOptions = {
-            north__spacing_open: 0, west__size: 300, south__size: 200, center__childOptions: {
+        var outerLayoutSettings = {
+            north__spacing_open: 0,
+            west__size: 300,
+            south__size: 200,
+            spacing_open: 6, // ALL panes
+            spacing_closed: 12, // ALL panes
+            center__childOptions: {
                 inset: {
                     top: 0, bottom: 0, left: 0, right: 0
                 }
             }
         };
 
-        // diagram and properties
-        var innerLayoutOptions = {
-            center__paneSelector: ".ui-layout-center", south__paneSelector: ".ui-layout-south"
-        };
         var innerLayout;
         $(document).ready(function () {
-            $('body').layout(outerLayoutOptions);
-            innerLayout = $('div.ui-layout-center').layout(innerLayoutOptions);
+            $('body').layout(outerLayoutSettings);
+            innerLayout = $('div.ui-layout-center').layout();
+            innerLayout.sizePane("south", 200);
         });
     </script>
 
