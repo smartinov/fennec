@@ -2,7 +2,7 @@
   'use strict';
 
   angular.module('myApp.directives')
-    .directive('fennecDiagram',  ['d3Service', function(d3Service) {
+    .directive('fennecDiagram',  ['d3Service', '$log', function(d3Service, $log) {
       return {
         restrict: 'EA',
         scope: {
@@ -27,7 +27,7 @@
             var resizeRectSize = 12;
 
             scope.$watch('data', function(newValue,oldValue) {
-             console.log("directive-> redrawing diagram"); //console.log(tablesData);
+             $log.debug("directive-> redrawing diagram"); //$log.debug(tablesData);
              if(newValue !== oldValue){
                  // for now i don't get why when i set in controller that $scope.diagramData={tables: [], links: []} why don't take efects here on creating new tab
                  // this is workaround
@@ -37,7 +37,7 @@
              restart(true);
             },true);
             scope.$watch('recal', function(newValue,oldValue) {
-                 console.log("directive-> referencedColumn changed"); //console.log(tablesData);
+                 $log.debug("directive-> referencedColumn changed"); //$log.debug(tablesData);
                 if(newValue!=""){
                  updateLinkPositionForTable(newValue);
                     }
@@ -61,7 +61,7 @@
             var svg;
             initSvgDiagram();
             function initSvgDiagram(){
-              console.log("diagram -> init svg diagram");
+              $log.debug("diagram -> init svg diagram");
               svg = d3.select(".diagram")
                   .style("width","100%")
                   .style("height","100%")
@@ -291,9 +291,10 @@
                     x2: function(d) { return d.element.endPositionX; },
                     y2: function(d) { return d.element.endPositionY; }
                   }).style("stroke", "rgb(6,120,155)").style("stroke-width", 3)
+                  .style("stroke-dasharray", "10 5")
                   .style('marker-start', function(d) { return (d.element.cardinality==3) ? 'url(#start-arrow)' : ''; })
                   .style('marker-end', function(d) { return  'url(#end-arrow)'; });
-              svgLinks.exit().remove();
+//              svgLinks.exit().remove();
             }
 
             var tmpSourceTableLink = null;
@@ -308,7 +309,7 @@
             function linkMouseClick(){
                  d3.event.stopPropagation();
               var rect=  d3.select(this);
-              rect.style( "stroke", "#01ecff").style("stroke-width", "3");
+              rect.style( "stroke", "#01ecff").style("stroke-width", "4");
             }
             function tableMouseClick(){
               d3.event.stopPropagation();
@@ -320,9 +321,9 @@
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
                   if(tableData != undefined){
-                    console.log("directive-> table selected: "+tableData.data.name);
+                    $log.debug("directive-> table selected: "+tableData.data.name);
                     scope.stable = tableData;
-                    // console.log(scope.stableForeignKeys);
+                    // $log.debug(scope.stableForeignKeys);
 
                     // foreign keys
                     var fk = [];
@@ -355,11 +356,11 @@
 
               var mouseClickX = point[0];
               var mouseClickY = point[1];
-              //console.log("mouseClick on x:"+mouseClickX+" y: "+mouseClickY);
+              //$log.debug("mouseClick on x:"+mouseClickX+" y: "+mouseClickY);
               if(actionStates == fennecStates.new_table){
                 var tableDataId = genGuid();
-                  console.log("directive->activediagram:"); console.log(scope.adiagram);
-                  console.log(scope.activeSchema);
+                  $log.debug("directive->activediagram:"); $log.debug(scope.adiagram);
+                  $log.debug(scope.activeSchema);
                 tablesData.push(
                   { data:{
                       id:tableDataId, name:"Table "+(tablesData.length+1),"comment":"no comment","collation":scope.activeSchema.collation,namespaceRef:"",
@@ -381,9 +382,9 @@
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
                   if(tableData != undefined){
-                    console.log("directive-> table selected: "+tableData.data.name);
+                    $log.debug("directive-> table selected: "+tableData.data.name);
                     scope.stable = tableData;
-                    // console.log(scope.stableForeignKeys);
+                    // $log.debug(scope.stableForeignKeys);
 
                     // foreign keys
                     var fk = [];
@@ -410,7 +411,7 @@
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
                   if(tableData != undefined){
-                    console.log("directive-> table["+tableData.data.name+"] is deleting");
+                    $log.debug("directive-> table["+tableData.data.name+"] is deleting");
                     scope.$emit('deleteTableEvent', tableData );
                   }
                 }
@@ -421,7 +422,7 @@
                 var selectedAttributeArrays = d3.select(this);                       // [[text#attribute0.attribute]]
                 var tableOfAttrArrays = d3.select(this.parentNode.parentNode);               // [[g#table0.table]]
                 var tableData =tableOfAttrArrays.node().__data__;
-                var columnData = selectedAttributeArrays.node().__data__;  // console.log(columnData);
+                var columnData = selectedAttributeArrays.node().__data__;  // $log.debug(columnData);
 
                 if(tmpSourceTableLink == null ){
                   tmpSourceTableLink = {x:0,y:0, table:tableData, attr:columnData};
@@ -434,7 +435,7 @@
                 var linkPosition= calculateLinkPosition(tmpSourceTableLink,tmpTargetTableLink);
                 tmpSourceTableLink = linkPosition.sourceTableLink;
                 tmpTargetTableLink = linkPosition.targetTableLink;
-                // console.log("Source("+tmpSourceTableLink.x+","+ tmpSourceTableLink.y+") Target("+tmpTargetTableLink.x+","+tmpTargetTableLink.y+")" );
+                // $log.debug("Source("+tmpSourceTableLink.x+","+ tmpSourceTableLink.y+") Target("+tmpTargetTableLink.x+","+tmpTargetTableLink.y+")" );
 
                   var fk_data_id = genGuid();
                   linksData.push(
@@ -495,7 +496,7 @@
             function getLinkPosition(table,column,isLinkStartOnTableRightSide){
               // isLinkStartOnTableRightSide - link start from a table right side
               var columnPositionInList = getColumnPositionInList(table.data.columns,column.cdata.id,"id");
-              // console.log("getLinkPosition() => "+attrPositionInList);
+              // $log.debug("getLinkPosition() => "+attrPositionInList);
               var linkCoordinate
               if(isLinkStartOnTableRightSide){
                 linkCoordinate = {
@@ -518,14 +519,14 @@
               var resizeTableTitleArrays = d3.select(this);          // [[rect.titleBox.drag]]
               var movingTableObject = d3.select(this.parentNode);    // [[g#table0.table]]
 
-              // console.log("d3.event.x:"+d3.event.x+" d3.event.y:"+d3.event.y);
+              // $log.debug("d3.event.x:"+d3.event.x+" d3.event.y:"+d3.event.y);
               var startTableXPosition = parseInt(resizeTableTitleArrays.attr('x'));       // ovo je isto uvek
               var startTableYPosition = parseInt(resizeTableTitleArrays.attr('y'));       // ovo je isto uvek
-              // console.log("move() => startTableXPosition: "+startTableXPosition+" startTableYPosition: "+startTableYPosition);
+              // $log.debug("move() => startTableXPosition: "+startTableXPosition+" startTableYPosition: "+startTableYPosition);
 
               relativeMovePosX += d3.event.x - startTableXPosition;
               relativeMovePosY += d3.event.y - startTableYPosition;
-              //console.log("move() => relativeMovePosX:"+relativeMovePosX+" relativeMovePosY:"+relativeMovePosY);
+              //$log.debug("move() => relativeMovePosX:"+relativeMovePosX+" relativeMovePosY:"+relativeMovePosY);
 
               movingTableObject.attr("transform", "translate(" + relativeMovePosX + "," + relativeMovePosY + ")");
               updateTablePosition(movingTableObject,startTableXPosition+relativeMovePosX, startTableYPosition+relativeMovePosY);
@@ -537,7 +538,7 @@
                 if (tablesData[i].element.id == tableElemId) {
                   tablesData[i].element.positionX = x;
                   tablesData[i].element.positionY = y;
-                  //console.log("updateTablePosition() => x: "+x+" y: "+y);
+                  //$log.debug("updateTablePosition() => x: "+x+" y: "+y);
                   tablesData[i].elModified = 1;
                   break;
                 }
@@ -552,13 +553,13 @@
                   for (var i = 0; i < linksData.length; i++) {
                       if (linksData[i].fk_data.tableRef == movingTable.data.id) {
                           var tableLink = linksData[i];
-                          //console.log("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
+                          //$log.debug("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
                           updateLinkData(tableLink);
                           redraw = true;
                       }
                       if (linksData[i].fk_data.referencedTableRef == movingTable.data.id) {
                           var tableLink = linksData[i];
-                          // console.log("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
+                          // $log.debug("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
                           updateLinkData(tableLink);
                           redraw = true;
                       }
@@ -582,8 +583,8 @@
               var sourceTableLink = {x:0,y:0, table:linkTables.sourceTable, attr:sourceTableColumn};
               var targetTableLink = {x:0,y:0, table:linkTables.targetTable, attr:referencedTableColumn};
               var linkPosition= calculateLinkPosition(sourceTableLink,targetTableLink);
-              //console.log("updateLinkData(link) => linkId: "+link.id);
-              //console.log("updateLinkData(link) before => source("+link.source.x+","+link.source.y+"), target("+link.target.x+","+  link.target.y+")");
+              //$log.debug("updateLinkData(link) => linkId: "+link.id);
+              //$log.debug("updateLinkData(link) before => source("+link.source.x+","+link.source.y+"), target("+link.target.x+","+  link.target.y+")");
 
               link.element.startPositionX = linkPosition.sourceTableLink.x;
               link.element.startPositionY = linkPosition.sourceTableLink.y;
@@ -638,12 +639,12 @@
               var tableHeight = selectedTableDataWithElement.element.height;
 
               var translateCoord = parseTranslateString(resizeTableObject.attr("transform"));
-              // console.log("dragResize()=> translateCoord x: "+translateCoord.x +" , y: "+translateCoord.y);
+              // $log.debug("dragResize()=> translateCoord x: "+translateCoord.x +" , y: "+translateCoord.y);
               var resizeRectCoord = calculateResizeRectPosition(resizeTableArrays,translateCoord,tableWidth,tableHeight);
               resizeRectXPos = resizeRectCoord.x;
               resizeRectYPos = resizeRectCoord.y;
-              // console.log("resize dx:"+dx+" dy:"+dy);
-              // console.log("d3.event.x:"+d3.event.dx+" d3.event.y:"+d3.event.dy);
+              // $log.debug("resize dx:"+dx+" dy:"+dy);
+              // $log.debug("d3.event.x:"+d3.event.dx+" d3.event.y:"+d3.event.dy);
 
               var oldx = resizeRectXPos;
               var oldy = resizeRectYPos;
@@ -659,7 +660,7 @@
               resizeTableArrays.attr("width", tableWidth).attr("height", tableHeight);
               resizeTableTitleArrays.attr("width", tableWidth);
 
-              hideAttributesOnResize(resizeTableObject,tableWidth, tableHeight,selectedTableDataWithElement.data.columns);       // console.log("dragResize()=> tableHeight: "+tableHeight+" tableWidth: "+tableWidth );
+              hideAttributesOnResize(resizeTableObject,tableWidth, tableHeight,selectedTableDataWithElement.data.columns);       // $log.debug("dragResize()=> tableHeight: "+tableHeight+" tableWidth: "+tableWidth );
               updateTableSize(selectedTableDataWithElement.element,tableHeight,tableWidth);
               updateLinkPosition(resizeTableObject);
             };
@@ -669,12 +670,12 @@
 
               var tableXPos = startTableXPosition + translateCoord.x;
               var tableYPos = startTableYPosition + translateCoord.y;
-              //console.log("calculateResizeRectPosition=> tableHeight: "+tableHeight + " tableWidth: "+tableWidth);
+              //$log.debug("calculateResizeRectPosition=> tableHeight: "+tableHeight + " tableWidth: "+tableWidth);
               var resizeRectXPos = tableXPos + tableWidth - resizeRectSize;
               var resizeRectYPos = tableYPos + tableHeight - resizeRectSize;
               //var resizeRectXPos = tableWidth - resizeRectSize;
               //var resizeRectYPos = tableHeight - resizeRectSize;
-              //console.log("resizeRectXPos: "+resizeRectXPos+ " resizeRectYPos: "+resizeRectYPos);
+              //$log.debug("resizeRectXPos: "+resizeRectXPos+ " resizeRectYPos: "+resizeRectYPos);
               return {x:resizeRectXPos, y:resizeRectYPos};
             }
             function updateTableSize(selectedTableElement,tableHeight, tableWidth){
@@ -706,13 +707,13 @@
               }
               for(var i=0;i<tableAttributesObjects.length;i++){
                 var attrObjArray = tableAttributesObjects[i];
-                // console.log(attrObjArray.node().__data__);
+                // $log.debug(attrObjArray.node().__data__);
                 var attrObject= $(attrObjArray[0]);
                 var attrPos = getAttributesLocationInTable(attrObject);
 
                 // 16 is the header of table
-                //console.log("childOffset.left "+attrPos.left);
-                //console.log("dragx-100 "+(dragx-100));
+                //$log.debug("childOffset.left "+attrPos.left);
+                //$log.debug("dragx-100 "+(dragx-100));
                 attrObjArray.attr("opacity", function(d) { return (((tableWidth-100) < attrPos.left || tableHeight - 16<attrPos.top)?0:1); });
               }
             }

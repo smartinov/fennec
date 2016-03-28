@@ -4,19 +4,19 @@ var projectsRoot = '/api/branch-revisions/1/change/';
 var branchRevisionRoot = '/api/branch-revisions/';
 
 angular.module('myApp.services')
-    .service('diagramService', function ($http) {
+    .service('diagramService', function ($http, $log) {
 
         // ****** LOAD FUNCTIONS ******
         this.loadBranchRevisionProjectState = function (branchRevisionId) {
             var url = branchRevisionRoot + branchRevisionId + "/project_state";
-            console.log(url);
+            $log.debug(url);
             return $http({method: "GET", url: url}).then(function (result) {
                 return result.data;
             });
         }
         this.loadDiagramElements = function (branchRevisionId, diagramId) {
             var url = branchRevisionRoot + branchRevisionId + "/diagram?diagramId=" + diagramId;
-            console.log(url);
+            $log.debug(url);
             return $http({method: "GET", url: url}).then(function (result) {
                 return result.data;
             });
@@ -27,7 +27,7 @@ angular.module('myApp.services')
 
         this.saveDiagramInfo = function(branchRevisionId, diagramContent){
             var url = branchRevisionRoot + branchRevisionId + "/change/";
-            console.log("save diagram data url: " + url);
+            $log.debug("save diagram data url: " + url);
 
             var data = {
                 "content": diagramContent,
@@ -37,13 +37,13 @@ angular.module('myApp.services')
                 "isUIChange": true,
                 "made_by": loggedUserId
             }
-            console.log("Saving diagram data data: ");console.log(data);
+            $log.debug("Saving diagram data data: ");$log.debug(data);
             $http.post(projectsRoot, data).
                 success(function () {
-                    console.log("Diagram["+diagramContent.name +", "+ diagramContent.id +"] saved successfully");
+                    $log.debug("Diagram["+diagramContent.name +", "+ diagramContent.id +"] saved successfully");
                 }).error(function () {
                     var msg = "Saving diagram["+diagramContent.name +", "+ diagramContent.id +"] failed";
-                    console.log(msg);
+                    $log.debug(msg);
                     throw msg;
                 });
         }
@@ -58,20 +58,20 @@ angular.module('myApp.services')
                 "isUIChange": false,
                 "made_by": loggedUserId
             }
-            console.log("Saving schema data data: ");console.log(data);
+            $log.debug("Saving schema data data: ");$log.debug(data);
             $http.post(projectsRoot, data).
                 success(function () {
-                    console.log("Schema["+schemaContent.databaseName +", "+ schemaContent.id +"] saved successfully");
+                    $log.debug("Schema["+schemaContent.databaseName +", "+ schemaContent.id +"] saved successfully");
                 }).error(function () {
                     var msg = "Saving schema["+diagramContent.databaseName +", "+ schemaContent.id +"] failed";
-                    console.log(msg);
+                    $log.debug(msg);
                     throw msg;
                 });
         }
 
         this.saveTableData = function (branchRevisionId, tableDataContent) {
             var url = branchRevisionRoot + branchRevisionId + "/change/";
-            console.log("save table data url: " + url);
+            $log.debug("save table data url: " + url);
 
             var data = {
                 "content": this.createPostTableData(tableDataContent),
@@ -81,14 +81,14 @@ angular.module('myApp.services')
                 "isUIChange": false,
                 "made_by": loggedUserId
             }
-            console.log("Saving table data: ");
-            console.log(data);
+            $log.debug("Saving table data: ");
+            $log.debug(data);
             $http.post(projectsRoot, data).
                 success(function () {
-                    console.log("Table["+tableDataContent.name +", "+ tableDataContent.id +"] saved successfully");
+                    $log.debug("Table["+tableDataContent.name +", "+ tableDataContent.id +"] saved successfully");
                 }).error(function () {
                     var msg = "Saving table["+tableDataContent.name +", "+ tableDataContent.id +"] failed";
-                    console.log(msg);
+                    $log.debug(msg);
                     throw msg;
                 });
         }
@@ -115,20 +115,20 @@ angular.module('myApp.services')
                 "isUIChange": true,
                 "made_by": loggedUserId
             }
-            console.log("Saving table element: ");
-            console.log(data);
+            $log.debug("Saving table element: ");
+            $log.debug(data);
             $http.post(projectsRoot, data).
                 success(function () {
-                    console.log("Table element[" + tableElementContent.id + "] saved successfully");
+                    $log.debug("Table element[" + tableElementContent.id + "] saved successfully");
                 }).error(function () {
                     var msg = "Saving table element with id:" + tableElementContent.id + " failed";
-                    console.log(msg);
+                    $log.debug(msg);
                     throw msg;
                 });
         }
         this.saveTableForeignKey = function (branchRevisionId, foreignKeyContent) {
             var url = branchRevisionRoot + branchRevisionId + "/change/";
-            console.log("save foreign key data url: " + url);
+            $log.debug("save foreign key data url: " + url);
 
             var data = {
                 "content": foreignKeyContent,
@@ -138,14 +138,14 @@ angular.module('myApp.services')
                 "isUIChange": false,
                 "made_by": loggedUserId
             }
-            console.log("Saving foreign key data: ");
-            console.log(data);
+            $log.debug("Saving foreign key data: ");
+            $log.debug(data);
             $http.post(projectsRoot, data).
                 success(function () {
-                    console.log("ForeignKey ["+foreignKeyContent.name +", "+ foreignKeyContent.id +"] saved successfully");
+                    $log.debug("ForeignKey ["+foreignKeyContent.name +", "+ foreignKeyContent.id +"] saved successfully");
                 }).error(function () {
                     var msg = "Saving foreignKey ["+foreignKeyContent.name +", "+ foreignKeyContent.id +"] failed";
-                    console.log(msg);
+                    $log.debug(msg);
                     throw msg;
                 });
         }
@@ -161,13 +161,13 @@ angular.module('myApp.services')
                 "isUIChange": false,
                 "made_by": loggedUserId
             }
-            console.log("Saving index data: "); console.log(data);
+            $log.debug("Saving index data: "); $log.debug(data);
             $http.post(projectsRoot, data).
                 success(function () {
-                    console.log("Index ["+indexContent.name +", "+ indexContent.id +"] saved successfully");
+                    $log.debug("Index ["+indexContent.name +", "+ indexContent.id +"] saved successfully");
                 }).error(function () {
                     var msg = "Saving index ["+indexContent.name +", "+ indexContent.id +"] failed";
-                    console.log(msg);
+                    $log.debug(msg);
                     throw msg;
                 });
         }
@@ -182,20 +182,20 @@ angular.module('myApp.services')
                 "isUIChange": false,
                 "made_by": loggedUserId
             }
-            console.log("Saving column: ");
-            console.log(data);
+            $log.debug("Saving column: ");
+            $log.debug(data);
             $http.post(projectsRoot, data).
                 success(function () {
-                    console.log("Column["+columnContent.name +", "+ columnContent.id +"] saved successfully");
+                    $log.debug("Column["+columnContent.name +", "+ columnContent.id +"] saved successfully");
                 }).error(function () {
                     var msg = "Saving column["+columnContent.name +", "+ columnContent.id +"] failed";
-                    console.log(msg);
+                    $log.debug(msg);
                     throw msg;
                 });
         }
         this.saveRelationshipElement = function (branchRevisionId, relationshipElementContent) {
             var url = branchRevisionRoot + branchRevisionId + "/change/";
-            console.log("save relationship element url: " + url);
+            $log.debug("save relationship element url: " + url);
 
             var data = {
                 "content": relationshipElementContent,
@@ -205,14 +205,14 @@ angular.module('myApp.services')
                 "isUIChange": true,
                 "made_by": loggedUserId
             }
-            console.log("Saving relationship element data: ");
-            console.log(data);
+            $log.debug("Saving relationship element data: ");
+            $log.debug(data);
             $http.post(projectsRoot, data).
                 success(function () {
-                    console.log("Relationship element ["+ relationshipElementContent.id +"] saved successfully");
+                    $log.debug("Relationship element ["+ relationshipElementContent.id +"] saved successfully");
                 }).error(function () {
                     var msg = "Saving relationship element ["+ relationshipElementContent.id +"] failed";
-                    console.log(msg);
+                    $log.debug(msg);
                     throw msg;
                 });
         }
@@ -228,14 +228,14 @@ angular.module('myApp.services')
                 "isUIChange": true,
                 "made_by": loggedUserId
             }
-            console.log("Deleting table element: ");
-            console.log(data);
+            $log.debug("Deleting table element: ");
+            $log.debug(data);
             $http.post(projectsRoot, data).
                 success(function () {
-                    console.log("Table element[" + tableElementContent.id + "] deleted successfully");
+                    $log.debug("Table element[" + tableElementContent.id + "] deleted successfully");
                 }).error(function () {
                     var msg = "Deleting table element with id:" + tableElementContent.id + " failed";
-                    console.log(msg);
+                    $log.debug(msg);
                     throw msg;
                 });
         }
@@ -249,14 +249,14 @@ angular.module('myApp.services')
                 "isUIChange": false,
                 "made_by": loggedUserId
             }
-            console.log("Deleting column: ");
-            console.log(data);
+            $log.debug("Deleting column: ");
+            $log.debug(data);
             $http.post(projectsRoot, data).
                 success(function () {
-                    console.log("Column["+columnContent.name +", "+ columnContent.id +"] deleted successfully");
+                    $log.debug("Column["+columnContent.name +", "+ columnContent.id +"] deleted successfully");
                 }).error(function () {
                     var msg = "Deleting column["+columnContent.name +", "+ columnContent.id +"] failed";
-                    console.log(msg);
+                    $log.debug(msg);
                     throw msg;
                 });
         }
@@ -270,13 +270,13 @@ angular.module('myApp.services')
                 "isUIChange": false,
                 "made_by": loggedUserId
             }
-            console.log("Deleting foreignkey: ");console.log(data);
+            $log.debug("Deleting foreignkey: ");$log.debug(data);
             $http.post(projectsRoot, data).
                 success(function () {
-                    console.log("ForeignKey ["+foreignKeyContent.name +", "+ foreignKeyContent.id +"] deleted successfully");
+                    $log.debug("ForeignKey ["+foreignKeyContent.name +", "+ foreignKeyContent.id +"] deleted successfully");
                 }).error(function () {
                     var msg = "Deleting column["+foreignKeyContent.name +", "+ foreignKeyContent.id +"] failed";
-                    console.log(msg);
+                    $log.debug(msg);
                     throw msg;
                 });
         }
@@ -290,14 +290,14 @@ angular.module('myApp.services')
                 "isUIChange": true,
                 "made_by": loggedUserId
             }
-            console.log("Deleting relationship element: ");console.log(data);
+            $log.debug("Deleting relationship element: ");$log.debug(data);
 
             $http.post(projectsRoot, data).
                 success(function () {
-                    console.log("Relationship element["+ relationshipElementContent.id +"] deleted successfully");
+                    $log.debug("Relationship element["+ relationshipElementContent.id +"] deleted successfully");
                 }).error(function () {
                     var msg = "Deleting relationship element["+relationshipElementContent.id +"] failed";
-                    console.log(msg);
+                    $log.debug(msg);
                     throw msg;
                 });
         }
@@ -311,14 +311,14 @@ angular.module('myApp.services')
                 "isUIChange": false,
                 "made_by": loggedUserId
             }
-            console.log("Deleting index: ");
-            console.log(data);
+            $log.debug("Deleting index: ");
+            $log.debug(data);
             $http.post(projectsRoot, data).
                 success(function () {
-                    console.log("Index[" + indexContent.id + "] deleted successfully");
+                    $log.debug("Index[" + indexContent.id + "] deleted successfully");
                 }).error(function () {
                     var msg = "Deleting index with id:" + indexContent.id + " failed";
-                    console.log(msg);
+                    $log.debug(msg);
                     throw msg;
                 });
         }
@@ -407,7 +407,7 @@ angular.module('myApp.services')
             var tables = this.getTablesData();
             for (var i = 0; i < tables.length; i++) {
                 if (id == tables[i].id) {
-                    console.log("TableService-> Table found for id: " + id);
+                    $log.debug("TableService-> Table found for id: " + id);
                     return tables[i];
                 }
             }
