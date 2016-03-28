@@ -151,8 +151,8 @@
             function redrawTables(){
               // Create table with attributes
               var svgTables = svg.selectAll("g.table").data(tablesData);
-              var table = svgTables.enter().append("g").classed("table", true).attr("id", function(d,i) { return "table"+i})
-              table.append("rect").classed("fennec_table", true).on("click", mouseClick);
+              var table = svgTables.enter().append("g").classed("table", true).attr("id", function(d,i) { return "table"+i});
+              table.append("rect").classed("fennec_table", true).on("click", tableMouseClick);
               var t = table.append("rect").classed("titleBox", true).call(drag);
               table.append("text").classed("name", true).data(tablesData);
 
@@ -227,8 +227,6 @@
                     return  d.cdata.name+ " (" + getTypeNameForValue(d.cdata.column_type)+")";
                   });
 
-
-
               table.selectAll("rect.resize-icon")
                   .attr({
                     x: function(d) { return d.element.positionX + d.element.width-resizeRectSize; },
@@ -285,7 +283,7 @@
 
               var svgLinks = svg.selectAll("g.link").data(linksData);
               var link = svgLinks.enter().append("g").classed("link", true);
-              link.append("svg:line").classed("link",true).attr("id", function(d) { return d.element.id});
+              link.append("svg:line").classed("link",true).attr("id", function(d) { return d.element.id}).on("click", linkMouseClick);
               link.selectAll("line.link")
                   .attr({
                     x1: function(d) { return d.element.startPositionX; },
@@ -307,9 +305,50 @@
 
             // ********* MOUSE EVENTS *********
             // ********* MOUSE EVENTS *********
-            function mouseClick(d) {
+            function linkMouseClick(){
+                 d3.event.stopPropagation();
+              var rect=  d3.select(this);
+              rect.style( "stroke", "#01ecff").style("stroke-width", "3");
+            }
+            function tableMouseClick(){
               d3.event.stopPropagation();
-              var dragTarget = d3.select(this);
+              var rect=  d3.select(this);
+              rect.style( "stroke", "#01ecff").style("stroke-width", "3");
+              selected_table = d3.select(this.parentNode);
+
+              if(actionStates == fennecStates.select){
+                if(selected_table != null){
+                  var tableData = selected_table.node().__data__;
+                  if(tableData != undefined){
+                    console.log("directive-> table selected: "+tableData.data.name);
+                    scope.stable = tableData;
+                    // console.log(scope.stableForeignKeys);
+
+                    // foreign keys
+                    var fk = [];
+                    for(var i in linksData){
+                        var currentLink = linksData[i];
+                        if(currentLink.fk_data.tableRef == tableData.data.id){
+                            var fk_data = {data:currentLink, refTable:getTableForId(currentLink.fk_data.referencedTableRef)};
+                            fk.push(fk_data);
+                        }
+                    }
+                    scope.stableForeignKeys = fk;
+
+                    // indexes
+                    scope.stableIndexes = tableData.data.indexes;
+                    scope.$apply();
+                    //passing value to controller if this directive will be private (zatvoren)
+                    //scope.$emit('selectedTableEvent', tableData );
+                  }
+                }
+              }
+            }
+
+            function mouseClick() {
+              d3.event.stopPropagation();
+              var rect=  d3.select(this);
+
               selected_table = d3.select(this.parentNode);
               var translateCoord = parseTranslateString(selected_table.attr("transform"));
               var point = d3.mouse(this)
@@ -362,6 +401,8 @@
                     scope.$apply();
                     //passing value to controller if this directive will be private (zatvoren)
                     //scope.$emit('selectedTableEvent', tableData );
+                  }else{
+                      restart(true);
                   }
                 }
               }
