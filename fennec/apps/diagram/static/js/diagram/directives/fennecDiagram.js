@@ -157,6 +157,7 @@
               table.append("text").classed("name", true).data(tablesData);
 
               var attributes =  table.append("g").classed("attributes",true).selectAll("attribute").data(function(d) { return d.data.columns});
+              attributes.enter().append("image").classed("attribute", true).attr("id", function(d,i) { return "image"+i}).on("click", mouseClick);
               var attribute = attributes.enter().append("text").classed("attribute", true).attr("id", function(d,i) { return "attribute"+i}).on("click", mouseClick);
               table.append("rect").classed("resize-icon", true).call(resize);
 
@@ -166,7 +167,7 @@
                     y: function(t) { return t.element.positionY; },
                     width: function(t) { return t.element.width; },
                     height: function(t) { return t.element.height; }
-                  })
+                  });
 
               table.selectAll("rect.titleBox")
                   .classed("drag", true)
@@ -175,27 +176,45 @@
                     y: function(t) { return t.element.positionY; },
                     width: function(t) { return t.element.width; },
                     height: 25,
-                    fill: "#ADD8E6"
-                  })
+                    fill: "#0088cc"
+                  });
 
               table.selectAll("text.name")
                   .attr({
                     x: function(t) { return t.element.positionX + 10; },
                     y: function(t) { return t.element.positionY + 20; },
-//                    width: function(t) { return t.element.width; }, text attribute don't need width
-                    height: 25,
-                    fill: "#ffffff"
+                    height: 25
                   })
                   .text(function(t) {
                     return t.data.name;
-                  })
+                  });
+
+
+
+              table.selectAll("image.attribute")
+                  .attr({
+                    x: function(d) {
+                      var table = getAttributeTable(d.cdata.id);
+                      return table.element.positionX + 8;
+                    },
+                    y: function(d,i) {
+                      var table = getAttributeTable(d.cdata.id);
+                      return table.element.positionY+33+((i==0)?0:(20*i));
+                    },
+                    height: 16,
+                    width: 16,
+                    'xlink:href': function(d) {
+                          var img = d.cdata.primary?"/static/images/primary-key.png":"/static/images/blue_circle_icon.png";
+                          return img;
+                    }
+                  });
 
               // TODO: find better way than using getAttributeTableMethod
               table.selectAll("text.attribute")
                   .attr({
                     x: function(d) {
                       var table = getAttributeTable(d.cdata.id);
-                      return table.element.positionX + 10;
+                      return table.element.positionX + 25;
                     },
                     y: function(d,i) {
                       var table = getAttributeTable(d.cdata.id);
@@ -205,8 +224,10 @@
                     fill: "#999999"
                   })
                   .text(function(d) {
-                    return d.cdata.name+ " (" + getTypeNameForValue(d.cdata.column_type)+")";
-                  })
+                    return  d.cdata.name+ " (" + getTypeNameForValue(d.cdata.column_type)+")";
+                  });
+
+
 
               table.selectAll("rect.resize-icon")
                   .attr({
@@ -215,13 +236,12 @@
                     width: resizeRectSize,
                     height: resizeRectSize,
                     fill: "#999999"
-                  })
+                  });
               svgTables.exit().remove();
             }
 
             //TODO: find way to skip this and pass dataType as value
             function getTypeNameForValue(columnType){
-
               var dataTypes =  [
                 {value: 1, text: 'ID'},
                 {value: 2, text: 'RefID'},
@@ -277,7 +297,6 @@
                   .style('marker-end', function(d) { return  'url(#end-arrow)'; });
               svgLinks.exit().remove();
             }
-
 
             var tmpSourceTableLink = null;
             var tmpTargetTableLink= null;
@@ -631,17 +650,21 @@
             function hideAttributesOnResize(resizeTableObject,tableWidth,tableHeight, tableAttributes){
               // TODO: find how to truncate text on resizing left
               // TODO: find way need to minus 100 from dragx , what is that 100 (-> (dragx-100))
-              var attributesObjectsFromPage = [];
+              var tableAttributesObjects = [];
               var attrNumber =tableAttributes.length;
-              //attribute0, attribute1
+              //attribute0, attribute1, image0, image1
               for (var i = attrNumber-1; i>= 0; i--) {
                  // Note: when select attribute(child element) from resizeTableObject, the data will be inherited from parent object in this case from table, we lose attribute data
                 // to fix this d3 logic :), add attribute data here ( this is how d3 work, it is build to inherit all data from parent to childs because of data consistency)
-                var attrObjArray = resizeTableObject.select("#attribute"+i).data($(tableAttributes[i]));
-                attributesObjectsFromPage.push(attrObjArray);
+                // icon in front of the text
+                var imgAttrObjArray = resizeTableObject.select("#image"+i).data($(tableAttributes[i]));
+                tableAttributesObjects.push(imgAttrObjArray);
+                // text
+                var textAttrObjArray = resizeTableObject.select("#attribute"+i).data($(tableAttributes[i]));
+                tableAttributesObjects.push(textAttrObjArray);
               }
-              for(var i=0;i<attrNumber;i++){
-                var attrObjArray = attributesObjectsFromPage[i];
+              for(var i=0;i<tableAttributesObjects.length;i++){
+                var attrObjArray = tableAttributesObjects[i];
                 // console.log(attrObjArray.node().__data__);
                 var attrObject= $(attrObjArray[0]);
                 var attrPos = getAttributesLocationInTable(attrObject);

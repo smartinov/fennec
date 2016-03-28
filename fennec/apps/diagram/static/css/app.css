@@ -36,6 +36,8 @@ rect.fennec_table {
     fill: white;
     stroke: black;
     stroke-width: "0.5";
+    /*rx:20;*/
+    /*ry:20;*/
     overflow:auto;
     resize:both;
 }
@@ -44,9 +46,11 @@ text{
     font: 12px sans-serif;
 }
 
-text.name {
+/*table header name */
+.name {
     font-weight: bold;
     font-size: 14pt;
+    fill: #ffffff;
 }
 
 .bar text{
