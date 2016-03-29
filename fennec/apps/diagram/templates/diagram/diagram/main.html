@@ -78,12 +78,13 @@
     <!-- Diagram -->
 	<div class="ui-layout-center">
 		<div role="tabpanel">
-			<ul class="nav nav-tabs" role="tablist">
+			<ul class="nav nav-tabs" role="tablist" style="cursor: pointer">
 				<li role="presentation" ng-repeat="tab in diagrams" ng-click="selectDiagram($index)" ng-class="{'active':selectedDiagram == $index}">
-					<a data-target="#tab" aria-controls="home" role="tab" data-toggle="tab">[[tab.data.name]] <span ng-click="closeDiagram($index)"><i class="icon-remove"></i></span></a>
+					<a data-target="#tab"  aria-controls="home" role="tab" data-toggle="tab">[[tab.data.name]] <span ng-click="closeDiagram($index)">
+                        <i class="icon-remove" style="cursor: pointer"></i></span></a>
 				</li>
 				<li role="presentation" ng-click="addDiagram()">
-					<a aria-controls="home" role="tab" data-toggle="tab">( + )</a>
+					<a aria-controls="home" role="tab" data-toggle="tab" style="cursor: pointer">( + )</a>
 				</li>
 			</ul>
 		</div>
@@ -97,11 +98,11 @@
 
     <!-- Table properties -->
 	<div class="ui-layout-south">
-       <tabset class="nav nav-tabs">
+       <tabset class="nav nav-tabs" style="cursor: pointer">
               <tab heading="Columns"> <div ng-include="'{% static 'partials/ColumnsTab.html' %}'"> </div></tab>
               <tab heading="Indexes"> <div ng-include="'{% static 'partials/IndexesTab.html' %}'"> </div></tab>
               <tab heading="Foreign Keys"><div ng-include="'{% static 'partials/ForeignKeysTab.html' %}'"></div></tab>
-            </tabset>
+       </tabset>
 
     </div>
     <div ng-if="isCreateSchemaPopupShown" ng-include="'{% static 'partials/SchemaPopup.html' %}'"></div>

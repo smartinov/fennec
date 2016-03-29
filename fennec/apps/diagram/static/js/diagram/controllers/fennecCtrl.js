@@ -34,7 +34,7 @@
                 $scope.activeDiagramEditData = {};  // for edit form
             }
             function clearDeletedScopes(){
-                $log.debug("ctrl -> clearing deleted scopes");
+                $log.debug("ctrl-> clearing deleted scopes");
                 $scope.deletedTableElements = []; // for now only deleting table elements
                 $scope.deletedColumnsData = [];
                 $scope.deletedLinks = [];
@@ -531,6 +531,7 @@
             $scope.addColumn = function () {
                 var tableDataId = $scope.selectedTable.data.id;
                 var tableCollation = $scope.selectedTable.data.collation;
+                var ordinal = $scope.selectedTable.data.columns.length+1;
                 $log.debug("Selected table id: " + tableDataId);
                 $scope.inserted = {
                     cdata: {
@@ -542,7 +543,7 @@
                         precision: 0.0,
                         default: "default",
                         collation: tableCollation,
-                        ordinal: 0,
+                        ordinal: ordinal,
                         primary: false,
                         nullable: false,
                         unique: false,
@@ -558,15 +559,16 @@
                 }
                 $log.debug("ctrl-> new column initialized");
             };
-            $scope.saveColumn = function (data, id) {
+            $scope.saveColumn = function (data, columnId) {
                 var selected = $filter('filter')($scope.dataTypes, {value: data.dataType});
                 if (selected.length != 0) {
                     var tableId = $scope.selectedTable.data.id;
                     var tableIndex = findTablePositionInArray(tableId, $scope.diagramData.tables);
                     var selectedTableColumns = $scope.diagramData.tables[tableIndex].data.columns;
-                    var column = getColumnForId(id, selectedTableColumns);
+                    var column = getColumnForId(columnId, selectedTableColumns);
                     column.cdata.column_type = selected[0].text;
                     column.modified = true;
+                    $log.debug("Column: "+data.name+" ordinal: "+ column.cdata.ordinal);
                 }
                 $log.debug("Column successfully saved")
                 return [200, {status: 'ok'}];
@@ -587,10 +589,18 @@
 
                 // remove column from table
                 $scope.selectedTable.data.columns.splice(index, 1);
+                updateColumnsOrdinal($scope.selectedTable.data.columns);
 
                 $scope.deletedColumnsData.push(columnData);
                 $log.debug("ctrl -> column[" + columnData.name + "] successfully deleted");
             };
+            function updateColumnsOrdinal(columns){
+                for(var i = 0 ; i< columns.length; i++){
+                    var column = columns[i];
+                    column.cdata.ordinal = i + 1;
+                    $log.debug("Column:"+column.cdata.name+" ordinal: "+column.cdata.ordinal);
+                }
+            }
             function deleteColumnLink(columnId, diagramLinks) {
                  for(var i = diagramLinks.length-1; i>=0;i--){
                     var link = diagramLinks[i];  // contain fk_data, element and dataModified, elModified
@@ -606,7 +616,6 @@
                     }
                 }
             }
-
 
             $scope.showColumnType = function (column) {
                 var selected = [];

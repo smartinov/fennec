@@ -32,14 +32,19 @@ rect.bgd {
     stroke-width: 0.1;
 }
 
-rect.fennec_table {
+.fennec_table {
     fill: white;
     stroke: black;
-    stroke-width: "0.5";
+    stroke-width: 1;
     /*rx:20;*/
     /*ry:20;*/
     overflow:auto;
     resize:both;
+}
+
+.fennec_table_selected{
+    stroke: #01ecff;
+    stroke-width: 4;
 }
 
 text{
@@ -53,6 +58,9 @@ text{
     fill: #ffffff;
 }
 
+.resize-icon{
+    cursor:nw-resize;
+}
 .bar text{
     /*text-anchor: end;*/
     pointer-events: none;

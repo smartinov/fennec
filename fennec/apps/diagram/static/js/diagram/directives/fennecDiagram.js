@@ -27,7 +27,7 @@
             var resizeRectSize = 12;
 
             scope.$watch('data', function(newValue,oldValue) {
-             $log.debug("directive-> redrawing diagram"); //$log.debug(tablesData);
+             $log.debug("dir-> redrawing diagram"); //$log.debug(tablesData);
              if(newValue !== oldValue){
                  // for now i don't get why when i set in controller that $scope.diagramData={tables: [], links: []} why don't take efects here on creating new tab
                  // this is workaround
@@ -36,13 +36,13 @@
              }
              restart(true);
             },true);
-            scope.$watch('recal', function(newValue,oldValue) {
-                 $log.debug("directive-> referencedColumn changed"); //$log.debug(tablesData);
-                if(newValue!=""){
-                 updateLinkPositionForTable(newValue);
-                    }
-                scope.recal = "";
-            },true);
+              scope.$watch('recal', function (newValue, oldValue) {
+                  if (newValue != "") {
+                      $log.debug("dir-> referencedColumn changed"); //$log.debug(tablesData);
+                      updateLinkPositionForTable(newValue);
+                  }
+                  scope.recal = "";
+              }, true);
 
             var drag = d3.behavior.drag()
                 .origin(function() {
@@ -61,7 +61,7 @@
             var svg;
             initSvgDiagram();
             function initSvgDiagram(){
-              $log.debug("diagram -> init svg diagram");
+              $log.debug("dir-> init svg diagram");
               svg = d3.select(".diagram")
                   .style("width","100%")
                   .style("height","100%")
@@ -140,7 +140,6 @@
             }
 
             function restart(redrawAll){
-
               if(redrawAll){
                 d3.select(".diagram").selectAll("*").remove();
                 initSvgDiagram();
@@ -190,38 +189,63 @@
                   });
 
 
-
               table.selectAll("image.attribute")
                   .attr({
-                    x: function(d) {
-                      var table = getAttributeTable(d.cdata.id);
-                      return table.element.positionX + 8;
-                    },
-                    y: function(d,i) {
-                      var table = getAttributeTable(d.cdata.id);
-                      return table.element.positionY+33+((i==0)?0:(20*i));
-                    },
-                    height: 16,
-                    width: 16,
-                    'xlink:href': function(d) {
-                          var img = d.cdata.primary?"/static/images/primary-key.png":"/static/images/blue_circle_icon.png";
-                          return img;
-                    }
+                          x: function(d) {
+                              var table = getAttributeTable(d.cdata.id);
+                              return table.element.positionX + 8;
+                          },
+                          y: function(d,i) {
+                              var table = getAttributeTable(d.cdata.id);
+                              return table.element.positionY+33+((i==0)?0:(20*i));
+                          },
+                          height: 16,
+                          width: 16,
+                          'xlink:href': function(d) {
+                                return d.cdata.primary?"/static/images/primary-key.png":"/static/images/blue_circle_icon.png";
+                          },
+                          opacity: function(d) {
+                             return calculateIfColumnVisible(d.cdata);
+                          }
                   });
+
+              function calculateIfColumnVisible(column){
+                  $log.debug("dir-> calculateIfColumnVisible() => "+ column.name);
+                  var table = getAttributeTable(column.id);
+                  var tableHeight = table.element.height;
+                  var columnPartHeight = tableHeight - 25; // title box part
+                  for(var i = 0; i < table.data.columns.length; i++){
+                      var col = table.data.columns[i];
+                      if(col.cdata.id == column.id){
+                          var columnPositionHeightInTable = column.ordinal * 20;
+                          if(columnPositionHeightInTable>columnPartHeight){
+                              $log.debug(column.name+ " - not visible");
+                              return 0; // hide
+                          }else{
+                              $log.debug(column.name+ " - visible");
+                              return 1;
+                          }
+                      }
+                  }
+                  return 0;
+              }
 
               // TODO: find better way than using getAttributeTableMethod
               table.selectAll("text.attribute")
                   .attr({
-                    x: function(d) {
-                      var table = getAttributeTable(d.cdata.id);
-                      return table.element.positionX + 25;
-                    },
-                    y: function(d,i) {
-                      var table = getAttributeTable(d.cdata.id);
-                      return table.element.positionY+45+((i==0)?0:(20*i));
-                    },
-                    height: 25,
-                    fill: "#999999"
+                      x: function (d) {
+                          var table = getAttributeTable(d.cdata.id);
+                          return table.element.positionX + 25;
+                      },
+                      y: function (d, i) {
+                          var table = getAttributeTable(d.cdata.id);
+                          return table.element.positionY + 45 + ((i == 0) ? 0 : (20 * i));
+                      },
+                      height: 25,
+                      fill: "#999999",
+                      opacity: function (d) {
+                          return calculateIfColumnVisible(d.cdata);
+                      }
                   })
                   .text(function(d) {
                     return  d.cdata.name+ " (" + getTypeNameForValue(d.cdata.column_type)+")";
@@ -314,14 +338,14 @@
             function tableMouseClick(){
               d3.event.stopPropagation();
               var rect=  d3.select(this);
-              rect.style( "stroke", "#01ecff").style("stroke-width", "3");
+              rect.classed("fennec_table_selected", true);
               selected_table = d3.select(this.parentNode);
 
               if(actionStates == fennecStates.select){
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
                   if(tableData != undefined){
-                    $log.debug("directive-> table selected: "+tableData.data.name);
+                    $log.debug("dir-> table selected: "+tableData.data.name);
                     scope.stable = tableData;
                     // $log.debug(scope.stableForeignKeys);
 
@@ -344,6 +368,15 @@
                   }
                 }
               }
+                if(actionStates == fennecStates.delete_obj){
+                if(selected_table != null){
+                  var tableData = selected_table.node().__data__;
+                  if(tableData != undefined){
+                    $log.debug("dir-> table["+tableData.data.name+"] is deleting");
+                    scope.$emit('deleteTableEvent', tableData );
+                  }
+                }
+              }
             }
 
             function mouseClick() {
@@ -359,7 +392,7 @@
               //$log.debug("mouseClick on x:"+mouseClickX+" y: "+mouseClickY);
               if(actionStates == fennecStates.new_table){
                 var tableDataId = genGuid();
-                  $log.debug("directive->activediagram:"); $log.debug(scope.adiagram);
+                  $log.debug("dir-> mouseClick() => active diagram:"); $log.debug(scope.adiagram);
                   $log.debug(scope.activeSchema);
                 tablesData.push(
                   { data:{
@@ -382,7 +415,7 @@
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
                   if(tableData != undefined){
-                    $log.debug("directive-> table selected: "+tableData.data.name);
+                    $log.debug("dir-> mouseClick()=> table selected: "+tableData.data.name);
                     scope.stable = tableData;
                     // $log.debug(scope.stableForeignKeys);
 
@@ -403,7 +436,7 @@
                     //passing value to controller if this directive will be private (zatvoren)
                     //scope.$emit('selectedTableEvent', tableData );
                   }else{
-                      restart(true);
+//                        restart(true);
                   }
                 }
               }
@@ -411,7 +444,7 @@
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
                   if(tableData != undefined){
-                    $log.debug("directive-> table["+tableData.data.name+"] is deleting");
+                    $log.debug("dir-> table["+tableData.data.name+"] is deleting");
                     scope.$emit('deleteTableEvent', tableData );
                   }
                 }
@@ -660,7 +693,8 @@
               resizeTableArrays.attr("width", tableWidth).attr("height", tableHeight);
               resizeTableTitleArrays.attr("width", tableWidth);
 
-              hideAttributesOnResize(resizeTableObject,tableWidth, tableHeight,selectedTableDataWithElement.data.columns);       // $log.debug("dragResize()=> tableHeight: "+tableHeight+" tableWidth: "+tableWidth );
+              $log.debug("dragResize()=> tableHeight: "+tableHeight+" tableWidth: "+tableWidth );
+              hideAttributesOnResize(resizeTableObject,tableWidth, tableHeight,selectedTableDataWithElement.data.columns);
               updateTableSize(selectedTableDataWithElement.element,tableHeight,tableWidth);
               updateLinkPosition(resizeTableObject);
             };
@@ -682,6 +716,7 @@
               var tableId = selectedTableElement.id;
               for (var i in tablesData) {
                 if (tablesData[i].element.id == tableId) {
+                  $log.debug("Height: "+tableHeight+ "width: "+tableWidth);
                   tablesData[i].element.height = tableHeight;
                   tablesData[i].element.width = tableWidth;
                   tablesData[i].elModified = 1;
