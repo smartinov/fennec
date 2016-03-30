@@ -209,27 +209,6 @@
                           }
                   });
 
-              function calculateIfColumnVisible(column){
-                  $log.debug("dir-> calculateIfColumnVisible() => "+ column.name);
-                  var table = getAttributeTable(column.id);
-                  var tableHeight = table.element.height;
-                  var columnPartHeight = tableHeight - 25; // title box part
-                  for(var i = 0; i < table.data.columns.length; i++){
-                      var col = table.data.columns[i];
-                      if(col.cdata.id == column.id){
-                          var columnPositionHeightInTable = column.ordinal * 20;
-                          if(columnPositionHeightInTable>columnPartHeight){
-                              $log.debug(column.name+ " - not visible");
-                              return 0; // hide
-                          }else{
-                              $log.debug(column.name+ " - visible");
-                              return 1;
-                          }
-                      }
-                  }
-                  return 0;
-              }
-
               // TODO: find better way than using getAttributeTableMethod
               table.selectAll("text.attribute")
                   .attr({
@@ -251,16 +230,37 @@
                     return  d.cdata.name+ " (" + getTypeNameForValue(d.cdata.column_type)+")";
                   });
 
-              table.selectAll("rect.resize-icon")
-                  .attr({
-                    x: function(d) { return d.element.positionX + d.element.width-resizeRectSize; },
-                    y: function(d) { return d.element.positionY + d.element.height - resizeRectSize; },
-                    width: resizeRectSize,
-                    height: resizeRectSize,
-                    fill: "#999999"
-                  });
+//              table.selectAll("rect.resize-icon")
+//                  .attr({
+//                    x: function(d) { return d.element.positionX + d.element.width-resizeRectSize; },
+//                    y: function(d) { return d.element.positionY + d.element.height - resizeRectSize; },
+//                    width: resizeRectSize,
+//                    height: resizeRectSize,
+//                    fill: "#999999"
+//                  });
               svgTables.exit().remove();
             }
+
+            function calculateIfColumnVisible(column){
+                  $log.debug("dir-> calculateIfColumnVisible() => "+ column.name);
+                  var table = getAttributeTable(column.id);
+                  var tableHeight = table.element.height;
+                  var columnPartHeight = tableHeight - 25; // title box part
+                  for(var i = 0; i < table.data.columns.length; i++){
+                      var col = table.data.columns[i];
+                      if(col.cdata.id == column.id){
+                          var columnPositionHeightInTable = column.ordinal * 20;
+                          if(columnPositionHeightInTable>columnPartHeight){
+                              $log.debug(column.name+ " - not visible");
+                              return 0; // hide
+                          }else{
+                              $log.debug(column.name+ " - visible");
+                              return 1;
+                          }
+                      }
+                  }
+                  return 0;
+              }
 
             //TODO: find way to skip this and pass dataType as value
             function getTypeNameForValue(columnType){
@@ -333,14 +333,24 @@
             function linkMouseClick(){
                  d3.event.stopPropagation();
               var rect=  d3.select(this);
-              rect.style( "stroke", "#01ecff").style("stroke-width", "4");
+              rect.style("stroke", "#01ecff").style("stroke-width", "4");
             }
             function tableMouseClick(){
               d3.event.stopPropagation();
               var rect=  d3.select(this);
-              rect.classed("fennec_table_selected", true);
-              selected_table = d3.select(this.parentNode);
+//              rect.classed("fennec_table", true).style("stroke-width", "2").style("stroke-dasharray", "10 5");
+                rect.classed("fennec_table_selected", true);
 
+
+              selected_table = d3.select(this.parentNode);
+              selected_table.selectAll("rect.resize-icon")
+                  .attr({
+                    x: function(d) { return d.element.positionX + d.element.width-resizeRectSize; },
+                    y: function(d) { return d.element.positionY + d.element.height - resizeRectSize; },
+                    width: resizeRectSize,
+                    height: resizeRectSize,
+                    fill: "#999999"
+                  });
               if(actionStates == fennecStates.select){
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
@@ -436,7 +446,7 @@
                     //passing value to controller if this directive will be private (zatvoren)
                     //scope.$emit('selectedTableEvent', tableData );
                   }else{
-//                        restart(true);
+                        restart(true);
                   }
                 }
               }
