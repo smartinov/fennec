@@ -581,6 +581,18 @@
                 }
             }
 
+            // ********* MOVE COLUMN *********
+            $scope.moveColumnUp = function(column, columns){
+                $log.debug("ctrl-> move up:");
+
+
+            }
+            $scope.moveColumnDown = function(column, columns){
+                $log.debug("ctrl-> move down");
+
+
+            }
+
             // ********* REMOVE COLUMN *********
             $scope.removeTableColumn = function (index) {
                 // delete links if exists

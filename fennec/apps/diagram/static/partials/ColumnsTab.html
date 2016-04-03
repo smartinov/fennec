@@ -7,7 +7,8 @@ Table Name:
 
 <table class="table table-bordered table-hover table-condensed">
     <tr style="font-weight: bold">
-        <td style="width:35%">Column</td>
+        <td style="width:3%"></td>
+        <td style="width:32%">Column</td>
         <td style="width:15%">Column Type</td>
         <td style="width:5%">Precision</td>
         <td style="width:5%">PK</td>
@@ -19,6 +20,10 @@ Table Name:
 
     <!-- TABLE COLUMNS -->
     <tr ng-repeat="column in selectedTable.data.columns">
+        <td>
+            <img src="../../../../../../../static/images/arrow_up.png" width="16" height="16" ng-click="moveColumnUp(column, selectedTable.data.columns)">
+            <img src="../../../../../../../static/images/arrow_down.png"  width="16" height="16" ng-click="moveColumnDown(column, selectedTable.data.columns)">
+        </td>
         <td>
               <span editable-text="column.cdata.name" e-name="name" e-form="rowform"
                       onbeforesave="checkName($data, column.id)" e-required>
