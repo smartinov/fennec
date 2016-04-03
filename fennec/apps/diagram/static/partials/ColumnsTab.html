@@ -20,9 +20,10 @@ Table Name:
 
     <!-- TABLE COLUMNS -->
     <tr ng-repeat="column in selectedTable.data.columns">
-        <td>
-            <img src="../../../../../../../static/images/arrow_up.png" width="16" height="16" ng-click="moveColumnUp(column, selectedTable.data.columns)">
-            <img src="../../../../../../../static/images/arrow_down.png"  width="16" height="16" ng-click="moveColumnDown(column, selectedTable.data.columns)">
+        <td >
+            <img ng-show="column.cdata.ordinal != 1" src="../../../../../../../static/images/arrow_up.png" width="16" height="16" ng-click="moveColumnUp(column, selectedTable.data.columns)">
+            <img ng-show="column.cdata.ordinal != selectedTable.data.columns.length"
+                 src="../../../../../../../static/images/arrow_down.png"  width="16" height="16" ng-click="moveColumnDown(column, selectedTable.data.columns)">
         </td>
         <td>
               <span editable-text="column.cdata.name" e-name="name" e-form="rowform"

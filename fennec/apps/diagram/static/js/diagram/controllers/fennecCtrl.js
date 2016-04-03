@@ -583,15 +583,53 @@
 
             // ********* MOVE COLUMN *********
             $scope.moveColumnUp = function(column, columns){
+
                 $log.debug("ctrl-> move up:");
+                if(column.cdata.ordinal==1){
+                    // if first we cannot move it up
+                    return;
+                }
 
+                var indexA = column.cdata.ordinal-1;
+                var indexB = column.cdata.ordinal-2;
+                columns = swapColumnsAndUpdateOrdinals(columns, indexA, indexB);
 
+                for(var i=0; i < columns.length; i++){
+                    console.log(columns[i].cdata.name+" :");
+                    console.log(columns[i].cdata.ordinal);
+                }
             }
             $scope.moveColumnDown = function(column, columns){
                 $log.debug("ctrl-> move down");
 
+                if(column.cdata.ordinal==columns.length){
+                    // if last we cannot move it up
+                    return;
+                }
 
+                var indexA = column.cdata.ordinal-1;
+                var indexB = column.cdata.ordinal;
+                columns = swapColumnsAndUpdateOrdinals(columns, indexA, indexB);
+
+                for(var i=0; i < columns.length; i++){
+                    $log.debug(columns[i].cdata.name+" :");
+                    $log.debug(columns[i].cdata.ordinal);
+                }
             }
+
+            function swapColumnsAndUpdateOrdinals(arr, indexA, indexB) {
+                var aOrdinal =  arr[indexA].cdata.ordinal;
+                var bOrdinal = arr[indexB].cdata.ordinal;
+                var temp = arr[indexA];
+
+                arr[indexA] = arr[indexB];
+                arr[indexB] = temp;
+                arr[indexA].cdata.ordinal = aOrdinal;
+                arr[indexA].modified = true;
+                arr[indexB].cdata.ordinal = bOrdinal;
+                arr[indexB].modified = true;
+                return arr;
+            };
 
             // ********* REMOVE COLUMN *********
             $scope.removeTableColumn = function (index) {
