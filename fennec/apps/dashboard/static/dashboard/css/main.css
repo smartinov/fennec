@@ -303,3 +303,24 @@ li.li-img{
   color: whitesmoke;
   font-size: x-large;
 }
+
+.project-title.a{
+    text-decoration-color: #ffffff;
+}
+
+.project-repo{
+  margin-left: 5%;
+  color: #757373;
+  font-size: large;
+  margin-top: 5%
+}
+
+.sidebar-content-title{
+    float: right; margin-right: 15%;
+}
+
+.branch-item{
+    padding-left: 5%;
+    font-size: large;
+    color: black;
+}

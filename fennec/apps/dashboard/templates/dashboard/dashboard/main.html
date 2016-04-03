@@ -89,12 +89,29 @@
             </div>
         </div>
         <div id="sidebar-wrapper-rigth">
-            <h3 class="project-title">[[selectedProject.name]]
-                <span style="float: right; margin-right: 15%;">
-                    <a  href="" ng-click="remove_project()" title="Remove"><i class="glyphicon glyphicon-remove" style="color: white;"></i></a>
+            <h3 class="project-title" ng-if="selectedProject!=undefined"><a style="color:white;" href="" ng-click="open_project()">[[selectedProject.name]]</a>
+                <span class="sidebar-content-title">
+                    <a  href="" ng-click="open_project()" title="Open"><i class="glyphicon glyphicon-log-in" style="color: white;"></i></a>
                     <a  href="" ng-click="edit_project()" title="Edit"><i class="glyphicon glyphicon-edit" style="color: white;"></i></a>
+                    <a  href="" ng-click="remove_project()" title="Remove"><i class="glyphicon glyphicon-remove" style="color: white;"></i></a>
                 </span>
             </h3>
+            <h4 class="project-repo" ng-if="selectedProject!=undefined"> Repository actions
+                 <span class="sidebar-content-title">
+                    <a  href="" ng-click="pull_branch()" title="Pull"><i class="glyphicon glyphicon-cloud-download" style="color: #757373;"></i></a>
+                    <a  href="" ng-click="push_branch()" title="Push"><i class="glyphicon glyphicon-cloud-upload" style="color: #757373;"></i></a>
+                    <a  href="" ng-click="commit_branch()" title="Commit"><i class="glyphicon glyphicon-open" style="color: #757373;"></i></a>
+                    <a  href="" ng-click="open_add_branch()" title="Branch"><i class="glyphicon glyphicon-new-window" style="color: #757373;"></i></a>
+                 </span>
+            </h4>
+            <div ng-if="selectedProject!=undefined" style="margin-top:5%;">
+                <span class="project-repo">Project branches</span>
+                <span class="sidebar-content-title">
+                    <select style="width:200%; margin-left:-50%;" ng-model="selectedBranch" ng-options="branch.id as branch.name for branch in selected_project_branches">
+                        <option value="0">Choose branch</option>
+                    </select>
+                </span>
+            </div>
         </div>
     </div>
 {% endblock %}
