@@ -2,7 +2,8 @@
     'use strict';
 
     var module = angular.module('myApp.controllers')
-        .controller('DiagramController', function ($scope, $filter, $http,$location, diagramService, spinnerService,Notification) {
+        .controller('DiagramController', function ($scope, $filter ,$location,$log,
+                                                   diagramService, spinnerService,Notification) {
 
             init();
             function init() {
@@ -10,7 +11,7 @@
                 $scope.schemas = [];
                 $scope.activeSchema = {};
                 $scope.diagrams = [];
-                $scope.newSchema = {id:"",databaseName:"",collation:""};
+//                $scope.newSchema = {id:"",databaseName:"",collation:""};
 
                 var absoluteURL = $location.$$absUrl;
                 var branchRevisionId = absoluteURL.substr(absoluteURL.lastIndexOf('/') + 1);
@@ -18,11 +19,11 @@
                 clearDiagramSpecificsScopes();
                 clearDeletedScopes();
 
-                console.log("ctrl-> fetching data from server for brevision:" + $scope.branchRevisionId);
+                $log.debug("ctrl-> fetching data from server for brevision:" + $scope.branchRevisionId);
                 loadBranchRevisionProjectAndDiagram($scope.branchRevisionId);
             }
             function clearDiagramSpecificsScopes() {
-                console.log("ctrl-> clearing diagram specifics scopes");
+                $log.debug("ctrl-> clearing diagram specifics scopes");
 
                 $scope.diagramData= {tables: [], links: []};
                 $scope.selectedTable = {};
@@ -33,7 +34,7 @@
                 $scope.activeDiagramEditData = {};  // for edit form
             }
             function clearDeletedScopes(){
-                console.log("ctrl -> clearing deleted scopes");
+                $log.debug("ctrl-> clearing deleted scopes");
                 $scope.deletedTableElements = []; // for now only deleting table elements
                 $scope.deletedColumnsData = [];
                 $scope.deletedLinks = [];
@@ -80,8 +81,8 @@
             function loadBranchRevisionProjectAndDiagram(branchRevisionId, diagramId) {
                 spinnerService.showSpinner();
                 var projectStateRequest = diagramService.loadBranchRevisionProjectState(branchRevisionId);
-                projectStateRequest.then(function (brState) {  // this is only run after $http completes
-                    //console.log(result);
+                projectStateRequest.then(function (brState) {
+                    //$log.debug(result);
                     if (diagramId == undefined) {
                         if (brState.diagrams.length > 0) {
                             diagramId = brState.diagrams[0].id;
@@ -94,41 +95,40 @@
                     });
                 });
                 projectStateRequest.catch(function (error) {
-                    console.log("ERROR: LoadBranchRevisionProjectState");
+                    $log.debug("ERROR: LoadBranchRevisionProjectState");
                     var errorMsg = "ERROR: LoadBranchRevisionProjectState->Loading diagram (branchRevisionId:'"+branchRevisionId+"') Status: "+error.status+" msg :"+error.data.detail+" (requested url:"+error.config.url+")";
-                    console.log(errorMsg);
+                    $log.debug(errorMsg);
                     alert("Error loading diagram! \n\nStatus: "+error.status+" Msg :"+error.data.detail+"\n\nClick to redirect on dashboard");
                     var dashboardURL = window.location.protocol+"//"+window.location.host+"/app/dashboard";
                     window.location.replace(dashboardURL);
                 });
                 projectStateRequest.finally(function (nesto) {
-                    //console.log("log loadBranchRevisionProjectStatefinally");
+                    //$log.debug("log loadBranchRevisionProjectStatefinally");
                 });
             }
             function prepareDiagramData(branchRevisionStatusData, diagramElements,diagramId) {
-                console.log(branchRevisionStatusData);
-                console.log(diagramElements);
+                $log.debug(branchRevisionStatusData);
+                $log.debug(diagramElements);
                 // ADD PROJECT INFO to scope
                 $scope.projectInfo = branchRevisionStatusData.project;
-                console.log("ProjectInfo: ");
-                console.log($scope.projectInfo);
+                $log.debug("ProjectInfo: ");
+                $log.debug($scope.projectInfo);
 
-                // ADD DIAGRAMS to scope
-
+                    // ADD DIAGRAMS to scope
                     for(var i in branchRevisionStatusData.diagrams){
                         // load diagrams on page refresh(on tab change don't load)
                         var extDiagram = {data: branchRevisionStatusData.diagrams[i], modified: false};
                         if($scope.diagrams.length<branchRevisionStatusData.diagrams.length) {
                             $scope.diagrams.push(extDiagram);
                         }
-                        console.log("Current processing diagram name:"+branchRevisionStatusData.diagrams[i].name);
+                        $log.debug("Current processing diagram name:"+branchRevisionStatusData.diagrams[i].name);
                         if(diagramId == branchRevisionStatusData.diagrams[i].id){
-                            console.log("Active diagram:"+extDiagram.data.name);
+                            $log.debug("Active diagram:"+extDiagram.data.name);
                             $scope.activeDiagram = extDiagram;
                             $scope.activeDiagramEditData = angular.copy(extDiagram);
                         }
                     }
-                    console.log("Diagrams: ");console.log($scope.diagrams);
+                    $log.debug("Diagrams: ");$log.debug($scope.diagrams);
 
                 if(diagramId == undefined){
                     $scope.activeDiagram = $scope.diagrams[0];
@@ -137,8 +137,8 @@
 
                 // ADD SCHEMAS to scope
                 setSchemasAndCreateDataToDisplay(branchRevisionStatusData, diagramElements);
-                console.log("Front diagram data:");
-                console.log($scope.diagramData);
+                $log.debug("Front diagram data:");
+                $log.debug($scope.diagramData);
             }
             function setSchemasAndCreateDataToDisplay(branchRevisionStatusData, diagramElements) {
                 // Load all data with project_state and then load diagram elements and bound the two together
@@ -146,14 +146,15 @@
 
                 for (var i in branchRevisionStatusData.schemas) {
                     // SET SCHEMAS
-                    var schema = {data:{
+                    var schema = {  data:{
                                         id: branchRevisionStatusData.schemas[i].id,
                                         databaseName: branchRevisionStatusData.schemas[i].databaseName,
                                         comment: branchRevisionStatusData.schemas[i].comment,
                                         collation: branchRevisionStatusData.schemas[i].collation,
                                         namespaces: branchRevisionStatusData.schemas[i].namespaces
                                     },
-                                    modified: false };
+                                    modified: false
+                                };
                     $scope.schemas.push(schema);
 
                     // SET DIAGRAM TABLES
@@ -179,7 +180,7 @@
                                         modified: false
                                     });
                                 }
-                                table.data.columns = columns;
+                                table.data.columns = sortTableColumns(columns);
 
                                 // IF foreignKeys EXISTS on table data CHECK ON DIAGRAM AND CREATE LINK
                                 for (var j in dataTable.foreignKeys) {
@@ -229,13 +230,19 @@
                     $scope.showCreateSchemaPopup();
                 }
             }
-
+            function sortTableColumns(columns){
+                return columns.sort(function(a, b) {
+                    var textA = a.cdata.ordinal;
+                    var textB = b.cdata.ordinal;
+                    return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+                });
+            }
 
             // ******* SAVE DIAGRAM ON BUTTON *******
             $scope.saveDiagramButton = function () {
                 if(confirm("You are going to save diagram ["+$scope.activeDiagram.data.name+"], are you sure?") == false) {return;}
 
-                console.log("Saving diagram["+$scope.activeDiagram.data.name+"] be patient..");
+                $log.debug("Saving diagram["+$scope.activeDiagram.data.name+"] be patient..");
                 var success = true;
                 try{
                 var branchRevisionId = $scope.branchRevisionId;
@@ -325,11 +332,11 @@
 
                 }catch (err){
                     success = false;
-                    console.log("Saving diagram["+$scope.activeDiagram.data.name+"] failed with msg:"+err);
+                    $log.debug("Saving diagram["+$scope.activeDiagram.data.name+"] failed with msg:"+err);
                     Notification.error("Saving diagram["+$scope.activeDiagram.data.name+"] failed with msg:"+err);
                 }
                 if(success){
-                    console.log("Diagram["+$scope.activeDiagram.data.name+"] content saved successfully");
+                    $log.debug("Diagram["+$scope.activeDiagram.data.name+"] content saved successfully");
                     clearDeletedScopes();
                     Notification.success("Diagram["+$scope.activeDiagram.data.name+"] content saved successfully");
                 }
@@ -377,7 +384,7 @@
                 if (tableIndex != null) {
                     $scope.diagramData.tables[tableIndex].data.indexes.push($scope.inserted);
                 }
-                console.log("ctrl-> new index initialized");
+                $log.debug("ctrl-> new index initialized");
             };
             $scope.deleteIndex = function(deletedExtendedIndex, selectedTableIndexes){
                 for(var i in selectedTableIndexes){
@@ -390,10 +397,10 @@
                         break;
                     }
                 }
-                console.log("index successfully deleted");
+                $log.debug("index successfully deleted");
             }
             $scope.showIndexColumns = function(extendedIndex){
-                console.log(extendedIndex);
+                $log.debug(extendedIndex);
                 $scope.selectedIndexComment = extendedIndex.data.comment;
 
                 var table = getTableForId(extendedIndex.data.tableRef);
@@ -453,12 +460,12 @@
                 var referencedTableIndexColumns = selectedForeignKey.refTable.data.columns;
 
                 $scope.selectedTableForeignKeyColumns = [{foreignKey:selectedForeignKey.data, sourceColumn:column,refTable:selectedForeignKey.refTable, refIndexColumns:referencedTableIndexColumns}];
-                console.log( $scope.selectedTableForeignKeyColumns);
-//                console.log(column.cdata.name);
-//                console.log(refColumn.cdata.name);
+                $log.debug( $scope.selectedTableForeignKeyColumns);
+//                $log.debug(column.cdata.name);
+//                $log.debug(refColumn.cdata.name);
             }
             $scope.deleteReferencedKey = function(foreignKey,foreignKeys){
-                console.log("Delete referenced key with name:"+foreignKey.data.fk_data.name);
+                $log.debug("Delete referenced key with name:"+foreignKey.data.fk_data.name);
                 // delete foreign key from links
                 deleteColumnLink(foreignKey.data.fk_data.sourceColumn, $scope.diagramData.links);
 
@@ -489,16 +496,19 @@
                 fkDetails.foreignKey.dataModified = true;
                 fkDetails.foreignKey.elModified = true;
                 fkDetails.foreignKey.fk_data.comment = data.comment;
-                $scope.recal = fkDetails.refTable;
+                updateTableLinks(fkDetails.refTable);
             }
-
+            function updateTableLinks(table){
+                // this actually work buy double binding with directive
+                $scope.recal = table;
+            }
 
 
              // ********* REMOVE TABLE *********
             function deleteTableElement(tableId, tables) {
                 for (var i = 0; i < tables.length; i++) {
                     if (tables[i].data.id === tableId) {
-                        console.log("ctrl -> table[" + tables[i].data.name + "] is deleted");
+                        $log.debug("ctrl -> table[" + tables[i].data.name + "] is deleted");
                         $scope.deletedTableElements.push(tables[i].element);
                         tables.splice(i, 1);
                     }
@@ -509,10 +519,10 @@
                 for(var i = diagramLinks.length-1; i>=0;i--){
                     var link = diagramLinks[i];  // contain fk_data, element and dataModified, elModified
                     if (link.fk_data.tableRef == tableId || link.fk_data.referencedTableRef == tableId) {
-                        console.log("ctrl -> link[" + link.fk_data.name + "] is deleted");
+                        $log.debug("ctrl -> link[" + link.fk_data.name + "] is deleted");
                         var exists = checkIfForeignKeyExistsOnBack(link.fk_data.tableRef,link.fk_data.id);
                         if(exists) {
-                            console.log("FK exist on server add to delete");
+                            $log.debug("FK exist on server add to delete");
                             $scope.deletedLinks.push(link);
                         }
                         diagramLinks.splice(i, 1);
@@ -523,7 +533,9 @@
             // ********* ADD/EDIT COLUMN *********
             $scope.addColumn = function () {
                 var tableDataId = $scope.selectedTable.data.id;
-                console.log("Selected table id: " + tableDataId);
+                var tableCollation = $scope.selectedTable.data.collation;
+                var ordinal = $scope.selectedTable.data.columns.length+1;
+                $log.debug("Selected table id: " + tableDataId);
                 $scope.inserted = {
                     cdata: {
                         id: genGuid(),
@@ -533,11 +545,11 @@
                         length: 150,
                         precision: 0.0,
                         default: "default",
-                        collation: "utf-8",
-                        ordinal: 0,
-                        primary: true,
-                        nullable: true,
-                        unique: true,
+                        collation: tableCollation,
+                        ordinal: ordinal,
+                        primary: false,
+                        nullable: false,
+                        unique: false,
                         autoIncrement: false,
                         dictionary: false,
                         tableRef: tableDataId
@@ -548,19 +560,20 @@
                 if (tableIndex != null) {
                     $scope.diagramData.tables[tableIndex].data.columns.push($scope.inserted);
                 }
-                console.log("ctrl-> new column initialized");
+                $log.debug("ctrl-> new column initialized");
             };
-            $scope.saveColumn = function (data, id) {
+            $scope.saveColumn = function (data, columnId) {
                 var selected = $filter('filter')($scope.dataTypes, {value: data.dataType});
                 if (selected.length != 0) {
                     var tableId = $scope.selectedTable.data.id;
                     var tableIndex = findTablePositionInArray(tableId, $scope.diagramData.tables);
                     var selectedTableColumns = $scope.diagramData.tables[tableIndex].data.columns;
-                    var column = getColumnForId(id, selectedTableColumns);
+                    var column = getColumnForId(columnId, selectedTableColumns);
                     column.cdata.column_type = selected[0].text;
                     column.modified = true;
+                    $log.debug("Column: "+data.name+" ordinal: "+ column.cdata.ordinal);
                 }
-                console.log("Column successfully saved")
+                $log.debug("Column successfully saved")
                 return [200, {status: 'ok'}];
             };
             function getColumnForId(columnId, columns) {
@@ -571,6 +584,63 @@
                 }
             }
 
+            // ********* MOVE COLUMN IN TABLE *********
+            $scope.moveColumnUp = function(column, columns){
+                $log.debug("ctrl-> move up");
+                if(column.cdata.ordinal==1){
+                    // if first we cannot move it up
+                    return;
+                }
+
+                var indexA = column.cdata.ordinal-1;
+                var indexB = column.cdata.ordinal-2;
+                columns = swapColumnsAndUpdateOrdinals(columns, indexA, indexB);
+
+                for(var i=0; i < columns.length; i++){
+                    console.log(columns[i].cdata.name+" ordinal:");
+                    console.log(columns[i].cdata.ordinal);
+                }
+            }
+            $scope.moveColumnDown = function(column, columns){
+                $log.debug("ctrl-> move down");
+
+                if(column.cdata.ordinal==columns.length){
+                    // if last we cannot move it up
+                    return;
+                }
+
+                var indexA = column.cdata.ordinal-1;
+                var indexB = column.cdata.ordinal;
+                columns = swapColumnsAndUpdateOrdinals(columns, indexA, indexB);
+
+                for(var i=0; i < columns.length; i++){
+                    $log.debug(columns[i].cdata.name+" ordinal:");
+                    $log.debug(columns[i].cdata.ordinal);
+                }
+            }
+
+            function swapColumnsAndUpdateOrdinals(arr, indexA, indexB) {
+                var aOrdinal =  arr[indexA].cdata.ordinal;
+                var bOrdinal = arr[indexB].cdata.ordinal;
+
+                var temp = arr[indexA];
+                arr[indexA] = arr[indexB];
+                arr[indexB] = temp;
+
+                arr[indexA].cdata.ordinal = aOrdinal;
+                arr[indexA].modified = true;
+                arr[indexB].cdata.ordinal = bOrdinal;
+                arr[indexB].modified = true;
+
+                // update link position if table has ref id
+                var table = getTableForId(arr[indexA].cdata.tableRef);
+                updateTableLinks(table);
+                return arr;
+            };
+
+
+
+
             // ********* REMOVE COLUMN *********
             $scope.removeTableColumn = function (index) {
                 // delete links if exists
@@ -579,26 +649,33 @@
 
                 // remove column from table
                 $scope.selectedTable.data.columns.splice(index, 1);
+                updateColumnsOrdinal($scope.selectedTable.data.columns);
 
                 $scope.deletedColumnsData.push(columnData);
-                console.log("ctrl -> column[" + columnData.name + "] successfully deleted");
+                $log.debug("ctrl -> column[" + columnData.name + "] successfully deleted");
             };
+            function updateColumnsOrdinal(columns){
+                for(var i = 0 ; i< columns.length; i++){
+                    var column = columns[i];
+                    column.cdata.ordinal = i + 1;
+                    $log.debug("Column:"+column.cdata.name+" ordinal: "+column.cdata.ordinal);
+                }
+            }
             function deleteColumnLink(columnId, diagramLinks) {
                  for(var i = diagramLinks.length-1; i>=0;i--){
                     var link = diagramLinks[i];  // contain fk_data, element and dataModified, elModified
                     if (link.fk_data.sourceColumn == columnId  || link.fk_data.referencedColumn == columnId) {
-                        console.log("ctrl -> link[" + link.fk_data.name + "] is deleted");
+                        $log.debug("ctrl -> link[" + link.fk_data.name + "] is deleted");
 
                         var exists = checkIfForeignKeyExistsOnBack(link.fk_data.tableRef,link.fk_data.id);
                         if(exists) {
-                            console.log("FK exist on server add to delete");
+                            $log.debug("FK exist on server add to delete");
                             $scope.deletedLinks.push(link); //if not exists on back no need to send delete request to the back
                         }
                         diagramLinks.splice(i, 1);
                     }
                 }
             }
-
 
             $scope.showColumnType = function (column) {
                 var selected = [];
@@ -623,11 +700,10 @@
             $scope.isCreateSchemaPopupShown = false;
             $scope.showCreateSchemaPopup = function(){
                 $scope.isCreateSchemaPopupShown = true;
+                $scope.newSchema = {id:genGuid(),databaseName:"",collation:""};
             }
             $scope.createSchemaOk = function(){
-                $scope.newSchema.id = genGuid();
                 $scope.schemas.push({data:$scope.newSchema,modified: true});
-                $scope.newSchema = {id:"",databaseName:"",collation:""};
                 $scope.isCreateSchemaPopupShown = false;
                 if($scope.schemas.length == 1){
                     showCurrentSchemaInDropDown($scope.schemas[0].data);
@@ -635,10 +711,16 @@
             }
             $scope.createSchemaCancel = function(){
                 $scope.isCreateSchemaPopupShown = false;
-                $scope.newSchema = {id:"",databaseName:"",collation:""};
             }
             function showCurrentSchemaInDropDown(schemaData) {
-                  $scope.activeSchema = schemaData; // select first schema in dropdown
+                  $scope.activeSchema = schemaData;
+            }
+
+            // ********* GET SCHEMA **************
+            $scope.getSchemaName = function(schemaId){
+                if(schemaId == undefined) return;
+                var schemaArray = $filter('filter')($scope.schemas, schemaId); // return array
+                return schemaArray.length ? schemaArray[0].data.databaseName : 'Not set';
             }
 
             // ******** THIS CONTROLLER UTIL FUNCTION ********
@@ -648,7 +730,7 @@
                         return i;
                     }
                 }
-                    console.log("Table not found for id: " + tableId);
+                    $log.debug("Table not found for id: " + tableId);
                 return null;
             }
             $scope.dataTypes = [
@@ -678,7 +760,6 @@
                         s4() + '-' + s4() + s4() + s4();
                 };
             })();
-
             function genGuid() {
                 //  id-s started with number is not recognized by d3.select function
                 var id = guid();
@@ -692,7 +773,7 @@
                 // it will check the source table fks
                 var table = getTableForId(sourceTableId);
                 if(table == null){
-                    console.log("Could not found table for id:"+sourceTableId);
+                    $log.debug("Could not found table for id:"+sourceTableId);
                     return false;
                 }
                 for(var i=0;i<table.data.foreignKeys.length;i++){

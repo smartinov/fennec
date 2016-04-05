@@ -3,14 +3,14 @@
 <html ng-app="{% block ng-app %}fennec{% endblock %}">
 <head>
     <title>{% block title %}Fennec{% endblock %}</title>
-    <!-- UI Libs -->
-    <script src="{% static "js/angular/jquery.js" %}"></script>
-    <script src="{% static "js/angular/jquery.layout.js" %}"></script>
-    <script src="{% static "js/angular/jquery.ui.all.js" %}"></script> <!-- using to move down and left panel-->
+    <!-- UI Libs (using to move down and left panel) -->
+    <script src="{% static "js/angular/jquery-latest.js" %}"></script>
+    <script src="{% static "js/angular/jquery-ui-latest.js" %}"></script>
+    <script src="{% static "js/angular/jquery.layout-latest.js" %}"></script>
 
+    <link href="{% static 'css/layout-default-latest.css' %}" rel="stylesheet">
     <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
     <link href="{% static 'css/xeditable.css' %}" rel="stylesheet">
-
     <link href="{% static 'css/notifications.css' %}" rel="stylesheet">
     <link href="{% static 'css/angular-ui-notification.min.css' %}" rel="stylesheet">
 
@@ -19,106 +19,33 @@
             padding: 9px 0;
         }
     </style>
-    <script>
-        var outerLayout, middleLayout, innerLayout;
+
+    <!--Settings for layouts ( toolbar and table properties close/open resize)-->
+    <script type="text/javascript">
+
+        // whole page
+        var pageLayoutSettings = {
+            north__spacing_open: 0,
+            west__size: 300,
+            spacing_open: 6, // ALL panes
+            spacing_closed: 12, // ALL panes
+            center__childOptions: {
+                // inner options - diagram and properties
+                inset: {
+                    top: 0, bottom: 0, left: 0, right: 0
+                },
+                spacing_open: 6, // ALL panes
+                spacing_closed: 12, // ALL panes
+                south__size: 200
+            }
+        };
+
+        var innerLayout;
         $(document).ready(function () {
-            outerLayout = $('body').layout({
-                center__paneSelector: ".outer-center"
-                , west__paneSelector: ".fennec-sidebar"
-                , west__size: 300
-                , east__size: 125
-                , spacing_open: 8 // ALL panes
-                , spacing_closed: 12 // ALL panes
-                , north__spacing_open: 0
-                , south__spacing_open: 0
-                , center__onresize: "middleLayout.resizeAll"
-            });
-
-            middleLayout = $('div.outer-center').layout({
-                center__paneSelector: ".middle-center"
-                , west__size: 100
-                , east__size: 100
-                , spacing_open: 8  // ALL panes
-                , spacing_closed: 12 // ALL panes
-                , center__onresize: "innerLayout.resizeAll"
-            });
-
-            innerLayout = $('div.middle-center').layout({
-                center__paneSelector: ".diagram"
-                , south__paneSelector: ".property"
-                , west__size: 300
-                , east__size: 125
-                , spacing_open: 8  // ALL panes
-                , spacing_closed: 12  // ALL panes
-                , west__spacing_closed: 12
-                , east__spacing_closed: 12
-            });
-
+            $('body').layout(pageLayoutSettings);
+            innerLayout = $('div.ui-layout-center').layout();
         });
     </script>
-    <style type="text/css">
-        .ui-layout-pane {
-            /* all 'panes' */
-            padding: 10px;
-            background: #FFF;
-            border-top: 1px solid #BBB;
-            border-bottom: 1px solid #BBB;
-        }
-        .ui-layout-pane-north,
-        .ui-layout-pane-south {
-            border: 1px solid #BBB;
-        }
-        .ui-layout-pane-west {
-            border-left: 1px solid #BBB;
-        }
-        .ui-layout-pane-east {
-            border-right: 1px solid #BBB;
-        }
-        .ui-layout-pane-center {
-            border-left: 0;
-            border-right: 0;
-        }
-        .diagram {
-            border: 1px solid #BBB;
-        }
-        .fennec-sidebar {
-            background-color: #F8F8F8;
-        }
-
-        .ui-layout-resizer {
-            /* all 'resizer-bars' */
-            background: #DDD;
-        }
-
-        .ui-layout-resizer:hover {
-            /* all 'resizer-bars' */
-            background: #FED;
-        }
-
-        .ui-layout-resizer-west {
-            border-left: 1px solid #BBB;
-        }
-
-        .ui-layout-resizer-east {
-            border-right: 1px solid #BBB;
-        }
-
-        .ui-layout-toggler {
-            /* all 'toggler-buttons' */
-            background: #AAA;
-        }
-
-        .ui-layout-toggler:hover {
-            /* all 'toggler-buttons' */
-            background: #FC3;
-        }
-        .outer-center,
-        .middle-center {
-            /* center pane that are 'containers' for a nested layout */
-            padding: 0;
-            border: 0;
-        }
-    </style>
 
     <!--my internal stylesheets-->
     <link href="{% static 'css/app.css' %}" rel="stylesheet">

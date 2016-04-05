@@ -33,8 +33,8 @@
 
 
 <!--Sidebar-->
-<div class="fennec-sidebar">
-    <div class="well sidebar-nav">
+<div class="ui-layout-west"	>
+     <div class="well sidebar-nav">
         <ul class="nav nav-list">
             <li class="nav-header">[[projectInfo.name]]</li>
 
@@ -71,18 +71,20 @@
     </div>
 </div>
 
-<!-- Diagram -->
-<div class="outer-center">
 
-    <div class="middle-center" style="background-color: #F8F8F8;" >
+<!-- Diagram Side -->
+<div class="ui-layout-center">
 
-        <div role="tabpanel">
-			<ul class="nav nav-tabs" role="tablist">
+    <!-- Diagram -->
+	<div class="ui-layout-center">
+		<div role="tabpanel">
+			<ul class="nav nav-tabs" role="tablist" style="cursor: pointer">
 				<li role="presentation" ng-repeat="tab in diagrams" ng-click="selectDiagram($index)" ng-class="{'active':selectedDiagram == $index}">
-					<a data-target="#tab" aria-controls="home" role="tab" data-toggle="tab">[[tab.data.name]] <span ng-click="closeDiagram($index)"><i class="icon-remove"></i></span></a>
+					<a data-target="#tab"  aria-controls="home" role="tab" data-toggle="tab">[[tab.data.name]] <span ng-click="closeDiagram($index)">
+                        <i class="icon-remove" style="cursor: pointer"></i></span></a>
 				</li>
 				<li role="presentation" ng-click="addDiagram()">
-					<a aria-controls="home" role="tab" data-toggle="tab">( + )</a>
+					<a aria-controls="home" role="tab" data-toggle="tab" style="cursor: pointer">( + )</a>
 				</li>
 			</ul>
 		</div>
@@ -92,18 +94,19 @@
                         stable="selectedTable" stable-foreign-keys="selectedTableForeignKeys" stable-indexes="selectedTableIndexes" recal="recal"></fennec-diagram>
 				</div>
 		</div>
+	</div>
 
-       {#        TABLE COLUMNS PROPERTIES      #}
-        <div class="property" style="background-color: #F8F8F8;">
-          <tabset class="nav nav-tabs">
+    <!-- Table properties -->
+	<div class="ui-layout-south">
+       <tabset class="nav nav-tabs" style="cursor: pointer">
               <tab heading="Columns"> <div ng-include="'{% static 'partials/ColumnsTab.html' %}'"> </div></tab>
               <tab heading="Indexes"> <div ng-include="'{% static 'partials/IndexesTab.html' %}'"> </div></tab>
               <tab heading="Foreign Keys"><div ng-include="'{% static 'partials/ForeignKeysTab.html' %}'"></div></tab>
-            </tabset>
-        </div>
+       </tabset>
 
     </div>
     <div ng-if="isCreateSchemaPopupShown" ng-include="'{% static 'partials/SchemaPopup.html' %}'"></div>
+
 </div>
 
 {% endblock %}
