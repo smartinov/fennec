@@ -496,9 +496,12 @@
                 fkDetails.foreignKey.dataModified = true;
                 fkDetails.foreignKey.elModified = true;
                 fkDetails.foreignKey.fk_data.comment = data.comment;
-                $scope.recal = fkDetails.refTable;
+                updateTableLinks(fkDetails.refTable);
             }
-
+            function updateTableLinks(table){
+                // this actually work buy double binding with directive
+                $scope.recal = table;
+            }
 
 
              // ********* REMOVE TABLE *********
@@ -581,10 +584,9 @@
                 }
             }
 
-            // ********* MOVE COLUMN *********
+            // ********* MOVE COLUMN IN TABLE *********
             $scope.moveColumnUp = function(column, columns){
-
-                $log.debug("ctrl-> move up:");
+                $log.debug("ctrl-> move up");
                 if(column.cdata.ordinal==1){
                     // if first we cannot move it up
                     return;
@@ -595,7 +597,7 @@
                 columns = swapColumnsAndUpdateOrdinals(columns, indexA, indexB);
 
                 for(var i=0; i < columns.length; i++){
-                    console.log(columns[i].cdata.name+" :");
+                    console.log(columns[i].cdata.name+" ordinal:");
                     console.log(columns[i].cdata.ordinal);
                 }
             }
@@ -612,7 +614,7 @@
                 columns = swapColumnsAndUpdateOrdinals(columns, indexA, indexB);
 
                 for(var i=0; i < columns.length; i++){
-                    $log.debug(columns[i].cdata.name+" :");
+                    $log.debug(columns[i].cdata.name+" ordinal:");
                     $log.debug(columns[i].cdata.ordinal);
                 }
             }
@@ -620,16 +622,24 @@
             function swapColumnsAndUpdateOrdinals(arr, indexA, indexB) {
                 var aOrdinal =  arr[indexA].cdata.ordinal;
                 var bOrdinal = arr[indexB].cdata.ordinal;
-                var temp = arr[indexA];
 
+                var temp = arr[indexA];
                 arr[indexA] = arr[indexB];
                 arr[indexB] = temp;
+
                 arr[indexA].cdata.ordinal = aOrdinal;
                 arr[indexA].modified = true;
                 arr[indexB].cdata.ordinal = bOrdinal;
                 arr[indexB].modified = true;
+
+                // update link position if table has ref id
+                var table = getTableForId(arr[indexA].cdata.tableRef);
+                updateTableLinks(table);
                 return arr;
             };
+
+
+
 
             // ********* REMOVE COLUMN *********
             $scope.removeTableColumn = function (index) {
