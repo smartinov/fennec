@@ -3,22 +3,17 @@
 <html ng-app="{% block ng-app %}fennec{% endblock %}">
 <head>
     <title>{% block title %}Fennec{% endblock %}</title>
+
     <!-- UI Libs (using to move down and left panel) -->
     <script src="{% static "js/angular/jquery-latest.js" %}"></script>
     <script src="{% static "js/angular/jquery-ui-latest.js" %}"></script>
     <script src="{% static "js/angular/jquery.layout-latest.js" %}"></script>
 
-    <link href="{% static 'css/layout-default-latest.css' %}" rel="stylesheet">
     <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
+    <link href="{% static 'css/layout-default-latest.css' %}" rel="stylesheet">
     <link href="{% static 'css/xeditable.css' %}" rel="stylesheet">
-    <link href="{% static 'css/notifications.css' %}" rel="stylesheet">
     <link href="{% static 'css/angular-ui-notification.min.css' %}" rel="stylesheet">
 
-    <style type="text/css">
-        .sidebar-nav {
-            padding: 9px 0;
-        }
-    </style>
 
     <!--Settings for layouts ( toolbar and table properties close/open resize)-->
     <script type="text/javascript">
