@@ -11,7 +11,6 @@
                 $scope.schemas = [];
                 $scope.activeSchema = {};
                 $scope.diagrams = [];
-//                $scope.newSchema = {id:"",databaseName:"",collation:""};
 
                 var absoluteURL = $location.$$absUrl;
                 var branchRevisionId = absoluteURL.substr(absoluteURL.lastIndexOf('/') + 1);
@@ -59,13 +58,20 @@
                 $scope.activeDiagramEditData = angular.copy(extNewDiagramInfo); // for edit form
             }
             $scope.closeDiagram = function (index) {
-                $scope.diagrams.splice(index, 1); //remove the object from the array based on index
-                clearDiagramSpecificsScopes();
+                $scope.diagrams.splice(index, 1); // remove the object from the array based on index
 
-                loadBranchRevisionProjectAndDiagram($scope.branchRevisionId, $scope.diagrams[index].data.id);
+                // if active diagram is closing
+                if ($scope.selectedDiagram == index) {
+                    clearDiagramSpecificsScopes();
+                    // if there are more open diagrams (tabs) select another
+                    if ($scope.diagrams.length > 0) {
+                        var activeDiagramId = $scope.diagrams[0].data.id;
+                        loadBranchRevisionProjectAndDiagram($scope.branchRevisionId, activeDiagramId, true);
+                    }
+                }
             }
             $scope.selectDiagram = function (index) {
-                if($scope.activeDiagram!=undefined && confirm("You are going to create new diagram, save changes on ["+$scope.activeDiagram.data.name+"] diagram") == true) {
+                if($scope.activeDiagram!=undefined && confirm("You are going to move to another diagram, save changes on ["+$scope.activeDiagram.data.name+"] diagram") == true) {
                     // save current diagram
                     $scope.saveDiagramButton();
                 }
@@ -73,93 +79,100 @@
                 $scope.selectedDiagram = index;
                 clearDiagramSpecificsScopes();
 
-                loadBranchRevisionProjectAndDiagram($scope.branchRevisionId, $scope.diagrams[index].data.id);
+                loadBranchRevisionProjectAndDiagram($scope.branchRevisionId, $scope.diagrams[index].data.id, true);
             }
 
 
             // ******* LOAD FUNCTIONS *******
-            function loadBranchRevisionProjectAndDiagram(branchRevisionId, diagramId) {
+            function loadBranchRevisionProjectAndDiagram(branchRevisionId, diagramId, isTabChange) {
                 spinnerService.showSpinner();
                 var projectStateRequest = diagramService.loadBranchRevisionProjectState(branchRevisionId);
-                projectStateRequest.then(function (brState) {
+                projectStateRequest.then(function (branchRevisionData) {
                     //$log.debug(result);
                     if (diagramId == undefined) {
-                        if (brState.diagrams.length > 0) {
-                            diagramId = brState.diagrams[0].id;
+                        if (branchRevisionData.diagrams.length > 0) {
+                            diagramId = branchRevisionData.diagrams[0].id;
                         }
                     }
                     var diagramRequest = diagramService.loadDiagramElements(branchRevisionId, diagramId);
                     diagramRequest.then(function (diagramElements) {
-                        prepareDiagramData(brState, diagramElements,diagramId);
+                        if(isTabChange == undefined || isTabChange == false){
+                            createDiagramsInfoForTabs(branchRevisionData, diagramId);
+                        }
+                        prepareDiagramData(branchRevisionData, diagramElements, diagramId);
                         spinnerService.hideSpinner();
                     });
                 });
                 projectStateRequest.catch(function (error) {
                     $log.debug("ERROR: LoadBranchRevisionProjectState");
-                    var errorMsg = "ERROR: LoadBranchRevisionProjectState->Loading diagram (branchRevisionId:'"+branchRevisionId+"') Status: "+error.status+" msg :"+error.data.detail+" (requested url:"+error.config.url+")";
+                    var errorMsg = "ERROR: LoadBranchRevisionProjectState->Loading diagram (branchRevisionId:'" + branchRevisionId + "') Status: " + error.status + " msg :" + error.data.detail + " (requested url:" + error.config.url + ")";
                     $log.debug(errorMsg);
-                    alert("Error loading diagram! \n\nStatus: "+error.status+" Msg :"+error.data.detail+"\n\nClick to redirect on dashboard");
-                    var dashboardURL = window.location.protocol+"//"+window.location.host+"/app/dashboard";
+                    alert("Error loading diagram! \n\nStatus: " + error.status + " Msg :" + error.data.detail + "\n\nClick to redirect on dashboard");
+                    var dashboardURL = window.location.protocol + "//" + window.location.host + "/app/dashboard";
                     window.location.replace(dashboardURL);
                 });
                 projectStateRequest.finally(function (nesto) {
                     //$log.debug("log loadBranchRevisionProjectStatefinally");
                 });
             }
-            function prepareDiagramData(branchRevisionStatusData, diagramElements,diagramId) {
-                $log.debug(branchRevisionStatusData);
+
+            function createDiagramsInfoForTabs(branchRevisionData, diagramId) {
+                // ADD DIAGRAMS info (name,description) to scope for tabs
+                for (var i in branchRevisionData.diagrams) {
+                    var extDiagram = {data: branchRevisionData.diagrams[i], modified: false};
+                    $scope.diagrams.push(extDiagram);
+                }
+                $log.debug("Diagrams: ");
+                $log.debug($scope.diagrams);
+            }
+
+            function prepareDiagramData(branchRevisionData, diagramElements, diagramId) {
+                $log.debug(branchRevisionData);
                 $log.debug(diagramElements);
                 // ADD PROJECT INFO to scope
-                $scope.projectInfo = branchRevisionStatusData.project;
+                $scope.projectInfo = branchRevisionData.project;
                 $log.debug("ProjectInfo: ");
                 $log.debug($scope.projectInfo);
 
-                    // ADD DIAGRAMS to scope
-                    for(var i in branchRevisionStatusData.diagrams){
-                        // load diagrams on page refresh(on tab change don't load)
-                        var extDiagram = {data: branchRevisionStatusData.diagrams[i], modified: false};
-                        if($scope.diagrams.length<branchRevisionStatusData.diagrams.length) {
-                            $scope.diagrams.push(extDiagram);
-                        }
-                        $log.debug("Current processing diagram name:"+branchRevisionStatusData.diagrams[i].name);
-                        if(diagramId == branchRevisionStatusData.diagrams[i].id){
-                            $log.debug("Active diagram:"+extDiagram.data.name);
+                if (diagramId == undefined) {
+                    $scope.activeDiagram = $scope.diagrams[0];
+                    $scope.activeDiagramEditData = angular.copy($scope.activeDiagram);
+                }else{
+                    for (var i = 0; i < $scope.diagrams.length; i++) {
+                        var extDiagram = $scope.diagrams[i];
+                        if (diagramId == extDiagram.data.id) {
+                            $log.debug("Active diagram:" + extDiagram.data.name);
                             $scope.activeDiagram = extDiagram;
                             $scope.activeDiagramEditData = angular.copy(extDiagram);
                         }
                     }
-                    $log.debug("Diagrams: ");$log.debug($scope.diagrams);
-
-                if(diagramId == undefined){
-                    $scope.activeDiagram = $scope.diagrams[0];
-                    $scope.activeDiagramEditData =  angular.copy($scope.activeDiagram);
                 }
 
                 // ADD SCHEMAS to scope
-                setSchemasAndCreateDataToDisplay(branchRevisionStatusData, diagramElements);
+                setSchemasAndCreateDataToDisplay(branchRevisionData, diagramElements);
                 $log.debug("Front diagram data:");
                 $log.debug($scope.diagramData);
             }
-            function setSchemasAndCreateDataToDisplay(branchRevisionStatusData, diagramElements) {
+            function setSchemasAndCreateDataToDisplay(branchRevisionData, diagramElements) {
                 // Load all data with project_state and then load diagram elements and bound the two together
                 $scope.schemas = [];
 
-                for (var i in branchRevisionStatusData.schemas) {
+                for (var i in branchRevisionData.schemas) {
                     // SET SCHEMAS
                     var schema = {  data:{
-                                        id: branchRevisionStatusData.schemas[i].id,
-                                        databaseName: branchRevisionStatusData.schemas[i].databaseName,
-                                        comment: branchRevisionStatusData.schemas[i].comment,
-                                        collation: branchRevisionStatusData.schemas[i].collation,
-                                        namespaces: branchRevisionStatusData.schemas[i].namespaces
+                                        id: branchRevisionData.schemas[i].id,
+                                        databaseName: branchRevisionData.schemas[i].databaseName,
+                                        comment: branchRevisionData.schemas[i].comment,
+                                        collation: branchRevisionData.schemas[i].collation,
+                                        namespaces: branchRevisionData.schemas[i].namespaces
                                     },
                                     modified: false
                                 };
                     $scope.schemas.push(schema);
 
                     // SET DIAGRAM TABLES
-                    for (var j in branchRevisionStatusData.schemas[i].tables) {
-                        var dataTable = branchRevisionStatusData.schemas[i].tables[j];
+                    for (var j in branchRevisionData.schemas[i].tables) {
+                        var dataTable = branchRevisionData.schemas[i].tables[j];
 
                         // CHECK IF TABLE EXISTS ON CURRENT DIAGRAM
                         for (var k in diagramElements.tableElements) {
