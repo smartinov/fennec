@@ -314,7 +314,7 @@
                     y1: function(d) { return d.element.startPositionY; },
                     x2: function(d) { return d.element.endPositionX; },
                     y2: function(d) { return d.element.endPositionY; }
-                  }).style("stroke", "rgb(6,120,155)").style("stroke-width", 3)
+                  }).style("stroke", "#0077b3").style("stroke-width", 3)
                   .style("stroke-dasharray", "10 5")
                   .style('marker-start', function(d) { return (d.element.cardinality==3) ? 'url(#start-arrow)' : ''; })
                   .style('marker-end', function(d) { return  'url(#end-arrow)'; });

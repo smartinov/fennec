@@ -20,12 +20,16 @@ function changeState(state){
     }
 
     if(state == fennecStates.new_table){
-           $('svg').css('cursor',"url('/static/images/rectangle_32x32_icon.png'), auto");
+           $('svg').css('cursor',"url('/static/images/table_pointer.cur'), auto");
     }
 
     if(state == fennecStates.new_link){
-//        $('svg').css('cursor',"url('/static/images/link_32x32_icon.png'), auto");
+        $('svg').css('cursor',"url('/static/images/link-pointer1.cur'), auto");
         clearTmpLinks();
+    }
+
+    if(state == fennecStates.delete_obj){
+        $('svg').css('cursor',"url('/static/images/delete_pointer.cur'), auto");
     }
 }
 
