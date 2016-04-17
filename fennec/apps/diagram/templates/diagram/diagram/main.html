@@ -30,39 +30,42 @@
 <!--Sidebar-->
 <div class="ui-layout-west"	>
      <div class="well sidebar-nav">
-        <ul class="nav nav-list">
-            <li class="nav-header">[[projectInfo.name]]</li>
+        <ul class="nav nav-list"    >
+            <li class="nav-header" style="padding-bottom: 10px;">Project Name - [[projectInfo.name]]</li>
+            <div></div>
+                    <li class="nav-header">Diagram</li>
 
             <li class="active"><a href="#"> [[activeDiagram.data.name]]</a></li>
 
-            <li class="nav-header">Diagram</li>
+            <input type="image" src="../../../../../../../static/images/buttons/opened-folder.png" alt="open"
+                        style="width:20px; height:20px;" ng-click="showOpenDiagramPopup()" >
+
             <button ng-click="saveDiagramButton()">Save diagram</button>
-            <form class="form-horizontal" role="form">
-                <div class="form-group">
+            <ng-form class="form-horizontal" role="form" >
+                <div class="form-group" >
                     <div class="col-sm-4">
                         <input class="form-control" id="inputName3" placeholder="Name" ng-model="activeDiagramEditData.data.name">
                         <button type="submit" ng-click="editDiagramButton()" class="btn btn-success">Edit</button>
                     </div>
                 </div>
-            </form>
+            </ng-form>
 
             <li class="nav-header">Toolbar</li>
             <input type="image" src="../../../../../../../static/images/buttons/table_icon.cur" alt="Submit" width="10" height="10" onclick="changeState(fennecStates.new_table)" >
             <button onclick="changeState(fennecStates.select)">Select table</button>
-            <!--<button onclick="changeState(fennecStates.new_link)">New link</button>-->
             <input type="image" src="../../../../../../../static/images/buttons/link_button.cur" alt="Submit" width="10" height="10" onclick="changeState(fennecStates.new_link)" >
             <button onclick="changeState(fennecStates.delete_obj)">Delete</button>
             <button onclick="innerLayout.toggle('south')">toggle Property div</button>
 
             <li class="nav-header" style="margin-top: 15px;">Schemas</li>
             <select ng-init="activeSchema=schemas[0].data" data-ng-options="s.data as s.data.databaseName for s in schemas" data-ng-model="activeSchema"></select>
-            <form class="form-horizontal" role="form">
+            <ng-form class="form-horizontal" role="form">
                 <div class="form-group">
                     <div class="col-sm-4">
                         <button type="submit" ng-click="showCreateSchemaPopup()" class="btn btn-success">Add</button>
                     </div>
                 </div>
-            </form>
+            </ng-form>
         </ul>
     </div>
 </div>
@@ -75,8 +78,8 @@
 	<div class="ui-layout-center">
 		<div role="tabpanel">
 			<ul class="nav nav-tabs" role="tablist" style="cursor: pointer">
-				<li role="presentation" ng-repeat="tab in diagrams" ng-click="selectDiagram($index)" ng-class="{'active':selectedDiagram == $index}">
-					<a data-target="#tab"  aria-controls="home" role="tab" data-toggle="tab">[[tab.data.name]] <span ng-click="closeDiagram($index)">
+				<li role="presentation" ng-repeat="tab in openedDiagrams" ng-click="selectDiagram($index)" ng-class="{'active':selectedDiagram == $index}">
+					<a data-target="#tab"  aria-controls="home" role="tab" data-toggle="tab">[[tab.data.name]] <span ng-click="closeDiagram($index, tab)">
                         <i class="icon-remove" style="cursor: pointer"></i></span></a>
 				</li>
 				<li role="presentation" ng-click="addDiagram()">
@@ -102,6 +105,7 @@
 
     </div>
     <div ng-if="isCreateSchemaPopupShown" ng-include="'{% static 'partials/SchemaPopup.html' %}'"></div>
+    <div ng-if="isOpenDiagramPopupShown" ng-include="'{% static 'partials/DiagramPopup.html' %}'"></div>
 
 </div>
 

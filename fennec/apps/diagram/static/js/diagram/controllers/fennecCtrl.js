@@ -5,30 +5,13 @@
         .controller('DiagramController', function ($scope, $filter ,$location,$log,
                                                    diagramService, spinnerService,Notification) {
 
-
             init();
             function init() {
-                $scope.panels = [
-  {
-    "title": "Collapsible Group Item #1",
-    "body": "Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch."
-  },
-  {
-    "title": "Collapsible Group Item #2",
-    "body": "Food truck fixie locavore, accusamus mcsweeney's marfa nulla single-origin coffee squid. Exercitation +1 labore velit, blog sartorial PBR leggings next level wes anderson artisan four loko farm-to-table craft beer twee."
-  },
-  {
-    "title": "Collapsible Group Item #3",
-    "body": "Etsy mixtape wayfarers, ethical wes anderson tofu before they sold out mcsweeney's organic lomo retro fanny pack lo-fi farm-to-table readymade."
-  }
-];
-$scope.panels.activePanel = -1;
-
-                $scope.isCollapsed   =true;
                 $scope.projectInfo = {};
                 $scope.schemas = [];
                 $scope.activeSchema = {};
-                $scope.diagrams = [];
+                $scope.openedDiagrams = [];
+                $scope.closedDiagrams = [];
 
                 var absoluteURL = $location.$$absUrl;
                 var branchRevisionId = absoluteURL.substr(absoluteURL.lastIndexOf('/') + 1);
@@ -67,24 +50,24 @@ $scope.panels.activePanel = -1;
                     $scope.saveDiagramButton();
                 }
                 var extNewDiagramInfo = {data:{id:genGuid(),name:"new diagram",description:"description",url:""},modified:true};
-                $scope.diagrams.push(extNewDiagramInfo);
-                $scope.selectedDiagram = $scope.diagrams.length - 1; //set the newly added tab active.
+                $scope.openedDiagrams.push(extNewDiagramInfo);
+                $scope.selectedDiagram = $scope.openedDiagrams.length - 1; //set the newly added tab active.
 
                 // clear scopes from previous diagram and set new diagram to active
                 clearDiagramSpecificsScopes();
                 $scope.activeDiagram = angular.copy(extNewDiagramInfo);
                 $scope.activeDiagramEditData = angular.copy(extNewDiagramInfo); // for edit form
             }
-            $scope.closeDiagram = function (index) {
-                $scope.diagrams.splice(index, 1); // remove the object from the array based on index
+            $scope.closeDiagram = function (index, closingDiagram) {
+                $scope.closedDiagrams.push(closingDiagram);
+                $scope.openedDiagrams.splice(index, 1); // remove the object from the array based on index
 
                 // if active diagram is closing
                 if ($scope.selectedDiagram == index) {
                     clearDiagramSpecificsScopes();
                     // if there are more open diagrams (tabs) select another
-                    if ($scope.diagrams.length > 0) {
-                        var activeDiagramId = $scope.diagrams[0].data.id;
-                        loadBranchRevisionProjectAndDiagram($scope.branchRevisionId, activeDiagramId, true);
+                    if ($scope.openedDiagrams.length > 0) {
+                        $scope.selectDiagram(0); // select first diagram tab
                     }
                 }
             }
@@ -97,7 +80,7 @@ $scope.panels.activePanel = -1;
                 $scope.selectedDiagram = index;
                 clearDiagramSpecificsScopes();
 
-                loadBranchRevisionProjectAndDiagram($scope.branchRevisionId, $scope.diagrams[index].data.id, true);
+                loadBranchRevisionProjectAndDiagram($scope.branchRevisionId, $scope.openedDiagrams[index].data.id, true);
             }
 
 
@@ -138,10 +121,10 @@ $scope.panels.activePanel = -1;
                 // ADD DIAGRAMS info (name,description) to scope for tabs
                 for (var i in branchRevisionData.diagrams) {
                     var extDiagram = {data: branchRevisionData.diagrams[i], modified: false};
-                    $scope.diagrams.push(extDiagram);
+                    $scope.openedDiagrams.push(extDiagram);
                 }
                 $log.debug("Diagrams: ");
-                $log.debug($scope.diagrams);
+                $log.debug($scope.openedDiagrams);
             }
 
             function prepareDiagramData(branchRevisionData, diagramElements, diagramId) {
@@ -153,11 +136,11 @@ $scope.panels.activePanel = -1;
                 $log.debug($scope.projectInfo);
 
                 if (diagramId == undefined) {
-                    $scope.activeDiagram = $scope.diagrams[0];
+                    $scope.activeDiagram = $scope.openedDiagrams[0];
                     $scope.activeDiagramEditData = angular.copy($scope.activeDiagram);
                 }else{
-                    for (var i = 0; i < $scope.diagrams.length; i++) {
-                        var extDiagram = $scope.diagrams[i];
+                    for (var i = 0; i < $scope.openedDiagrams.length; i++) {
+                        var extDiagram = $scope.openedDiagrams[i];
                         if (diagramId == extDiagram.data.id) {
                             $log.debug("Active diagram:" + extDiagram.data.name);
                             $scope.activeDiagram = extDiagram;
@@ -269,7 +252,30 @@ $scope.panels.activePanel = -1;
                 });
             }
 
-            // ******* SAVE DIAGRAM ON BUTTON *******
+            // ******* OPEN/SAVE/EDIT DIAGRAM *******
+            $scope.isOpenDiagramPopupShown = false;
+            $scope.showOpenDiagramPopup = function(){
+                $scope.isOpenDiagramPopupShown = true;
+                $scope.openDiagramData = {data:""};
+            }
+            $scope.openDiagram = function () {
+                $scope.isOpenDiagramPopupShown = false;
+                $scope.openedDiagrams.push($scope.openDiagramData.data);
+                // remove diagram from closed diagram
+                for(var i=0; i<$scope.closedDiagrams.length;i++){
+                    var diagram = $scope.closedDiagrams[i];
+                    if(diagram.data.id == $scope.openDiagramData.data.data.id){
+                        $scope.closedDiagrams.splice(i,1);
+                    }
+                }
+
+                // select the opening diagram as active
+                $scope.selectDiagram($scope.openedDiagrams.length-1);
+            }
+            $scope.cancelDiagramPopup = function(){
+                $scope.isOpenDiagramPopupShown = false;
+            }
+
             $scope.saveDiagramButton = function () {
                 if(confirm("You are going to save diagram ["+$scope.activeDiagram.data.name+"], are you sure?") == false) {return;}
 
@@ -372,13 +378,12 @@ $scope.panels.activePanel = -1;
                     Notification.success("Diagram["+$scope.activeDiagram.data.name+"] content saved successfully");
                 }
             }
-
             $scope.editDiagramButton = function(){
                 $scope.activeDiagramEditData.modified = true;
                 $scope.activeDiagram = angular.copy($scope.activeDiagramEditData);
-                for(var i in $scope.diagrams){
-                    if($scope.diagrams[i].data.id == $scope.activeDiagram.data.id){
-                        $scope.diagrams[i].data.name = $scope.activeDiagram.data.name;
+                for(var i in $scope.openedDiagrams){
+                    if($scope.openedDiagrams[i].data.id == $scope.activeDiagram.data.id){
+                        $scope.openedDiagrams[i].data.name = $scope.activeDiagram.data.name;
                     }
                 }
             }
