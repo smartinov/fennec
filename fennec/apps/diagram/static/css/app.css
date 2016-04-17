@@ -127,3 +127,8 @@ h1{
     left: 0;
     z-index: 9999999;
 }
+
+  /* Side bar content*/
+  .sidebar-nav {
+            padding: 9px 0;
+        }
