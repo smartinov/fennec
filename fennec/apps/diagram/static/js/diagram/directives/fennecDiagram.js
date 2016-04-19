@@ -2,7 +2,7 @@
   'use strict';
 
   angular.module('myApp.directives')
-    .directive('fennecDiagram',  ['d3Service', '$log', function(d3Service, $log) {
+    .directive('fennecDiagram',  ['d3Service', '$log', '$timeout', function(d3Service, $log, $timeout) {
       return {
         restrict: 'EA',
         scope: {
@@ -238,8 +238,15 @@
 //                    height: resizeRectSize,
 //                    fill: "#999999"
 //                  });
+
+            $timeout(function(){
+              // Any code in here will automatically have an $scope.apply() run afterwards
+              scope.stable = null; // nothing   selected
+            });
+
               svgTables.exit().remove();
             }
+
 
             function calculateIfColumnVisible(column){
                   $log.debug("dir-> calculateIfColumnVisible() => "+ column.name);
@@ -387,6 +394,7 @@
                   }
                 }
               }
+                changeState(fennecStates.select);
             }
 
             function mouseClick() {
@@ -419,7 +427,6 @@
                 );
                 restart(true);
 //                innerLayout.close('south');
-                changeState(fennecStates.select);
               }
               if(actionStates == fennecStates.select){
                 if(selected_table != null){
@@ -456,6 +463,7 @@
                   if(tableData != undefined){
                     $log.debug("dir-> table["+tableData.data.name+"] is deleting");
                     scope.$emit('deleteTableEvent', tableData );
+
                   }
                 }
               }
@@ -509,9 +517,9 @@
                       }
                   );
                 clearTmpLinks();
-                changeState(fennecStates.select);
                 redrawLines();
               }
+              changeState(fennecStates.select);
             }
             function calculateLinkPosition(sourceTableLink,targetTableLink){
               if(sourceTableLink.table.element.positionX < targetTableLink.table.element.positionX){

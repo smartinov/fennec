@@ -39,9 +39,7 @@
         <ul class="nav nav-list"    >
             <li class="nav-header" style="padding-bottom: 10px;">Project Name - [[projectInfo.name]]</li>
             <div></div>
-                    <li class="nav-header">Diagram</li>
-
-            <li class="active"><a href="#"> [[activeDiagram.data.name]]</a></li>
+                    <li class="nav-header">Diagram - [[activeDiagram.data.name]]</li>
 
             <input type="image" src="../../../../../../../static/images/buttons/opened-folder.png" alt="open"
                         style="width:20px; height:20px;" ng-click="showOpenDiagramPopup()" >
@@ -102,12 +100,15 @@
 	</div>
 
     <!-- Table properties -->
-	<div class="ui-layout-south">
-       <tabset class="nav nav-tabs" style="cursor: pointer">
-              <tab heading="Columns"> <div ng-include="'{% static 'partials/ColumnsTab.html' %}'"> </div></tab>
-              <tab heading="Indexes"> <div ng-include="'{% static 'partials/IndexesTab.html' %}'"> </div></tab>
-              <tab heading="Foreign Keys"><div ng-include="'{% static 'partials/ForeignKeysTab.html' %}'"></div></tab>
-       </tabset>
+	<div class="ui-layout-south " >
+        <div ng-show="selectedTable==null" style="text-align:center;font-style: italic;font-family:Courier New;margin: 25px;"> Table is not selected </div>
+        <div ng-show="selectedTable!=null">
+           <tabset class="nav nav-tabs" style="cursor: pointer">
+                  <tab heading="Columns"> <div ng-include="'{% static 'partials/ColumnsTab.html' %}'"> </div></tab>
+                  <tab heading="Indexes"> <div ng-include="'{% static 'partials/IndexesTab.html' %}'"> </div></tab>
+                  <tab heading="Foreign Keys"><div ng-include="'{% static 'partials/ForeignKeysTab.html' %}'"></div></tab>
+           </tabset>
+        </div>
 
     </div>
     <div ng-if="isCreateSchemaPopupShown" ng-include="'{% static 'partials/SchemaPopup.html' %}'"></div>

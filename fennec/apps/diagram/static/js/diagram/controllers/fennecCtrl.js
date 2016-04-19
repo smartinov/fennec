@@ -26,7 +26,7 @@
                 $log.debug("ctrl-> clearing diagram specifics scopes");
 
                 $scope.diagramData= {tables: [], links: []};
-                $scope.selectedTable = {};
+                $scope.selectedTable = null;
                 $scope.selectedTableForeignKeys = [];
                 $scope.selectedTableForeignKeyColumns=[]; // refIndexColumns - it contain only columns which are indexed
 
@@ -393,13 +393,12 @@
             $scope.$on('deleteTableEvent', function (scope, deletedTable) {
                 deleteTableElement(deletedTable.data.id, $scope.diagramData.tables);
 
-                    // when select the table this method is called
-                if ($scope.selectedTable != null && $scope.selectedTable.id == deletedTable.id) {
+                // when select the table this method is called
+                if ($scope.selectedTable != null && $scope.selectedTable.data.id == deletedTable.data.id) {
                      $scope.selectedTable = null;
                 }
                 $scope.$apply();
             });
-
             // ****** INDEX TAB - LEFT ******
             $scope.indexTypes =["INDEX","UNIQUE"];
             $scope.addIndex = function () {
