@@ -3,7 +3,13 @@
 {% block ng-app %}myApp{% endblock %}
 {% block title %}Diagram{% endblock %}
 {% block custom-javascript %}
-
+    <script>
+        /* Run before angular.js it is needed for because without this table property part not working*/
+        if (window.jQuery) {
+            window.hideJQuery = window.jQuery;
+            window.jQuery = false;
+        }
+    </script>
     <!-- Vendor Libs: jQuery only used for Bootstrap functionality -->
     <script src="{% static "js/angular/angular.js" %}"></script>
     <script src="{% static "js/angular/angular-route.js" %}"></script>

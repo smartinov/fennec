@@ -418,7 +418,7 @@
                 }
                 );
                 restart(true);
-                innerLayout.close('south');
+//                innerLayout.close('south');
                 changeState(fennecStates.select);
               }
               if(actionStates == fennecStates.select){
