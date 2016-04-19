@@ -38,31 +38,36 @@
      <div class="well sidebar-nav">
         <ul class="nav nav-list"    >
             <li class="nav-header" style="padding-bottom: 10px;">Project Name - [[projectInfo.name]]</li>
-            <div></div>
-                    <li class="nav-header">Diagram - [[activeDiagram.data.name]]</li>
 
-            <input type="image" src="../../../../../../../static/images/buttons/opened-folder.png" alt="open"
-                        style="width:20px; height:20px;" ng-click="showOpenDiagramPopup()" >
+            <li class="nav-header">Active diagram <a editable-text="activeDiagram.data.name"
+                        style="background-color: #E4F5F8; border: 1px solid #C0DEED;">[[ activeDiagram.data.name ]]</a>
+            </li>
+            <li class="nav-header" style="margin-top: 5px;">Active schema
+                <a editable-select="activeSchema" e-ng-options="s.data as s.data.databaseName for s in schemas" style="background-color: #E4F5F8;
+                        border: 1px solid #C0DEED;">[[ activeSchema.databaseName ]]</a>
+            </li>
 
-            <button ng-click="saveDiagramButton()">Save diagram</button>
-            <ng-form class="form-horizontal" role="form" >
-                <div class="form-group" >
-                    <div class="col-sm-4">
-                        <input class="form-control" id="inputName3" placeholder="Name" ng-model="activeDiagramEditData.data.name">
-                        <button type="submit" ng-click="editDiagramButton()" class="btn btn-success">Edit</button>
-                    </div>
-                </div>
-            </ng-form>
 
-            <li class="nav-header">Toolbar</li>
+        </ul>
+     </div>
+
+     <div class="well sidebar-nav">
+        <ul class="nav nav-list" >
+             <li class="nav-header">Toolbar</li>
+        <input type="image" src="../../../../../../../static/images/buttons/opened-folder.png" alt="open"
+                        style="width:22px; height:22px;" ng-click="showOpenDiagramPopup()" >
+
+             <input type="image" src="../../../../../../../static/images/buttons/save.png" alt="open"
+                        style="width:22px; height:22px;" ng-click="saveDiagramButton()" >
+        <hr>
             <input type="image" src="../../../../../../../static/images/buttons/table_icon.cur" alt="Submit" width="10" height="10" onclick="changeState(fennecStates.new_table)" >
             <button onclick="changeState(fennecStates.select)">Select table</button>
             <input type="image" src="../../../../../../../static/images/buttons/link_button.cur" alt="Submit" width="10" height="10" onclick="changeState(fennecStates.new_link)" >
             <button onclick="changeState(fennecStates.delete_obj)">Delete</button>
             <button onclick="innerLayout.toggle('south')">toggle Property div</button>
 
-            <li class="nav-header" style="margin-top: 15px;">Schemas</li>
-            <select ng-init="activeSchema=schemas[0].data" data-ng-options="s.data as s.data.databaseName for s in schemas" data-ng-model="activeSchema"></select>
+
+
             <ng-form class="form-horizontal" role="form">
                 <div class="form-group">
                     <div class="col-sm-4">
@@ -71,6 +76,7 @@
                 </div>
             </ng-form>
         </ul>
+
     </div>
 </div>
 

@@ -40,5 +40,8 @@
         $logProvider.debugEnabled(true);
     }]);
 
+    app.run(function(editableOptions){
+        editableOptions.theme = 'bs2';
+    });
 
 }());

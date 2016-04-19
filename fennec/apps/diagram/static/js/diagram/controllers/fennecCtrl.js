@@ -31,7 +31,6 @@
                 $scope.selectedTableForeignKeyColumns=[]; // refIndexColumns - it contain only columns which are indexed
 
                 $scope.selectedTableIndexes = [];
-                $scope.activeDiagramEditData = {};  // for edit form
             }
             function clearDeletedScopes(){
                 $log.debug("ctrl-> clearing deleted scopes");
@@ -55,8 +54,8 @@
 
                 // clear scopes from previous diagram and set new diagram to active
                 clearDiagramSpecificsScopes();
-                $scope.activeDiagram = angular.copy(extNewDiagramInfo);
-                $scope.activeDiagramEditData = angular.copy(extNewDiagramInfo); // for edit form
+//                this was before $scope.activeDiagram = angular.copy(extNewDiagramInfo);
+                $scope.activeDiagram = extNewDiagramInfo;
             }
             $scope.closeDiagram = function (index, closingDiagram) {
                 $scope.closedDiagrams.push(closingDiagram);
@@ -137,14 +136,12 @@
 
                 if (diagramId == undefined) {
                     $scope.activeDiagram = $scope.openedDiagrams[0];
-                    $scope.activeDiagramEditData = angular.copy($scope.activeDiagram);
                 }else{
                     for (var i = 0; i < $scope.openedDiagrams.length; i++) {
                         var extDiagram = $scope.openedDiagrams[i];
                         if (diagramId == extDiagram.data.id) {
                             $log.debug("Active diagram:" + extDiagram.data.name);
                             $scope.activeDiagram = extDiagram;
-                            $scope.activeDiagramEditData = angular.copy(extDiagram);
                         }
                     }
                 }
@@ -378,15 +375,7 @@
                     Notification.success("Diagram["+$scope.activeDiagram.data.name+"] content saved successfully");
                 }
             }
-            $scope.editDiagramButton = function(){
-                $scope.activeDiagramEditData.modified = true;
-                $scope.activeDiagram = angular.copy($scope.activeDiagramEditData);
-                for(var i in $scope.openedDiagrams){
-                    if($scope.openedDiagrams[i].data.id == $scope.activeDiagram.data.id){
-                        $scope.openedDiagrams[i].data.name = $scope.activeDiagram.data.name;
-                    }
-                }
-            }
+
             $scope.setTableToModified = function(selectedTable){
                 selectedTable.dataModified = true;
             }
@@ -727,9 +716,6 @@
                     return "Username 2 should be `awesome`";
                 }
             };
-
-
-
 
             // ********* CREATE SCHEMA *********
             $scope.isCreateSchemaPopupShown = false;
