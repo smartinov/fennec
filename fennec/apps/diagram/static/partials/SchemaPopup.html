@@ -1,25 +1,34 @@
 <div class="PopupMainPanel">
     <div class="popup popup-small">
-        <div class="container">
-            <h2 style="margin-bottom: 15px">Create New Schema</h2>
+            <div class="popup-header">
+                <h2>Create New Schema</h2>
+                <a ng-click="createSchemaCancel()" class="btn-close" aria-hidden="true">×</a>
+            </div>
+            <div class="popup-body">
+                <form name="schemaForm">
+                    <div class="form-group">
+                        <label for="lbDatabaseName">Database Name:</label>
+                        <input ng-model="newSchema.databaseName" type="text" name="databaseName" id="tbDatabaseName"
+                               placeholder="Enter name" ng-required="true">
+                        <span id="lbDatabaseNameError" ng-if="schemaForm.databaseName.$invalid"
+                              style="color: red;font-size: 25px;"> * </span>
+                    </div>
+                    <div class="form-group">
+                        <label for="lbCollation">Collation:</label>
+                        <input id="tbCollation" name="collation" ng-model="newSchema.collation" type="text"
+                               class="form-control" placeholder="Enter schema collation" ng-required="true">
+                        <span id="lbCollationError" ng-if="schemaForm.collation.$invalid"
+                              style="color: red;font-size: 25px;"> * </span>
+                    </div>
 
-            <form name="schemaForm">
-                <div class="form-group">
-                    <label for="lbDatabaseName">Database Name:</label>
-                    <input ng-model="newSchema.databaseName" type="text" name="databaseName" id="tbDatabaseName"
-                           placeholder="Enter name" ng-required="true">
-                    <span id="lbDatabaseNameError" ng-if="schemaForm.databaseName.$invalid" style="color: red;font-size: 25px;"> * </span>
-                </div>
-                <div class="form-group">
-                    <label for="lbCollation">Collation:</label>
-                    <input id="tbCollation" name="collation" ng-model="newSchema.collation" type="text"
-                           class="form-control" placeholder="Enter schema collation" ng-required="true">
-                    <span id="lbCollationError" ng-if="schemaForm.collation.$invalid" style="color: red;font-size: 25px;"> * </span>
-                </div>
-                <button class="btn btn-default" ng-click="createSchemaOk()" ng-disabled="schemaForm.$invalid" id="ttfpOK">Create</button>
-                <label class="btn btn-default" ng-click="createSchemaCancel()" id="ttfpCancel">Cancel</label>
-            </form>
+                </form>
+            </div>
+            <div class="popup-footer">
+                 <button class="btn btn-primary" ng-click="createSchemaOk()" ng-disabled="schemaForm.$invalid"
+                            id="ttfpOK">Create
+                    </button>
+                    <label class="btn btn-danger" ng-click="createSchemaCancel()" id="ttfpCancel">Cancel</label>
+            </div>
         </div>
 
-    </div>
 </div>
