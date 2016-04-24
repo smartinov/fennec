@@ -17,9 +17,9 @@
 
     <!--Settings for layouts ( toolbar and table properties close/open resize)-->
     <script type="text/javascript">
-
         // whole page
         var pageLayoutSettings = {
+            north__size:40,
             north__spacing_open: 0,
             west__size: 300,
             spacing_open: 6, // ALL panes
@@ -49,24 +49,8 @@
 <body ng-controller="DiagramController">
 
 <!--Menu-->
-<div class="ui-layout-north">
-    </br>
-    <div class="navbar navbar-fixed-top">
-        <div class="navbar-inner">
-            <div class="container-fluid">
-                <a class="brand" href="#">Model</a>
-
-                <div class="nav-collapse">
-                    <ul class="nav">
-                        <li class="active"><a href="#">Home</a></li>
-                        <li><a href="#about">About</a></li>
-                    </ul>
-                    <p class="navbar-text pull-right">Logged in as <a href="#">username</a></p>
-                </div>
-                <!--/.nav-collapse -->
-            </div>
-        </div>
-    </div>
+<div class="ui-layout-north menu" >
+    {% include "diagram/template/navbar.html" %}
 </div>
 
 {% block content %}{% endblock %}

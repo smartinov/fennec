@@ -1,0 +1,39 @@
+{% load staticfiles %}
+        <div class="navbar navbar-fixed-top" role="navigation"  >
+        <div class="navbar-inner">
+            <div class="container-fluid">
+                <a class="brand" href="">Fennec</a>
+
+                <div class="nav-collapse">
+                    <ul class="nav">
+                        <li class="dropdown">
+                            <a id="drop1" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Diagram<b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li role="presentation">
+                                    <a role="menuitem" tabindex="-1" ng-click="showOpenDiagramPopup()"> Open </a>
+                                </li>
+                                 <li role="presentation">
+                                    <a role="menuitem" tabindex="-1" ng-click="saveDiagramButton()"> Save </a>
+                                </li>
+
+                                <li role="presentation" class="divider"></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" ng-click="showCreateSchemaPopup()">Create schema</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li><a href="/app/dashboard">Dashboard</a></li>
+                        <li><a href="#about">About</a></li>
+                    </ul>
+
+                    <p class="navbar-text pull-right">
+                        <a href="{% url 'auth.sign-out' %}">
+                            <i class="fa fa-sign-out">Sign Out</i>
+                        </a></p>
+
+                    <!--<p class="navbar-text pull-right">Logged in as <a href="#">username</a></p>-->
+
+                </div>
+    
+            </div>
+        </div>
+    </div>
