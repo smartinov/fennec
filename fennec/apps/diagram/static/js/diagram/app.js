@@ -24,7 +24,7 @@
     // setup dependency injection
     angular.module('d3', []);
     angular.module('myApp.services', []);
-    angular.module('myApp.controllers', ["xeditable",'ui.bootstrap','ui-notification']);
+    angular.module('myApp.controllers', ['xeditable','ui.bootstrap','ui-notification']);
     angular.module('myApp.directives', ['d3']);
 
     app.config(['$httpProvider', '$interpolateProvider', function ($httpProvider, $interpolateProvider) {
@@ -36,5 +36,12 @@
         $interpolateProvider.endSymbol(']]');
     }]);
 
+    app.config(['$logProvider', function($logProvider){
+        $logProvider.debugEnabled(true);
+    }]);
+
+    app.run(function(editableOptions){
+        editableOptions.theme = 'bs2';
+    });
 
 }());

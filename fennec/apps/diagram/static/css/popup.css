@@ -1,4 +1,5 @@
 
+
 div.PopupMainPanel {
     min-width: 800px;
     display: block;
@@ -17,21 +18,46 @@ div.PopupMainPanel {
 }
 
 .popup {
+    border: #333 solid 1px;
+    border-radius: 8px;
     position: relative;
     top: 50px;
     margin: 0 auto;
-    padding: 40px 20px;
     background: white;
     -webkit-box-shadow: 0px 0px 20px #323232;
     -moz-box-shadow: 0px 0px 20px #323232;
     box-shadow: 0px 0px 20px #323232;
 }
 
+.popup-body {
+  padding: 20px;
+}
+.popup-header,
+.popup-footer {
+  padding: 10px 20px;
+}
+.popup-header {
+  border-bottom: #eee solid 1px;
+}
+.popup-header h2 {
+  font-size: 20px;
+}
+.popup-footer {
+  border-top: #eee solid 1px;
+  text-align: right;
+}
+
+.btn-close {
+  cursor: pointer;
+  color: #aaa;
+  font-size: 30px;
+  text-decoration: none !important;
+  position: absolute;
+  right: 4px;
+  top: 7px;
+}
 
 .input-fix{
     box-sizing: border-box;
 }
 
-.container{
-    margin-left: 20px;
-}

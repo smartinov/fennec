@@ -2,7 +2,7 @@
   'use strict';
 
   angular.module('myApp.directives')
-    .directive('fennecDiagram',  ['d3Service','$compile', function(d3Service,$compile) {
+    .directive('fennecDiagram',  ['d3Service', '$log', '$timeout', function(d3Service, $log, $timeout) {
       return {
         restrict: 'EA',
         scope: {
@@ -27,7 +27,7 @@
             var resizeRectSize = 12;
 
             scope.$watch('data', function(newValue,oldValue) {
-             console.log("directive-> redrawing diagram"); //console.log(tablesData);
+             $log.debug("dir-> redrawing diagram"); //$log.debug(tablesData);
              if(newValue !== oldValue){
                  // for now i don't get why when i set in controller that $scope.diagramData={tables: [], links: []} why don't take efects here on creating new tab
                  // this is workaround
@@ -36,13 +36,13 @@
              }
              restart(true);
             },true);
-            scope.$watch('recal', function(newValue,oldValue) {
-                 console.log("directive-> referencedColumn changed"); //console.log(tablesData);
-                if(newValue!=""){
-                 updateLinkPositionForTable(newValue);
-                    }
-                scope.recal = "";
-            },true);
+              scope.$watch('recal', function (newValue, oldValue) {
+                  if (newValue != "") {
+                      $log.debug("dir-> referencedColumn changed"); //$log.debug(tablesData);
+                      updateLinkPositionForTable(newValue);
+                  }
+                  scope.recal = "";
+              }, true);
 
             var drag = d3.behavior.drag()
                 .origin(function() {
@@ -61,14 +61,15 @@
             var svg;
             initSvgDiagram();
             function initSvgDiagram(){
-              console.log("diagram -> init svg diagram");
+              $log.debug("dir-> init svg diagram");
               svg = d3.select(".diagram")
-                  .style("outline","1px solid black")
                   .style("width","100%")
                   .style("height","100%")
                   .style("float","left")
-                  .style("overflow","auto")
-                  .append("svg").attr('width', modelDefaultWidth).attr('height', modelDefaultHeight).on("click", mouseClick);
+                  .append("svg")
+                  .attr('width', modelDefaultWidth)
+                  .attr('height', modelDefaultHeight)
+                  .style("outline","1px solid black").on("click", mouseClick);
 
               svg.append('svg:defs').append('svg:marker')
                   .attr('id', 'end-arrow')
@@ -139,7 +140,6 @@
             }
 
             function restart(redrawAll){
-
               if(redrawAll){
                 d3.select(".diagram").selectAll("*").remove();
                 initSvgDiagram();
@@ -150,12 +150,13 @@
             function redrawTables(){
               // Create table with attributes
               var svgTables = svg.selectAll("g.table").data(tablesData);
-              var table = svgTables.enter().append("g").classed("table", true).attr("id", function(d,i) { return "table"+i})
-              table.append("rect").classed("fennec_table", true).on("click", mouseClick);
+              var table = svgTables.enter().append("g").classed("table", true).attr("id", function(d,i) { return "table"+i});
+              table.append("rect").classed("fennec_table", true).on("click", tableMouseClick);
               var t = table.append("rect").classed("titleBox", true).call(drag);
               table.append("text").classed("name", true).data(tablesData);
 
               var attributes =  table.append("g").classed("attributes",true).selectAll("attribute").data(function(d) { return d.data.columns});
+              attributes.enter().append("image").classed("attribute", true).attr("id", function(d,i) { return "image"+i}).on("click", mouseClick);
               var attribute = attributes.enter().append("text").classed("attribute", true).attr("id", function(d,i) { return "attribute"+i}).on("click", mouseClick);
               table.append("rect").classed("resize-icon", true).call(resize);
 
@@ -165,7 +166,7 @@
                     y: function(t) { return t.element.positionY; },
                     width: function(t) { return t.element.width; },
                     height: function(t) { return t.element.height; }
-                  })
+                  });
 
               table.selectAll("rect.titleBox")
                   .classed("drag", true)
@@ -174,53 +175,102 @@
                     y: function(t) { return t.element.positionY; },
                     width: function(t) { return t.element.width; },
                     height: 25,
-                    fill: "#ADD8E6"
-                  })
+                    fill: "#0088cc"
+                  });
 
               table.selectAll("text.name")
                   .attr({
                     x: function(t) { return t.element.positionX + 10; },
                     y: function(t) { return t.element.positionY + 20; },
-//                    width: function(t) { return t.element.width; }, text attribute don't need width
-                    height: 25,
-                    fill: "#ffffff"
+                    height: 25
                   })
                   .text(function(t) {
                     return t.data.name;
-                  })
+                  });
+
+
+              table.selectAll("image.attribute")
+                  .attr({
+                          x: function(d) {
+                              var table = getAttributeTable(d.cdata.id);
+                              return table.element.positionX + 8;
+                          },
+                          y: function(d,i) {
+                              var table = getAttributeTable(d.cdata.id);
+                              return table.element.positionY+33+((i==0)?0:(20*i));
+                          },
+                          height: 16,
+                          width: 16,
+                          'xlink:href': function(d) {
+                                return d.cdata.primary?"/static/images/primary-key.png":"/static/images/blue_circle_icon.png";
+                          },
+                          opacity: function(d) {
+                             return calculateIfColumnVisible(d.cdata);
+                          }
+                  });
 
               // TODO: find better way than using getAttributeTableMethod
               table.selectAll("text.attribute")
                   .attr({
-                    x: function(d) {
-                      var table = getAttributeTable(d.cdata.id);
-                      return table.element.positionX + 10;
-                    },
-                    y: function(d,i) {
-                      var table = getAttributeTable(d.cdata.id);
-                      return table.element.positionY+45+((i==0)?0:(20*i));
-                    },
-                    height: 25,
-                    fill: "#999999"
+                      x: function (d) {
+                          var table = getAttributeTable(d.cdata.id);
+                          return table.element.positionX + 25;
+                      },
+                      y: function (d, i) {
+                          var table = getAttributeTable(d.cdata.id);
+                          return table.element.positionY + 45 + ((i == 0) ? 0 : (20 * i));
+                      },
+                      height: 25,
+                      fill: "#999999",
+                      opacity: function (d) {
+                          return calculateIfColumnVisible(d.cdata);
+                      }
                   })
                   .text(function(d) {
-                    return d.cdata.name+ " (" + getTypeNameForValue(d.cdata.column_type)+")";
-                  })
+                    return  d.cdata.name+ " (" + getTypeNameForValue(d.cdata.column_type)+")";
+                  });
 
-              table.selectAll("rect.resize-icon")
-                  .attr({
-                    x: function(d) { return d.element.positionX + d.element.width-resizeRectSize; },
-                    y: function(d) { return d.element.positionY + d.element.height - resizeRectSize; },
-                    width: resizeRectSize,
-                    height: resizeRectSize,
-                    fill: "#999999"
-                  })
+//              table.selectAll("rect.resize-icon")
+//                  .attr({
+//                    x: function(d) { return d.element.positionX + d.element.width-resizeRectSize; },
+//                    y: function(d) { return d.element.positionY + d.element.height - resizeRectSize; },
+//                    width: resizeRectSize,
+//                    height: resizeRectSize,
+//                    fill: "#999999"
+//                  });
+
+            $timeout(function(){
+              // Any code in here will automatically have an $scope.apply() run afterwards
+              scope.stable = null; // nothing   selected
+            });
+
               svgTables.exit().remove();
             }
 
+
+            function calculateIfColumnVisible(column){
+                  $log.debug("dir-> calculateIfColumnVisible() => "+ column.name);
+                  var table = getAttributeTable(column.id);
+                  var tableHeight = table.element.height;
+                  var columnPartHeight = tableHeight - 25; // title box part
+                  for(var i = 0; i < table.data.columns.length; i++){
+                      var col = table.data.columns[i];
+                      if(col.cdata.id == column.id){
+                          var columnPositionHeightInTable = column.ordinal * 20;
+                          if(columnPositionHeightInTable>columnPartHeight){
+                              $log.debug(column.name+ " - not visible");
+                              return 0; // hide
+                          }else{
+                              $log.debug(column.name+ " - visible");
+                              return 1;
+                          }
+                      }
+                  }
+                  return 0;
+              }
+
             //TODO: find way to skip this and pass dataType as value
             function getTypeNameForValue(columnType){
-
               var dataTypes =  [
                 {value: 1, text: 'ID'},
                 {value: 2, text: 'RefID'},
@@ -264,19 +314,19 @@
 
               var svgLinks = svg.selectAll("g.link").data(linksData);
               var link = svgLinks.enter().append("g").classed("link", true);
-              link.append("svg:line").classed("link",true).attr("id", function(d) { return d.element.id});
+              link.append("svg:line").classed("link",true).attr("id", function(d) { return d.element.id}).on("click", linkMouseClick);
               link.selectAll("line.link")
                   .attr({
                     x1: function(d) { return d.element.startPositionX; },
                     y1: function(d) { return d.element.startPositionY; },
                     x2: function(d) { return d.element.endPositionX; },
                     y2: function(d) { return d.element.endPositionY; }
-                  }).style("stroke", "rgb(6,120,155)").style("stroke-width", 3)
+                  }).style("stroke", "#0077b3").style("stroke-width", 3)
+                  .style("stroke-dasharray", "10 5")
                   .style('marker-start', function(d) { return (d.element.cardinality==3) ? 'url(#start-arrow)' : ''; })
                   .style('marker-end', function(d) { return  'url(#end-arrow)'; });
-              svgLinks.exit().remove();
+//              svgLinks.exit().remove();
             }
-
 
             var tmpSourceTableLink = null;
             var tmpTargetTableLink= null;
@@ -286,46 +336,35 @@
             }
 
             // ********* MOUSE EVENTS *********
-            function mouseClick(d) {
+            // ********* MOUSE EVENTS *********
+            function linkMouseClick(){
+                 d3.event.stopPropagation();
+              var rect=  d3.select(this);
+              rect.style("stroke", "#01ecff").style("stroke-width", "4");
+            }
+            function tableMouseClick(){
               d3.event.stopPropagation();
-              var dragTarget = d3.select(this);
+              var rect=  d3.select(this);
+//              rect.classed("fennec_table", true).style("stroke-width", "2").style("stroke-dasharray", "10 5");
+                rect.classed("fennec_table_selected", true);
+
+
               selected_table = d3.select(this.parentNode);
-              var translateCoord = parseTranslateString(selected_table.attr("transform"));
-              var point = d3.mouse(this)
-
-              var mouseClickX = point[0];
-              var mouseClickY = point[1];
-              //console.log("mouseClick on x:"+mouseClickX+" y: "+mouseClickY);
-              if(actionStates == fennecStates.new_table){
-                var tableDataId = genGuid();
-                  console.log("directive->activediagram:"); console.log(scope.adiagram);
-                  console.log(scope.activeSchema);
-                tablesData.push(
-                  { data:{
-                      id:tableDataId, name:"Table "+(tablesData.length+1),"comment":"no comment","collation":"utf-8",namespaceRef:"",
-                      columns: [],indexes: [],foreignKeys: [],schemaRef:scope.activeSchema.id
-                  },
-                   element:{
-                      id:genGuid(),positionX:mouseClickX,positionY:mouseClickY,width:tableDefaultWidth, height:tableDefaultHeight, tableRef: tableDataId,
-                      diagramRef:scope.adiagram.id, color:"#FFFFFF",collapsed:false
-                  },
-                    dataModified: true,
-                    elModified: true
-                }
-                );
-                restart(true);
-                innerLayout.close('south');
-                changeState(fennecStates.select);
-                //TODO: change css to rectangle
-
-              }
+              selected_table.selectAll("rect.resize-icon")
+                  .attr({
+                    x: function(d) { return d.element.positionX + d.element.width-resizeRectSize; },
+                    y: function(d) { return d.element.positionY + d.element.height - resizeRectSize; },
+                    width: resizeRectSize,
+                    height: resizeRectSize,
+                    fill: "#999999"
+                  });
               if(actionStates == fennecStates.select){
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
                   if(tableData != undefined){
-                    console.log("directive-> table selected: "+tableData.data.name);
+                    $log.debug("dir-> table selected: "+tableData.data.name);
                     scope.stable = tableData;
-                    // console.log(scope.stableForeignKeys);
+                    // $log.debug(scope.stableForeignKeys);
 
                     // foreign keys
                     var fk = [];
@@ -346,12 +385,85 @@
                   }
                 }
               }
+                if(actionStates == fennecStates.delete_obj){
+                if(selected_table != null){
+                  var tableData = selected_table.node().__data__;
+                  if(tableData != undefined){
+                    $log.debug("dir-> table["+tableData.data.name+"] is deleting");
+                    scope.$emit('deleteTableEvent', tableData );
+                  }
+                }
+              }
+                changeState(fennecStates.select);
+            }
+
+            function mouseClick() {
+              d3.event.stopPropagation();
+              var rect=  d3.select(this);
+
+              selected_table = d3.select(this.parentNode);
+              var translateCoord = parseTranslateString(selected_table.attr("transform"));
+              var point = d3.mouse(this)
+
+              var mouseClickX = point[0];
+              var mouseClickY = point[1];
+              //$log.debug("mouseClick on x:"+mouseClickX+" y: "+mouseClickY);
+              if(actionStates == fennecStates.new_table){
+                var tableDataId = genGuid();
+                  $log.debug("dir-> mouseClick() => active diagram:"); $log.debug(scope.adiagram);
+                  $log.debug(scope.activeSchema);
+                tablesData.push(
+                  { data:{
+                      id:tableDataId, name:"Table "+(tablesData.length+1),"comment":"no comment","collation":scope.activeSchema.collation,namespaceRef:"",
+                      columns: [],indexes: [],foreignKeys: [],schemaRef:scope.activeSchema.id
+                  },
+                   element:{
+                      id:genGuid(),positionX:mouseClickX,positionY:mouseClickY,width:tableDefaultWidth, height:tableDefaultHeight, tableRef: tableDataId,
+                      diagramRef:scope.adiagram.id, color:"#FFFFFF",collapsed:false
+                  },
+                    dataModified: true,
+                    elModified: true
+                }
+                );
+                restart(true);
+//                innerLayout.close('south');
+              }
+              if(actionStates == fennecStates.select){
+                if(selected_table != null){
+                  var tableData = selected_table.node().__data__;
+                  if(tableData != undefined){
+                    $log.debug("dir-> mouseClick()=> table selected: "+tableData.data.name);
+                    scope.stable = tableData;
+                    // $log.debug(scope.stableForeignKeys);
+
+                    // foreign keys
+                    var fk = [];
+                    for(var i in linksData){
+                        var currentLink = linksData[i];
+                        if(currentLink.fk_data.tableRef == tableData.data.id){
+                            var fk_data = {data:currentLink, refTable:getTableForId(currentLink.fk_data.referencedTableRef)};
+                            fk.push(fk_data);
+                        }
+                    }
+                    scope.stableForeignKeys = fk;
+
+                    // indexes
+                    scope.stableIndexes = tableData.data.indexes;
+                    scope.$apply();
+                    //passing value to controller if this directive will be private (zatvoren)
+                    //scope.$emit('selectedTableEvent', tableData );
+                  }else{
+                        restart(true);
+                  }
+                }
+              }
               if(actionStates == fennecStates.delete_obj){
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
                   if(tableData != undefined){
-                    console.log("directive-> table["+tableData.data.name+"] is deleting");
+                    $log.debug("dir-> table["+tableData.data.name+"] is deleting");
                     scope.$emit('deleteTableEvent', tableData );
+
                   }
                 }
               }
@@ -361,7 +473,7 @@
                 var selectedAttributeArrays = d3.select(this);                       // [[text#attribute0.attribute]]
                 var tableOfAttrArrays = d3.select(this.parentNode.parentNode);               // [[g#table0.table]]
                 var tableData =tableOfAttrArrays.node().__data__;
-                var columnData = selectedAttributeArrays.node().__data__;  // console.log(columnData);
+                var columnData = selectedAttributeArrays.node().__data__;  // $log.debug(columnData);
 
                 if(tmpSourceTableLink == null ){
                   tmpSourceTableLink = {x:0,y:0, table:tableData, attr:columnData};
@@ -374,7 +486,7 @@
                 var linkPosition= calculateLinkPosition(tmpSourceTableLink,tmpTargetTableLink);
                 tmpSourceTableLink = linkPosition.sourceTableLink;
                 tmpTargetTableLink = linkPosition.targetTableLink;
-                // console.log("Source("+tmpSourceTableLink.x+","+ tmpSourceTableLink.y+") Target("+tmpTargetTableLink.x+","+tmpTargetTableLink.y+")" );
+                // $log.debug("Source("+tmpSourceTableLink.x+","+ tmpSourceTableLink.y+") Target("+tmpTargetTableLink.x+","+tmpTargetTableLink.y+")" );
 
                   var fk_data_id = genGuid();
                   linksData.push(
@@ -405,9 +517,9 @@
                       }
                   );
                 clearTmpLinks();
-                changeState(fennecStates.select);
                 redrawLines();
               }
+              changeState(fennecStates.select);
             }
             function calculateLinkPosition(sourceTableLink,targetTableLink){
               if(sourceTableLink.table.element.positionX < targetTableLink.table.element.positionX){
@@ -435,7 +547,7 @@
             function getLinkPosition(table,column,isLinkStartOnTableRightSide){
               // isLinkStartOnTableRightSide - link start from a table right side
               var columnPositionInList = getColumnPositionInList(table.data.columns,column.cdata.id,"id");
-              // console.log("getLinkPosition() => "+attrPositionInList);
+              // $log.debug("getLinkPosition() => "+attrPositionInList);
               var linkCoordinate
               if(isLinkStartOnTableRightSide){
                 linkCoordinate = {
@@ -458,14 +570,14 @@
               var resizeTableTitleArrays = d3.select(this);          // [[rect.titleBox.drag]]
               var movingTableObject = d3.select(this.parentNode);    // [[g#table0.table]]
 
-              // console.log("d3.event.x:"+d3.event.x+" d3.event.y:"+d3.event.y);
+              // $log.debug("d3.event.x:"+d3.event.x+" d3.event.y:"+d3.event.y);
               var startTableXPosition = parseInt(resizeTableTitleArrays.attr('x'));       // ovo je isto uvek
               var startTableYPosition = parseInt(resizeTableTitleArrays.attr('y'));       // ovo je isto uvek
-              // console.log("move() => startTableXPosition: "+startTableXPosition+" startTableYPosition: "+startTableYPosition);
+              // $log.debug("move() => startTableXPosition: "+startTableXPosition+" startTableYPosition: "+startTableYPosition);
 
               relativeMovePosX += d3.event.x - startTableXPosition;
               relativeMovePosY += d3.event.y - startTableYPosition;
-              //console.log("move() => relativeMovePosX:"+relativeMovePosX+" relativeMovePosY:"+relativeMovePosY);
+              //$log.debug("move() => relativeMovePosX:"+relativeMovePosX+" relativeMovePosY:"+relativeMovePosY);
 
               movingTableObject.attr("transform", "translate(" + relativeMovePosX + "," + relativeMovePosY + ")");
               updateTablePosition(movingTableObject,startTableXPosition+relativeMovePosX, startTableYPosition+relativeMovePosY);
@@ -477,7 +589,7 @@
                 if (tablesData[i].element.id == tableElemId) {
                   tablesData[i].element.positionX = x;
                   tablesData[i].element.positionY = y;
-                  //console.log("updateTablePosition() => x: "+x+" y: "+y);
+                  //$log.debug("updateTablePosition() => x: "+x+" y: "+y);
                   tablesData[i].elModified = 1;
                   break;
                 }
@@ -492,13 +604,13 @@
                   for (var i = 0; i < linksData.length; i++) {
                       if (linksData[i].fk_data.tableRef == movingTable.data.id) {
                           var tableLink = linksData[i];
-                          //console.log("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
+                          //$log.debug("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
                           updateLinkData(tableLink);
                           redraw = true;
                       }
                       if (linksData[i].fk_data.referencedTableRef == movingTable.data.id) {
                           var tableLink = linksData[i];
-                          // console.log("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
+                          // $log.debug("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
                           updateLinkData(tableLink);
                           redraw = true;
                       }
@@ -522,8 +634,8 @@
               var sourceTableLink = {x:0,y:0, table:linkTables.sourceTable, attr:sourceTableColumn};
               var targetTableLink = {x:0,y:0, table:linkTables.targetTable, attr:referencedTableColumn};
               var linkPosition= calculateLinkPosition(sourceTableLink,targetTableLink);
-              //console.log("updateLinkData(link) => linkId: "+link.id);
-              //console.log("updateLinkData(link) before => source("+link.source.x+","+link.source.y+"), target("+link.target.x+","+  link.target.y+")");
+              //$log.debug("updateLinkData(link) => linkId: "+link.id);
+              //$log.debug("updateLinkData(link) before => source("+link.source.x+","+link.source.y+"), target("+link.target.x+","+  link.target.y+")");
 
               link.element.startPositionX = linkPosition.sourceTableLink.x;
               link.element.startPositionY = linkPosition.sourceTableLink.y;
@@ -578,12 +690,12 @@
               var tableHeight = selectedTableDataWithElement.element.height;
 
               var translateCoord = parseTranslateString(resizeTableObject.attr("transform"));
-              // console.log("dragResize()=> translateCoord x: "+translateCoord.x +" , y: "+translateCoord.y);
+              // $log.debug("dragResize()=> translateCoord x: "+translateCoord.x +" , y: "+translateCoord.y);
               var resizeRectCoord = calculateResizeRectPosition(resizeTableArrays,translateCoord,tableWidth,tableHeight);
               resizeRectXPos = resizeRectCoord.x;
               resizeRectYPos = resizeRectCoord.y;
-              // console.log("resize dx:"+dx+" dy:"+dy);
-              // console.log("d3.event.x:"+d3.event.dx+" d3.event.y:"+d3.event.dy);
+              // $log.debug("resize dx:"+dx+" dy:"+dy);
+              // $log.debug("d3.event.x:"+d3.event.dx+" d3.event.y:"+d3.event.dy);
 
               var oldx = resizeRectXPos;
               var oldy = resizeRectYPos;
@@ -599,7 +711,8 @@
               resizeTableArrays.attr("width", tableWidth).attr("height", tableHeight);
               resizeTableTitleArrays.attr("width", tableWidth);
 
-              hideAttributesOnResize(resizeTableObject,tableWidth, tableHeight,selectedTableDataWithElement.data.columns);       // console.log("dragResize()=> tableHeight: "+tableHeight+" tableWidth: "+tableWidth );
+              $log.debug("dragResize()=> tableHeight: "+tableHeight+" tableWidth: "+tableWidth );
+              hideAttributesOnResize(resizeTableObject,tableWidth, tableHeight,selectedTableDataWithElement.data.columns);
               updateTableSize(selectedTableDataWithElement.element,tableHeight,tableWidth);
               updateLinkPosition(resizeTableObject);
             };
@@ -609,18 +722,19 @@
 
               var tableXPos = startTableXPosition + translateCoord.x;
               var tableYPos = startTableYPosition + translateCoord.y;
-              //console.log("calculateResizeRectPosition=> tableHeight: "+tableHeight + " tableWidth: "+tableWidth);
+              //$log.debug("calculateResizeRectPosition=> tableHeight: "+tableHeight + " tableWidth: "+tableWidth);
               var resizeRectXPos = tableXPos + tableWidth - resizeRectSize;
               var resizeRectYPos = tableYPos + tableHeight - resizeRectSize;
               //var resizeRectXPos = tableWidth - resizeRectSize;
               //var resizeRectYPos = tableHeight - resizeRectSize;
-              //console.log("resizeRectXPos: "+resizeRectXPos+ " resizeRectYPos: "+resizeRectYPos);
+              //$log.debug("resizeRectXPos: "+resizeRectXPos+ " resizeRectYPos: "+resizeRectYPos);
               return {x:resizeRectXPos, y:resizeRectYPos};
             }
             function updateTableSize(selectedTableElement,tableHeight, tableWidth){
               var tableId = selectedTableElement.id;
               for (var i in tablesData) {
                 if (tablesData[i].element.id == tableId) {
+                  $log.debug("Height: "+tableHeight+ "width: "+tableWidth);
                   tablesData[i].element.height = tableHeight;
                   tablesData[i].element.width = tableWidth;
                   tablesData[i].elModified = 1;
@@ -631,24 +745,28 @@
             function hideAttributesOnResize(resizeTableObject,tableWidth,tableHeight, tableAttributes){
               // TODO: find how to truncate text on resizing left
               // TODO: find way need to minus 100 from dragx , what is that 100 (-> (dragx-100))
-              var attributesObjectsFromPage = [];
+              var tableAttributesObjects = [];
               var attrNumber =tableAttributes.length;
-              //attribute0, attribute1
+              //attribute0, attribute1, image0, image1
               for (var i = attrNumber-1; i>= 0; i--) {
                  // Note: when select attribute(child element) from resizeTableObject, the data will be inherited from parent object in this case from table, we lose attribute data
                 // to fix this d3 logic :), add attribute data here ( this is how d3 work, it is build to inherit all data from parent to childs because of data consistency)
-                var attrObjArray = resizeTableObject.select("#attribute"+i).data($(tableAttributes[i]));
-                attributesObjectsFromPage.push(attrObjArray);
+                // icon in front of the text
+                var imgAttrObjArray = resizeTableObject.select("#image"+i).data($(tableAttributes[i]));
+                tableAttributesObjects.push(imgAttrObjArray);
+                // text
+                var textAttrObjArray = resizeTableObject.select("#attribute"+i).data($(tableAttributes[i]));
+                tableAttributesObjects.push(textAttrObjArray);
               }
-              for(var i=0;i<attrNumber;i++){
-                var attrObjArray = attributesObjectsFromPage[i];
-                // console.log(attrObjArray.node().__data__);
+              for(var i=0;i<tableAttributesObjects.length;i++){
+                var attrObjArray = tableAttributesObjects[i];
+                // $log.debug(attrObjArray.node().__data__);
                 var attrObject= $(attrObjArray[0]);
                 var attrPos = getAttributesLocationInTable(attrObject);
 
                 // 16 is the header of table
-                //console.log("childOffset.left "+attrPos.left);
-                //console.log("dragx-100 "+(dragx-100));
+                //$log.debug("childOffset.left "+attrPos.left);
+                //$log.debug("dragx-100 "+(dragx-100));
                 attrObjArray.attr("opacity", function(d) { return (((tableWidth-100) < attrPos.left || tableHeight - 16<attrPos.top)?0:1); });
               }
             }

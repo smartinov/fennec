@@ -14,14 +14,22 @@ var actionStates = 'select';
 
 function changeState(state){
     this.actionStates = state;
-//     $('.diagram').css('cursor', "pointer");
+
+    if(state == fennecStates.select){
+        $('svg').css('cursor',"default");
+    }
 
     if(state == fennecStates.new_table){
-        $('svg').css('cursor',"url(http://findicons.com/files/icons/1722/gnome_2_18_icon_theme/24/stock_draw_rectangle.png), auto");
+           $('svg').css('cursor',"url('/static/images/table_pointer.cur'), auto");
     }
 
     if(state == fennecStates.new_link){
+        $('svg').css('cursor',"url('/static/images/link-pointer1.cur'), auto");
         clearTmpLinks();
+    }
+
+    if(state == fennecStates.delete_obj){
+        $('svg').css('cursor',"url('/static/images/delete_pointer.cur'), auto");
     }
 }
 

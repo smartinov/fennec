@@ -32,23 +32,35 @@ rect.bgd {
     stroke-width: 0.1;
 }
 
-rect.fennec_table {
+.fennec_table {
     fill: white;
     stroke: black;
-    stroke-width: "0.5";
+    stroke-width: 1;
+    /*rx:20;*/
+    /*ry:20;*/
     overflow:auto;
     resize:both;
+}
+
+.fennec_table_selected{
+    stroke: #01ecff;
+    stroke-width: 4;
 }
 
 text{
     font: 12px sans-serif;
 }
 
-text.name {
+/*table header name */
+.name {
     font-weight: bold;
     font-size: 14pt;
+    fill: #ffffff;
 }
 
+.resize-icon{
+    cursor:nw-resize;
+}
 .bar text{
     /*text-anchor: end;*/
     pointer-events: none;
@@ -115,3 +127,8 @@ h1{
     left: 0;
     z-index: 9999999;
 }
+
+  /* Side bar content*/
+  .sidebar-nav {
+            padding: 9px 0;
+        }
