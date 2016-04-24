@@ -13,14 +13,15 @@
 
     <script src="{% static "dashboard/js/angular-strap/angular-strap.min.js" %}"></script>
     <script src="{% static "dashboard/js/angular-strap/angular-strap.tpl.min.js" %}"></script>
+    <script src="{% static "dashboard/js/plugins/ngDialog.js" %}"></script>
 
     <script src="{% static "dashboard/js/base/app.js" %}"></script>
 
     <script src="{% static "dashboard/js/plugins/angular-ui-notification.min.js" %}"></script>
-
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css" rel="stylesheet">
     <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
     <link rel="stylesheet" href="//rawgithub.com/mgcrea/angular-motion/master/dist/angular-motion.min.css">
 
     <link href="{% static 'dashboard/css/notifications.css' %}" rel="stylesheet">
@@ -29,9 +30,12 @@
     <link href="{% static 'dashboard/css/navbar.css' %}" rel="stylesheet">
     <link href="{% static 'dashboard/css/main.css' %}" rel="stylesheet">
     <link href="{% static 'dashboard/css/animations.css' %}" rel="stylesheet">
+    <link href="{% static 'dashboard/css/ngDialog.css' %}" rel="stylesheet">
+    <link href="{% static 'dashboard/css/ngDialog-plain.css' %}" rel="stylesheet">
 </head>
 <body>
 {% include "dashboard/template/navbar.html" %}
+{% include "dashboard/template/add_branch_popup.html" %}
 <div class="content"  ng-controller="{% block  ng-controller %}{% endblock %}" ng-init="{% block  ng-init %}{% endblock %}">
     {% block content %}{% endblock %}
 </div>
