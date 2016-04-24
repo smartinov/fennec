@@ -1,5 +1,4 @@
 var projectsRoot = '/api/projects/';
-var branchesRoot = '/api/branches/';
 var usersRoot = '/api/users/';
 var notification_popup_template = '../';
 var app = angular.module('fennec.dashboard', ['mgcrea.ngStrap', 'ngAnimate','ui-notification', 'ngResource', 'ngSanitize', 'ngDialog']);
@@ -13,7 +12,7 @@ var add_branch_html_template = '<div class="ngdialog-message">' +
                                '  <span>Type:</span>'+
                                ' <input type="text" name="type" ng-model="addBranchModel.type" style="margin-left: 11.5%;"><br>'+
                                '</div>'+
-                                '<div style="margin-top: 5%;">'+
+                               '<div style="margin-top: 5%;">'+
                                ' <span>Description:</span>'+
                                ' <input type="text" name="description" ng-model="addBranchModel.description" style="margin-left: 1%;"></div><br>'+
                                '    <div class="ngdialog-buttons">' +
@@ -33,12 +32,31 @@ app.factory('Project', function($resource){
 
 app.factory('ProjectBranches', ['$http', function($http){
     var url_base =  '/api/branches/';
+    var url_branch = '/api/branch-revisions/replace_id/branch/';
     var obj = {};
     obj.getProjectBranches = function(id){
         return $http.get(url_base+'?project_ref='+id);
     }
+    obj.branchFromBranchRevision = function(revision_id, b_name, b_type, b_description){
+        var url = url_branch.replace('replace_id', revision_id);
+        return $http.post(url, {'name': b_name, 'type':b_type, 'description': b_description});
+    }
+
     obj.addProjectBranch = function(b_name, b_type, b_description, b_project, b_created_by){
-        return $http.post(branchesRoot, {name:b_name, type:b_type, description:b_description, current_version:0, project_ref:b_project, created_by:b_created_by});
+        return $http.post(url_base, {name:b_name, type:b_type, description:b_description, current_version:0, project_ref:b_project, created_by:b_created_by});
+    }
+    return obj;
+}]);
+
+app.factory('BranchRevisions',['$http', function($http) {
+    var url_base = '/api/branch-revisions/';
+    var url_commit = '/api/branch-revisions/revision_id/commit/';
+    var obj = {};
+    obj.getBranchRevisions = function(id){
+        return $http.get(url_base+'?branch_ref='+id);
+    }
+    obj.postCommitRevision = function(id){
+        return $http.post(url_commit.replace('revision_id', id));
     }
     return obj;
 }]);
@@ -60,13 +78,15 @@ app.config(['$httpProvider', '$interpolateProvider', 'ngDialogProvider', functio
 }]);
 
 app.controller("ProjectsController",
-    function ($scope, $http, Notification, Project, ProjectBranches, ngDialog) {
+    function ($scope, $http, Notification, Project, ProjectBranches, ngDialog, BranchRevisions, $location, $window) {
         $scope.UserFullName = 'Nikola Latinovic';
         $scope.criteria = {parameter:'All'};
         $scope.add_project = {};
         $scope.add_new = false;
         $scope.selected_project_branches = [];
-        $scope.selectedBranch = {};
+        $scope.selectedBranch = undefined;
+        $scope.selectedRevision = undefined;
+        $scope.selectedBracnhRevisions = [];
         $scope.addBranchModel = {};
 
         //Projects manipulation operations//////////////////////////////////////////////////
@@ -77,7 +97,7 @@ app.controller("ProjectsController",
 
                 function(){
                     //function called if there is an error retrieveing projects.
-                     $scope.projects = [];
+                    $scope.projects = [];
                     Notification.error('We have a temporary issue with retrieving projects. Please try again.');
                 });
         };
@@ -102,7 +122,17 @@ app.controller("ProjectsController",
                 function(){
                     Notification.error('We have a temporary issue. Please try again.');
                 });
-        };
+        }
+
+        $scope.open_project = function(){
+            if($scope.selectedBranch != undefined && $scope.selectedRevision != undefined){
+               var redirect_url = 'diagram/projects/pid/branches/bid/branch-revision/rid';
+               $window.location.href = redirect_url.replace('pid',$scope.selectedProject.id).replace('bid',$scope.selectedBranch.id)
+                   .replace('rid',$scope.selectedRevision.id);
+            }else{
+                 Notification.error('Please select branch and revision first.');
+            }
+        }
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
         /////// Project Branches Operations //////////////////////////////////////////////////////////
@@ -116,16 +146,45 @@ app.controller("ProjectsController",
                     Notification.error('We have a temporary issue retrieving branches. Please try again.');
                 });
         }
+
+        $scope.updateBranch = function(){
+            if($scope.selectedBranch != undefined) {
+                BranchRevisions.getBranchRevisions($scope.selectedBranch.id)
+                    .success(function (response) {
+                        $scope.selectedBracnhRevisions = response;
+                        $scope.selectedRevision = response[0];
+                    })
+                    .error(function () {
+                        Notification.error('Error retrieving branch revisions.');
+                    });
+            }
+        };
+
         $scope.open_add_branch = function(){
-            ngDialog.open({ template: add_branch_html_template,
-                            scope: $scope});
+            if($scope.selectedBranch != undefined && $scope.selectedRevision != undefined) {
+               ngDialog.open({ template: add_branch_html_template,
+                               scope: $scope});
+            }else{
+                Notification.error('Please select branch to branch from.');
+            }
         }
 
         $scope.add_branch = function(){
-             $http.post(branchesRoot, {name:$scope.addBranchModel.name, type: $scope.addBranchModel.type, description: $scope.addBranchModel.description, current_version:0, project_ref:$scope.selectedProject.id, created_by:'1'}).
-                  success(function(){$scope.load_project_branches(); ngDialog.close(); Notification.success('Branch added successfully.');}).
+             ProjectBranches.branchFromBranchRevision($scope.selectedRevision.id,  $scope.addBranchModel.name, $scope.addBranchModel.type, $scope.addBranchModel.description).
+                  success(function(){$scope.load_project_branches(); ngDialog.close(); Notification.success('Branched successfully.');}).
                   error(function () {Notification.error('We have a temporary issue with saving branch. Please try again.');});
              $scope.addBranchModel = {}
+        }
+
+        $scope.commit_branch = function(){
+            if($scope.selectedRevision!=undefined){
+                BranchRevisions.postCommitRevision($scope.selectedRevision.id)
+                    .success(function(){Notification.success('Changes commited successfully.');})
+                    .error(function (){Notification.error('We have a temporary issue commiting changes. Please try again.');});
+
+            }else{
+                Notification.error('Please select revision to commit.');
+            }
         }
         //////////////////////////////////////////////////////////////////////////////////////////////
 
