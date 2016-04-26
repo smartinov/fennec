@@ -24,7 +24,7 @@ function changeState(state){
     }
 
     if(state == fennecStates.new_link){
-        $('svg').css('cursor',"url('/static/images/link-pointer1.cur'), auto");
+        $('svg').css('cursor',"url('/static/images/link-pointer.cur'), auto");
         clearTmpLinks();
     }
 
