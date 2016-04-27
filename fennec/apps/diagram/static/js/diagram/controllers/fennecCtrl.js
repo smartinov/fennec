@@ -118,7 +118,7 @@
 
             function createDiagramsInfoForTabs(branchRevisionData, diagramId) {
                 // ADD DIAGRAMS info (name,description) to scope for tabs
-                for (var i in branchRevisionData.diagrams) {
+                for (var i= 0, len=branchRevisionData.diagrams.length;i<len; i++) {
                     var extDiagram = {data: branchRevisionData.diagrams[i], modified: false};
                     $scope.openedDiagrams.push(extDiagram);
                 }
@@ -137,7 +137,7 @@
                 if (diagramId == undefined) {
                     $scope.activeDiagram = $scope.openedDiagrams[0];
                 }else{
-                    for (var i = 0; i < $scope.openedDiagrams.length; i++) {
+                    for (var i = 0,len=$scope.openedDiagrams.length; i < len; i++) {
                         var extDiagram = $scope.openedDiagrams[i];
                         if (diagramId == extDiagram.data.id) {
                             $log.debug("Active diagram:" + extDiagram.data.name);
@@ -155,7 +155,7 @@
                 // Load all data with project_state and then load diagram elements and bound the two together
                 $scope.schemas = [];
 
-                for (var i in branchRevisionData.schemas) {
+                for (var i= 0,len= branchRevisionData.schemas.length; i<len;i++) {
                     // SET SCHEMAS
                     var schema = {  data:{
                                         id: branchRevisionData.schemas[i].id,
@@ -169,11 +169,11 @@
                     $scope.schemas.push(schema);
 
                     // SET DIAGRAM TABLES
-                    for (var j in branchRevisionData.schemas[i].tables) {
+                    for (var j= 0, jLen= branchRevisionData.schemas[i].tables.length;j<jLen; j++) {
                         var dataTable = branchRevisionData.schemas[i].tables[j];
 
                         // CHECK IF TABLE EXISTS ON CURRENT DIAGRAM
-                        for (var k in diagramElements.tableElements) {
+                        for (var k= 0, kLen =  diagramElements.tableElements.length; k<kLen;k++) {
                             if (dataTable.id == diagramElements.tableElements[k].tableRef) {
                                 // TABLE EXISTS ON CURRENT DIAGRAM, CREATE FRONT TABLE DATA
                                 var table = {
@@ -185,18 +185,18 @@
 
                                 // ADD COLUMNS TO TABLE
                                 var columns = [];
-                                for (var j in dataTable.columns) {
+                                for (var l= 0, lLen=dataTable.columns.length;l<lLen;l++) {
                                     columns.push({
-                                        cdata: dataTable.columns[j],
+                                        cdata: dataTable.columns[l],
                                         modified: false
                                     });
                                 }
                                 table.data.columns = sortTableColumns(columns);
 
                                 // IF foreignKeys EXISTS on table data CHECK ON DIAGRAM AND CREATE LINK
-                                for (var j in dataTable.foreignKeys) {
-                                    var foreignKey = dataTable.foreignKeys[j];
-                                    for(var m in diagramElements.relationshipElements){
+                                for (var l= 0, lLen= dataTable.foreignKeys.length;l<lLen; l++) {
+                                    var foreignKey = dataTable.foreignKeys[l];
+                                    for(var m= 0, mLen = diagramElements.relationshipElements.length;m<mLen; m++){
                                         var relationElement = diagramElements.relationshipElements[m];
                                         if(foreignKey.id == relationElement.foreignKeyRef){
                                             var link ={
@@ -214,8 +214,8 @@
                                 // Indexes
                                 if (dataTable.indexes.length > 0) {
                                     var tableExtendedIndexes = [];
-                                    for (var j in dataTable.indexes) {
-                                        var indexData = dataTable.indexes[j];
+                                    for (var l= 0, lLen = dataTable.indexes.length;l<lLen; l++) {
+                                        var indexData = dataTable.indexes[l];
                                         indexData.columns = JSON.parse(indexData.columns); // need to convert to list i got it like string from server
                                         var extendedIndex = {
                                             data: indexData,
@@ -259,7 +259,7 @@
                 $scope.isOpenDiagramPopupShown = false;
                 $scope.openedDiagrams.push($scope.openDiagramData.data);
                 // remove diagram from closed diagram
-                for(var i=0; i<$scope.closedDiagrams.length;i++){
+                for(var i= 0,len =$scope.closedDiagrams.length;i<len; i++){
                     var diagram = $scope.closedDiagrams[i];
                     if(diagram.data.id == $scope.openDiagramData.data.data.id){
                         $scope.closedDiagrams.splice(i,1);
@@ -282,7 +282,7 @@
                 var branchRevisionId = $scope.branchRevisionId;
 
                 // save new schemas
-                for(var i in $scope.schemas){
+                for(var i= 0, len = $scope.schemas.length; i<len; i++){
                     if($scope.schemas[i].modified){
                         diagramService.saveSchema(branchRevisionId,$scope.schemas[i].data);
                     }
@@ -294,7 +294,7 @@
                 }
 
                 // save/update table
-                for (var i in $scope.diagramData.tables) {
+                for (var i= 0, len = $scope.diagramData.tables.length; i<len; i++) {
                     var table = $scope.diagramData.tables[i];
 
                     if (table.dataModified) {
@@ -306,7 +306,7 @@
                         table.elModified = false; // reset it
                     }
 
-                    for(var j in table.data.columns){
+                    for(var j= 0, jLen=table.data.columns.length; j<jLen; j++){
                         // var column = table.data.columns[(table.data.columns.length-1)-j]; // colak from back is saving columns to database
                         var column = table.data.columns[j]; // colak from back is saving columns to database
                         if(column.modified){
@@ -316,8 +316,8 @@
                     }
 
                     // save indexes
-                    for(var i in table.data.indexes){
-                        var index = table.data.indexes[i];
+                    for(var k= 0,kLen = table.data.indexes.length; k<kLen; k++){
+                        var index = table.data.indexes[k];
                         if(index.modified){
                             diagramService.saveIndex(branchRevisionId,index.data);
                             index.modified = false;
@@ -326,7 +326,7 @@
                 }
 
                 // save/update foreignKeys and relationElements
-                for(var i in $scope.diagramData.links){
+                for(var i= 0, len = $scope.diagramData.links.length; i<len; i++){
                     var link = $scope.diagramData.links[i];
                     if(link.dataModified){
                         diagramService.saveTableForeignKey(branchRevisionId,link.fk_data);
@@ -340,26 +340,26 @@
 
 
                 // delete table elements
-                for(var i in $scope.deletedTableElements){
+                for(var i= 0, len = $scope.deletedTableElements.length; i<len; i++){
                     var delTableElement = $scope.deletedTableElements[i];
                     diagramService.deleteTableElement(branchRevisionId, delTableElement);
                 }
 
                 // delete columns
-                for(var i in $scope.deletedColumnsData){
+                for(var i= 0, len= $scope.deletedColumnsData.length;i<len; i++){
                     var delColumnData = $scope.deletedColumnsData[i];
                     diagramService.deleteColumn(branchRevisionId, delColumnData);
                 }
 
                 // delete foreign keys
-                for(var i in $scope.deletedLinks){
+                for(var i= 0, len = $scope.deletedLinks.length; i<len; i++){
                     var link = $scope.deletedLinks[i];
                     diagramService.deleteTableForeignKey(branchRevisionId, link.fk_data);
                     diagramService.deleteRelationshipElement(branchRevisionId, link.element);
                 }
 
                 // delete indexes
-                for(var i in $scope.deletedIndexes){
+                for(var i= 0, len =$scope.deletedIndexes.length;i<len;i++){
                     var index = $scope.deletedIndexes[i];
                     diagramService.deleteIndex(branchRevisionId, index.data);
                 }
@@ -411,7 +411,7 @@
                 $log.debug("ctrl-> new index initialized");
             };
             $scope.deleteIndex = function(deletedExtendedIndex, selectedTableIndexes){
-                for(var i in selectedTableIndexes){
+                for(var i= 0, len = selectedTableIndexes.length;i<len;i++){
                     var index = selectedTableIndexes[i];
                     if(deletedExtendedIndex.data.id == index.data.id){
                         selectedTableIndexes.splice(i,1);
@@ -429,11 +429,11 @@
 
                 var table = getTableForId(extendedIndex.data.tableRef);
                 $scope.indexColumns = {extendedIndex:extendedIndex,columns:[]};
-                for(var i in table.data.columns){
+                for(var i= 0, len = table.data.columns.length; i<len; i++){
                     var column = table.data.columns[i];
                     var indexColumn = {id: column.cdata.id, name: column.cdata.name, selected: false};
                     if(extendedIndex.data.columns.length>0) {
-                        for (var j in extendedIndex.data.columns) {
+                        for (var j= 0, jLen = extendedIndex.data.columns.length;j<jLen; j++) {
                             if(extendedIndex.data.columns[j] == column.cdata.id){
                                  indexColumn.selected = true;
                             }
@@ -445,16 +445,16 @@
 
             // ****** INDEX TAB - RIGHT ******
             $scope.saveChangesOnIndexColumns = function(extendedIndex,selectedIndexComment){
-                for(var i in $scope.indexColumns.columns){
+                for(var i= 0, len=$scope.indexColumns.columns.length;i<len;i++){
                     var column = $scope.indexColumns.columns[i];
                     if(column.selected){
                         extendedIndex.data.columns.push(column.id);
                     }else{
                         // remove if not selected
-                        for(var i = extendedIndex.data.columns.length-1; i>=0;i--){
-                            var columnId = extendedIndex.data.columns[i];
+                        for(var j = extendedIndex.data.columns.length-1; j>=0;j--){
+                            var columnId = extendedIndex.data.columns[j];
                             if(columnId == column.id){
-                                extendedIndex.data.columns.splice(i, 1);
+                                extendedIndex.data.columns.splice(j, 1);
                             }
                         }
                     }
@@ -494,7 +494,7 @@
                 deleteColumnLink(foreignKey.data.fk_data.sourceColumn, $scope.diagramData.links);
 
                 // foreign key tab has own list delete from it
-                for(var i in foreignKeys){
+                for(var i= 0,len=foreignKeys.length;i<len;i++){
                     var fk = foreignKeys[i];
                     if(fk.data.fk_data.id == foreignKey.data.fk_data.id){
                         foreignKeys.splice(i,1);
@@ -507,7 +507,7 @@
                 if(refColumnId == undefined){
                     return "Not selected";
                 }
-                for(var a in refIndexColumns){
+                for(var a= 0, len=refIndexColumns.length;a<len;a++){
                     var column = refIndexColumns[a];
                     if(refColumnId == column.cdata.id){
                         return column.cdata.name;
@@ -530,11 +530,12 @@
 
              // ********* REMOVE TABLE *********
             function deleteTableElement(tableId, tables) {
-                for (var i = 0; i < tables.length; i++) {
+                for (var i = 0, len=tables.length; i < len; i++) {
                     if (tables[i].data.id === tableId) {
                         $log.debug("ctrl -> table[" + tables[i].data.name + "] is deleted");
                         $scope.deletedTableElements.push(tables[i].element);
                         tables.splice(i, 1);
+                        break;
                     }
                 }
                 deleteTableLinks(tableId,$scope.diagramData.links);
@@ -601,7 +602,7 @@
                 return [200, {status: 'ok'}];
             };
             function getColumnForId(columnId, columns) {
-                for (var i = 0; i < columns.length; i++) {
+                for (var i = 0, len = columns.length; i < len; i++) {
                     if (columns[i].cdata.id == columnId) {
                         return columns[i];
                     }
@@ -620,7 +621,7 @@
                 var indexB = column.cdata.ordinal-2;
                 columns = swapColumnsAndUpdateOrdinals(columns, indexA, indexB);
 
-                for(var i=0; i < columns.length; i++){
+                for(var i= 0, len=columns.length; i < len; i++){
                     console.log(columns[i].cdata.name+" ordinal:");
                     console.log(columns[i].cdata.ordinal);
                 }
@@ -637,7 +638,7 @@
                 var indexB = column.cdata.ordinal;
                 columns = swapColumnsAndUpdateOrdinals(columns, indexA, indexB);
 
-                for(var i=0; i < columns.length; i++){
+                for(var i= 0, len = columns.length; i < len; i++){
                     $log.debug(columns[i].cdata.name+" ordinal:");
                     $log.debug(columns[i].cdata.ordinal);
                 }
@@ -679,7 +680,7 @@
                 $log.debug("ctrl -> column[" + columnData.name + "] successfully deleted");
             };
             function updateColumnsOrdinal(columns){
-                for(var i = 0 ; i< columns.length; i++){
+                for(var i = 0, len = columns.length ; i< len; i++){
                     var column = columns[i];
                     column.cdata.ordinal = i + 1;
                     $log.debug("Column:"+column.cdata.name+" ordinal: "+column.cdata.ordinal);
@@ -746,7 +747,7 @@
 
             // ******** THIS CONTROLLER UTIL FUNCTION ********
             function findTablePositionInArray(tableId, tables) {
-                for (var i = 0; i < tables.length; i++) {
+                for (var i = 0, len = tables.length; i < len; i++) {
                     if (tables[i].data.id == tableId) {
                         return i;
                     }
@@ -797,7 +798,7 @@
                     $log.debug("Could not found table for id:"+sourceTableId);
                     return false;
                 }
-                for(var i=0;i<table.data.foreignKeys.length;i++){
+                for(var i= 0, len = table.data.foreignKeys.length;i<len;i++){
                     var fkData =table.data.foreignKeys[i];
                     if(fkData.id == foreignKeyId){
                         return true;
@@ -806,7 +807,7 @@
                 return false;
             }
             function getTableForId(id) {
-            for (var i = 0; i < $scope.diagramData.tables.length; i++) {
+            for (var i = 0, len=$scope.diagramData.tables.length; i < len; i++) {
                 if (id == $scope.diagramData.tables[i].data.id) {
                     return $scope.diagramData.tables[i];
                 }

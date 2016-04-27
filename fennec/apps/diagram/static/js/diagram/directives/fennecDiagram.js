@@ -241,7 +241,7 @@
 
             $timeout(function(){
               // Any code in here will automatically have an $scope.apply() run afterwards
-              scope.stable = null; // nothing   selected
+//              scope.stable = null; // nothing   selected
             });
 
               svgTables.exit().remove();
@@ -336,11 +336,13 @@
             }
 
             // ********* MOUSE EVENTS *********
+
             // ********* MOUSE EVENTS *********
             function linkMouseClick(){
-                 d3.event.stopPropagation();
+              d3.event.stopPropagation();
               var rect=  d3.select(this);
               rect.style("stroke", "#01ecff").style("stroke-width", "4");
+              deselectTable();
             }
             function tableMouseClick(){
               d3.event.stopPropagation();
@@ -453,6 +455,7 @@
                     //passing value to controller if this directive will be private (zatvoren)
                     //scope.$emit('selectedTableEvent', tableData );
                   }else{
+                        deselectTable();
                         restart(true);
                   }
                 }
@@ -520,6 +523,12 @@
                 redrawLines();
               }
               changeState(fennecStates.select);
+            }
+            function deselectTable(){
+                      $timeout(function(){
+                        // Any code in here will automatically have an $scope.apply() run afterwards
+                          scope.stable = null; // nothing   selected
+                      });
             }
             function calculateLinkPosition(sourceTableLink,targetTableLink){
               if(sourceTableLink.table.element.positionX < targetTableLink.table.element.positionX){
