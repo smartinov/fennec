@@ -24,7 +24,7 @@
     // setup dependency injection
     angular.module('d3', []);
     angular.module('myApp.services', []);
-    angular.module('myApp.controllers', ['xeditable','ui.bootstrap','ui-notification']);
+    angular.module('myApp.controllers', ['xeditable','ui.bootstrap','ui-notification','ng-drag-scroll']);
     angular.module('myApp.directives', ['d3']);
 
     app.config(['$httpProvider', '$interpolateProvider', function ($httpProvider, $interpolateProvider) {
@@ -37,7 +37,7 @@
     }]);
 
     app.config(['$logProvider', function($logProvider){
-        $logProvider.debugEnabled(true);
+        $logProvider.debugEnabled(false);
     }]);
 
     app.run(function(editableOptions){

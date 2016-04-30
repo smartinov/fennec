@@ -17,6 +17,7 @@
     <script src="{% static "js/plugins/angular-ui-notification.min.js" %}"></script>
     <script src="{% static "js/angular/ui-bootstrap-tpls-0.4.0.js" %}"></script>
 
+
     <!-- fennec modeling diagram javascripts -->
     <script src="{% static "js/diagram/app.js" %}"></script>
     <script src="{% static "js/diagram/services/d3.js" %}"></script>
@@ -24,6 +25,7 @@
     <script src="{% static "js/diagram/services/spinnerService.js" %}"></script>
     <script src="{% static "js/diagram/controllers/fennecCtrl.js" %}"></script>
     <script src="{% static "js/diagram/directives/fennecDiagram.js" %}"></script>
+    <script src="{% static "js/diagram/directives/ng-drag-scroll.js" %}"></script>
     <script src="{% static "js/diagram/state-machine.js" %}"></script>
     <script src="{% static "js/spinjs/spin.js" %}"></script>
 
@@ -64,6 +66,12 @@
 
             <input class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/select_icon.png"
                         onclick="changeState(fennecStates.select)" alt="Select icon">
+
+
+             <input class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/drag_button.png"
+                        onclick="changeState(fennecStates.drag)" alt="Select icon">
+
+
             <input class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/table_icon.cur"
                 alt="New table" onclick="changeState(fennecStates.new_table)" >
 
@@ -83,8 +91,8 @@
 <div class="ui-layout-center">
 
     <!-- Diagram -->
-	<div class="ui-layout-center">
-		<div role="tabpanel">
+	<div class="ui-layout-center" drag-scroll >
+		<div role="tabpanel" >
 			<ul class="nav nav-tabs" role="tablist" style="cursor: pointer">
 				<li role="presentation" ng-repeat="tab in openedDiagrams" ng-click="selectDiagram($index)" ng-class="{'active':selectedDiagram == $index}">
 					<a data-target="#tab"  aria-controls="home" role="tab" data-toggle="tab">[[tab.data.name]] <span ng-click="closeDiagram($index, tab)">

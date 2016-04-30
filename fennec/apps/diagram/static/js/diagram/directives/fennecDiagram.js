@@ -2,7 +2,8 @@
   'use strict';
 
   angular.module('myApp.directives')
-    .directive('fennecDiagram',  ['d3Service', '$log', '$timeout', function(d3Service, $log, $timeout) {
+    .directive('fennecDiagram',  ['d3Service', '$log', '$timeout',
+          function(d3Service, $log, $timeout) {
       return {
         restrict: 'EA',
         scope: {
@@ -14,7 +15,7 @@
             activeSchema: "=",
             recal: "="
         },
-        template:"<div class='diagram'  ></div>",
+        template:"<div class='diagram'></div>",
         link: function(scope, iElement, iAttrs) {
           d3Service.then(function(d3) {
             var tablesData = scope.data.tables;
@@ -36,13 +37,14 @@
              }
              restart(true);
             },true);
-              scope.$watch('recal', function (newValue, oldValue) {
+
+            scope.$watch('recal', function (newValue, oldValue) {
                   if (newValue != "") {
                       $log.debug("dir-> referencedColumn changed"); //$log.debug(tablesData);
                       updateLinkPositionForTable(newValue);
                   }
                   scope.recal = "";
-              }, true);
+            }, true);
 
             var drag = d3.behavior.drag()
                 .origin(function() {
@@ -339,12 +341,16 @@
 
             // ********* MOUSE EVENTS *********
             function linkMouseClick(){
+              if(actionStates == fennecStates.drag){return;}
+
               d3.event.stopPropagation();
               var rect=  d3.select(this);
               rect.style("stroke", "#01ecff").style("stroke-width", "4");
               deselectTable();
             }
             function tableMouseClick(){
+              if(actionStates == fennecStates.drag){return;}
+
               d3.event.stopPropagation();
               var rect=  d3.select(this);
 //              rect.classed("fennec_table", true).style("stroke-width", "2").style("stroke-dasharray", "10 5");
@@ -400,6 +406,8 @@
             }
 
             function mouseClick() {
+              if(actionStates == fennecStates.drag){return;}
+
               d3.event.stopPropagation();
               var rect=  d3.select(this);
 
@@ -792,47 +800,25 @@
 
             var lastKeyDown;
             function keydown() {
+                if (selected_table != null) {
+                    var tableData = selected_table.node().__data__;
+                        if (tableData != undefined) {
+                            return;
+                        }
+                }
+
               d3.event.preventDefault();
 
               if(lastKeyDown !== -1) return;
               lastKeyDown = d3.event.keyCode;
 
               switch(d3.event.keyCode) {
-                case 8: // backspace
-                case 46: // delete
-                  if(selected_table) {
-                    tablesData.splice(tablesData.indexOf(selected_table), 1);
-                  }
-                  selected_table = null;
-                  restart();
-                  break;
-                case 66: // B
-                  if(selected_link) {
-                    // set link direction to both left and right
-                    selected_link.left = true;
-                    selected_link.right = true;
-                  }
-                  restart();
-                  break;
-                case 76: // L
-                  if(selected_link) {
-                    // set link direction to left only
-                    selected_link.left = true;
-                    selected_link.right = false;
-                  }
-                  restart();
-                  break;
-                case 82: // R
-                  if(selected_table) {
-                    // toggle node reflexivity
-                    selected_table.reflexive = !selected_table.reflexive;
-                  } else if(selected_link) {
-                    // set link direction to right only
-                    selected_link.left = false;
-                    selected_link.right = true;
-                  }
-                  restart();
-                  break;
+                case 71:  // g
+                     changeState(fennecStates.drag);
+                      break;
+                case 27:  // esc
+                     clearTmpLinks();
+                     changeState(fennecStates.select);
               }
             }
 
@@ -841,17 +827,12 @@
 
               // ctrl
               if(d3.event.keyCode === 17) {
-                circle
-                    .on('mousedown.drag', null)
-                    .on('touchstart.drag', null);
-                svg.classed('ctrl', false);
+
               }
             }
 
-            d3.select(window)
-                // editable table messing with this, find way to ignore this methods on edit
-                //.on('keydown', keydown)
-                //.on('keyup', keyup);
+            // editable table messing with this, find way to ignore this methods on edit
+            d3.select(window).on('keydown', keydown).on('keyup', keyup);
 
             // *********  HELPER FUNCTIONS *********
             function getLinkForTableId(movingTableObject){
