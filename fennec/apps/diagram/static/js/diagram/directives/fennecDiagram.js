@@ -813,7 +813,7 @@
               lastKeyDown = d3.event.keyCode;
 
               switch(d3.event.keyCode) {
-                case 71:  // g
+                case 68:  // d
                      changeState(fennecStates.drag);
                       break;
                 case 27:  // esc
