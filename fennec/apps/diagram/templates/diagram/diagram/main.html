@@ -93,9 +93,9 @@
     <!-- Diagram -->
 	<div class="ui-layout-center" drag-scroll >
 		<div role="tabpanel" >
-			<ul class="nav nav-tabs" role="tablist" style="cursor: pointer">
-				<li role="presentation" ng-repeat="tab in openedDiagrams" ng-click="selectDiagram($index)" ng-class="{'active':selectedDiagram == $index}">
-					<a data-target="#tab"  aria-controls="home" role="tab" data-toggle="tab">[[tab.data.name]] <span ng-click="closeDiagram($index, tab)">
+			<ul class="nav nav-tabs" role="tablist" >
+				<li  role="presentation" ng-repeat="tab in openedDiagrams" ng-click="selectDiagram($index)" ng-class="{'active':selectedDiagram == $index}">
+					<a style="cursor: pointer" data-target="#tab"  aria-controls="home" role="tab" data-toggle="tab">[[tab.data.name]] <span ng-click="closeDiagram($index, tab)">
                         <i class="icon-remove" style="cursor: pointer"></i></span></a>
 				</li>
 				<li role="presentation" ng-click="addDiagram()">

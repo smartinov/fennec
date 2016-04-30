@@ -493,8 +493,14 @@
                 if(tmpTargetTableLink == null){
                   tmpTargetTableLink = {x:0,y:0, table:tableData, attr:columnData};
                 }
-
-                var linkPosition= calculateLinkPosition(tmpSourceTableLink,tmpTargetTableLink);
+               var linkPosition;
+                try {
+                    linkPosition = calculateLinkPosition(tmpSourceTableLink, tmpTargetTableLink);
+                }catch(err){
+                    $log.error("Select correct table columns for link.");
+                    clearTmpLinks();
+                    return;
+                }
                 tmpSourceTableLink = linkPosition.sourceTableLink;
                 tmpTargetTableLink = linkPosition.targetTableLink;
                 // $log.debug("Source("+tmpSourceTableLink.x+","+ tmpSourceTableLink.y+") Target("+tmpTargetTableLink.x+","+tmpTargetTableLink.y+")" );
