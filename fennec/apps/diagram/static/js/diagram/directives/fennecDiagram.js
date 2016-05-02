@@ -13,7 +13,7 @@
             stableIndexes: "=",
             adiagram: "=",
             activeSchema: "=",
-            recal: "="
+            updateTableLinks: "="
         },
         template:"<div class='diagram'></div>",
         link: function(scope, iElement, iAttrs) {
@@ -38,12 +38,12 @@
              restart(true);
             },true);
 
-            scope.$watch('recal', function (newValue, oldValue) {
-                  if (newValue != "") {
+            scope.$watch('updateTableLinks', function (newValue, oldValue) {
+                  if (newValue != null && newValue != "") {
                       $log.debug("dir-> referencedColumn changed"); //$log.debug(tablesData);
                       updateLinkPositionForTable(newValue);
                   }
-                  scope.recal = "";
+                  scope.updateTableLinks = "";
             }, true);
 
             var drag = d3.behavior.drag()

@@ -257,6 +257,7 @@
                 });
             }
 
+
             // ******* OPEN/SAVE/EDIT DIAGRAM *******
             $scope.isOpenDiagramPopupShown = false;
             $scope.showOpenDiagramPopup = function(){
@@ -280,7 +281,6 @@
             $scope.cancelDiagramPopup = function(){
                 $scope.isOpenDiagramPopupShown = false;
             }
-
             $scope.saveDiagramButton = function () {
                 if(confirm("You are going to save diagram ["+$scope.activeDiagram.data.name+"], are you sure?") == false) {return;}
 
@@ -383,7 +383,6 @@
                     Notification.success("Diagram["+$scope.activeDiagram.data.name+"] content saved successfully");
                 }
             }
-
             $scope.setTableToModified = function(selectedTable){
                 selectedTable.dataModified = true;
             }
@@ -407,6 +406,8 @@
                 }
                 $scope.deleteReferencedKey({data:deletedLink}, fk);
             });
+
+
             // ****** INDEX TAB - LEFT ******
             $scope.indexTypes =["PRIMARY","INDEX","UNIQUE"];
             $scope.addIndex = function () {
@@ -461,7 +462,6 @@
                     $scope.indexColumns.columns.push(indexColumn);
                 }
             }
-
             // ****** INDEX TAB - RIGHT ******
             $scope.saveChangesOnIndexColumns = function(extendedIndex,selectedIndexComment){
                 for(var i= 0, len=$scope.indexColumns.columns.length;i<len;i++){
@@ -534,7 +534,7 @@
                 }
                 return "Not selected";
             };
-            $scope.recal = "";
+            $scope.updateTableLinks = "";
             $scope.saveReferencedKeyDetails = function(data,fkDetails){
                 fkDetails.foreignKey.dataModified = true;
                 fkDetails.foreignKey.elModified = true;
@@ -543,7 +543,7 @@
             }
             function updateTableLinks(table){
                 // this actually work buy double binding with directive
-                $scope.recal = table;
+                $scope.updateTableLinks = table;
             }
 
 
