@@ -229,7 +229,7 @@
                       }
                   })
                   .text(function(d) {
-                    return  d.cdata.name+ " (" + getTypeNameForValue(d.cdata.column_type)+")";
+                    return  d.cdata.name+ " (" + d.cdata.column_type +")";
                   });
 
 //              table.selectAll("rect.resize-icon")
@@ -255,7 +255,7 @@
                   var table = getAttributeTable(column.id);
                   var tableHeight = table.element.height;
                   var columnPartHeight = tableHeight - 25; // title box part
-                  for(var i = 0; i < table.data.columns.length; i++){
+                  for(var i = 0, len=table.data.columns.length; i < len; i++){
                       var col = table.data.columns[i];
                       if(col.cdata.id == column.id){
                           var columnPositionHeightInTable = column.ordinal * 20;
@@ -271,39 +271,13 @@
                   return 0;
               }
 
-            //TODO: find way to skip this and pass dataType as value
-            function getTypeNameForValue(columnType){
-              var dataTypes =  [
-                {value: 1, text: 'ID'},
-                {value: 2, text: 'RefID'},
-                {value: 3, text: 'TEXT'},
-                {value: 4, text: 'INT'},
-                {value: 5, text: 'BIGINT'},
-                {value: 6, text: 'DECIMAL'},
-                {value: 7, text: 'DOUBLE'},
-                {value: 8, text: 'FLOAT'},
-                {value: 9, text: 'TINYINT'},
-                {value: 10, text: 'BOOL'},
-                {value: 11, text: 'BOOLEAN'}
-              ];
-
-              if(isNumber(columnType)== false){
-                return columnType;
-              }else{
-                for(var i =0;i<dataTypes.length;i++){
-                  if(dataTypes[i].value == columnType){
-                    return dataTypes[i].text;
-                  }
-                }
-              }
-            }
             function isNumber(n) {
               return !isNaN(parseFloat(n)) && isFinite(n);
             }
             function getAttributeTable(attrId){
               // TODO: latter extend to check all column just in case
-              for(var i=0;i<tablesData.length;i++){
-                for(var j=0;j<tablesData[i].data.columns.length;j++){
+              for(var i= 0,len=tablesData.length; i<len; i++){
+                for(var j= 0,jLen = tablesData[i].data.columns.length;j<jLen; j++){
                   var columnData = tablesData[i].data.columns[j].cdata;
                   if(columnData.id == attrId){
                     return tablesData[i];
@@ -376,7 +350,7 @@
 
                     // foreign keys
                     var fk = [];
-                    for(var i in linksData){
+                    for(var i= 0,len=linksData.length;i<len;i++){
                         var currentLink = linksData[i];
                         if(currentLink.fk_data.tableRef == tableData.data.id){
                             var fk_data = {data:currentLink, refTable:getTableForId(currentLink.fk_data.referencedTableRef)};
@@ -448,7 +422,7 @@
 
                     // foreign keys
                     var fk = [];
-                    for(var i in linksData){
+                    for(var i= 0, len = linksData.length; i<len;i++){
                         var currentLink = linksData[i];
                         if(currentLink.fk_data.tableRef == tableData.data.id){
                             var fk_data = {data:currentLink, refTable:getTableForId(currentLink.fk_data.referencedTableRef)};
@@ -608,7 +582,7 @@
             };
             function updateTablePosition(movingTableObject,x,y) {
               var tableElemId = movingTableObject.node().__data__.element.id;
-              for (var i in tablesData) {
+              for (var i= 0, len=tablesData.length;i<len; i++) {
                 if (tablesData[i].element.id == tableElemId) {
                   tablesData[i].element.positionX = x;
                   tablesData[i].element.positionY = y;
@@ -624,7 +598,7 @@
             }
             function updateLinkPositionForTable(movingTable) {
                   var redraw = false;
-                  for (var i = 0; i < linksData.length; i++) {
+                  for (var i = 0, len = linksData.length;i<len; i++) {
                       if (linksData[i].fk_data.tableRef == movingTable.data.id) {
                           var tableLink = linksData[i];
                           //$log.debug("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
@@ -671,7 +645,7 @@
                 sourceTable:null,
                 targetTable:null
               };
-              for(var i=0;i<tablesData.length;i++) {
+              for(var i= 0, len =tablesData.length; i<len; i++) {
                 if(tablesData[i].data.id == sourceTableId){
                   result.sourceTable = tablesData[i];
                   if(result.targetTable == null){
@@ -692,7 +666,7 @@
               return result;
             }
             function getColumnForId(columns, columnId){
-                for(var i in columns){
+                for(var i= 0, len =  columns.length; i<len;i++){
                     if(columns[i].cdata.id == columnId){
                         return columns[i];
                     }
@@ -755,7 +729,7 @@
             }
             function updateTableSize(selectedTableElement,tableHeight, tableWidth){
               var tableId = selectedTableElement.id;
-              for (var i in tablesData) {
+              for (var i= 0, len =tablesData.length; i<len; i++) {
                 if (tablesData[i].element.id == tableId) {
                   $log.debug("Height: "+tableHeight+ "width: "+tableWidth);
                   tablesData[i].element.height = tableHeight;
@@ -781,7 +755,7 @@
                 var textAttrObjArray = resizeTableObject.select("#attribute"+i).data($(tableAttributes[i]));
                 tableAttributesObjects.push(textAttrObjArray);
               }
-              for(var i=0;i<tableAttributesObjects.length;i++){
+              for(var i= 0, len = tableAttributesObjects.length; i<len; i++){
                 var attrObjArray = tableAttributesObjects[i];
                 // $log.debug(attrObjArray.node().__data__);
                 var attrObject= $(attrObjArray[0]);
@@ -804,112 +778,114 @@
             }
 
 
-            var lastKeyDown;
-            function keydown() {
-                if (selected_table != null) {
-                    var tableData = selected_table.node().__data__;
-                        if (tableData != undefined) {
-                            return;
-                        }
-                }
+              var lastKeyDown;
+              function keydown() {
+                  if (selected_table != null) {
+                      var tableData = selected_table.node().__data__;
+                      if (tableData != undefined) {
+                          return;
+                      }
+                  }
 
-              d3.event.preventDefault();
+                  d3.event.preventDefault();
 
-              if(lastKeyDown !== -1) return;
-              lastKeyDown = d3.event.keyCode;
+                  if (lastKeyDown !== -1) return;
+                  lastKeyDown = d3.event.keyCode;
 
-              switch(d3.event.keyCode) {
-                case 68:  // d
-                     changeState(fennecStates.drag);
-                      break;
-                case 27:  // esc
-                     clearTmpLinks();
-                     changeState(fennecStates.select);
+                  switch (d3.event.keyCode) {
+                      case 68:  // d
+                          changeState(fennecStates.drag);
+                          break;
+                      case 27:  // esc
+                          clearTmpLinks();
+                          changeState(fennecStates.select);
+                  }
               }
-            }
 
-            function keyup() {
-              lastKeyDown = -1;
+              function keyup() {
+                  lastKeyDown = -1;
+                  // ctrl
+                  if (d3.event.keyCode === 17) {
+                  }
+              }
 
-              // ctrl
-              if(d3.event.keyCode === 17) {
+              // editable table messing with this, find way to ignore this methods on edit
+              d3.select(window).on('keydown', keydown).on('keyup', keyup);
 
+              // *********  HELPER FUNCTIONS *********
+              function getLinkForTableId(movingTableObject) {
+                  // TODO: this is not good , need to set like in add links part
+                  var table = movingTableObject.node().__data__;
+                  for (var i = 0, len = linksData.length; i < len; i++) {
+                      if (linksData[i].source.tableId == table.id) {
+                          return linksData[i];
+                      }
+                      if (linksData[i].target.tableId == table.id) {
+                          return linksData[i];
+                      }
+                  }
+                  return null;
               }
-            }
 
-            // editable table messing with this, find way to ignore this methods on edit
-            d3.select(window).on('keydown', keydown).on('keyup', keyup);
+              function genGuid() {
+                  //  id-s started with number is not recognized by d3.select function
+                  var id = guid();
+                  id = id.slice(1);
+                  var possible = "abcdef";
+                  var hexLetter = possible.charAt(Math.floor(Math.random() * possible.length))
+                  id = hexLetter + id;
+                  return id;
+              }
 
-            // *********  HELPER FUNCTIONS *********
-            function getLinkForTableId(movingTableObject){
-              // TODO: this is not good , need to set like in add links part
-              var table = movingTableObject.node().__data__;
-              for(var i=0;i<linksData.length;i++){
-                if(linksData[i].source.tableId == table.id){
-                  return linksData[i];
-                }
-                if(linksData[i].target.tableId == table.id){
-                  return linksData[i];
-                }
+              function parseAllTransformation(a) {
+                  var b = {};
+                  for (var i in a = a.match(/(\w+\((\-?\d+\.?\d*,?)+\))+/g)) {
+                      var c = a[i].match(/[\w\.\-]+/g);
+                      b[c.shift()] = c;
+                  }
+                  return b;
               }
-              return null;
-            }
-            function genGuid(){
-              //  id-s started with number is not recognized by d3.select function
-              var id = guid();
-              id = id.slice(1);
-              var possible = "abcdef";
-              var hexLetter = possible.charAt(Math.floor(Math.random() * possible.length))
-              id = hexLetter+id;
-              return id;
-            }
-            function parseAllTransformation (a)
-            {
-              var b={};
-              for (var i in a = a.match(/(\w+\((\-?\d+\.?\d*,?)+\))+/g))
-              {
-                var c = a[i].match(/[\w\.\-]+/g);
-                b[c.shift()] = c;
-              }
-              return b;
-            }
-            function parseTranslateString(trans){
-              if(trans == 'undefined' || trans == null){
-                return {x:0,y:0};
-              }
-              var translateObject = parseAllTransformation(trans);
-              var resultObject = {
-                x: parseInt(translateObject.translate[0]),
-                y: parseInt(translateObject.translate[1])
-              }
-              return resultObject;
-            }
 
-            var guid = (function() {
-              function s4() {
-                return Math.floor((1 + Math.random()) * 0x10000)
-                    .toString(16)
-                    .substring(1);
+              function parseTranslateString(trans) {
+                  if (trans == 'undefined' || trans == null) {
+                      return {x: 0, y: 0};
+                  }
+                  var translateObject = parseAllTransformation(trans);
+                  var resultObject = {
+                      x: parseInt(translateObject.translate[0]),
+                      y: parseInt(translateObject.translate[1])
+                  }
+                  return resultObject;
               }
-              return function() {
-                return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-                    s4() + '-' + s4() + s4() + s4();
-              };
-            })();
-            function getColumnPositionInList(myArray, searchTerm, property) {
-              for(var i = 0, len = myArray.length; i < len; i++) {
-                if (myArray[i].cdata[property] === searchTerm) return i;
+
+              var guid = (function () {
+                  function s4() {
+                      return Math.floor((1 + Math.random()) * 0x10000)
+                          .toString(16)
+                          .substring(1);
+                  }
+
+                  return function () {
+                      return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                          s4() + '-' + s4() + s4() + s4();
+                  };
+              })();
+
+              function getColumnPositionInList(myArray, searchTerm, property) {
+                  for (var i = 0, len = myArray.length; i < len; i++) {
+                      if (myArray[i].cdata[property] === searchTerm) return i;
+                  }
+                  return -1;
               }
-              return -1;
-            }
-            function getTableForId(id) {
-            for (var i = 0; i < tablesData.length; i++) {
-                if (id == tablesData[i].data.id) {
-                    return tablesData[i];
-                }
-            }
-            return null;
-        }
+
+              function getTableForId(id) {
+                  for (var i = 0, len = tablesData.length; i < len; i++) {
+                      if (id == tablesData[i].data.id) {
+                          return tablesData[i];
+                      }
+                  }
+                  return null;
+              }
 
           });
         }

@@ -115,7 +115,11 @@
                     //$log.debug("log loadBranchRevisionProjectStatefinally");
                 });
             }
-
+            $scope.ifPrimarySetAsUnique = function(primary, column){
+                if(primary){
+                    column.unique = true;
+                }
+            }
             function createDiagramsInfoForTabs(branchRevisionData, diagramId) {
                 // ADD DIAGRAMS info (name,description) to scope for tabs
                 for (var i= 0, len=branchRevisionData.diagrams.length;i<len; i++) {
@@ -588,18 +592,14 @@
                 $log.debug("ctrl-> new column initialized");
             };
             $scope.saveColumn = function (data, columnId) {
-                var selected = $filter('filter')($scope.dataTypes, {value: data.dataType});
-                if (selected.length != 0) {
-                    var tableId = $scope.selectedTable.data.id;
-                    var tableIndex = findTablePositionInArray(tableId, $scope.diagramData.tables);
-                    var selectedTableColumns = $scope.diagramData.tables[tableIndex].data.columns;
-                    var column = getColumnForId(columnId, selectedTableColumns);
-                    column.cdata.column_type = selected[0].text;
-                    column.modified = true;
-                    $log.debug("Column: "+data.name+" ordinal: "+ column.cdata.ordinal);
-                }
-                $log.debug("Column successfully saved")
-                return [200, {status: 'ok'}];
+                var tableId = $scope.selectedTable.data.id;
+                var tableIndex = findTablePositionInArray(tableId, $scope.diagramData.tables);
+                var selectedTableColumns = $scope.diagramData.tables[tableIndex].data.columns;
+                var column = getColumnForId(columnId, selectedTableColumns);
+                column.cdata.column_type = data.column_type;
+                column.modified = true;
+                $log.debug("Column: " + data.name + " ordinal: " + column.cdata.ordinal);
+                $log.debug("Column successfully saved");
             };
             function getColumnForId(columnId, columns) {
                 for (var i = 0, len = columns.length; i < len; i++) {
@@ -643,7 +643,6 @@
                     $log.debug(columns[i].cdata.ordinal);
                 }
             }
-
             function swapColumnsAndUpdateOrdinals(arr, indexA, indexB) {
                 var aOrdinal =  arr[indexA].cdata.ordinal;
                 var bOrdinal = arr[indexB].cdata.ordinal;
@@ -662,8 +661,6 @@
                 updateTableLinks(table);
                 return arr;
             };
-
-
 
 
             // ********* REMOVE COLUMN *********
@@ -705,18 +702,14 @@
             $scope.showColumnType = function (column) {
                 var selected = [];
                 if (column.cdata.column_type) {
-                    selected = $filter('filter')($scope.dataTypes, {text: column.cdata.column_type}); // this is how can we search trough list
+                    selected = $filter('filter')($scope.columnTypes, {text: column.cdata.column_type}); // this is how can we search trough list
                     if (selected.length == 0) {
-                        selected = $filter('filter')($scope.dataTypes, {value: column.cdata.column_type});
+                        selected = $filter('filter')($scope.columnTypes, {value: column.cdata.column_type});
                     }
                 }
                 return selected.length ? selected[0].text : 'Not set';
             };
-            $scope.checkName = function (data, id) {
-                if (id === 2 && data !== 'awesome') {
-                    return "Username 2 should be `awesome`";
-                }
-            };
+
 
             // ********* CREATE SCHEMA *********
             $scope.isCreateSchemaPopupShown = false;
@@ -755,18 +748,18 @@
                     $log.debug("Table not found for id: " + tableId);
                 return null;
             }
-            $scope.dataTypes = [
-                {value: 1, text: 'ID'},
-                {value: 2, text: 'RefID'},
-                {value: 3, text: 'TEXT'},
-                {value: 4, text: 'INT'},
-                {value: 5, text: 'BIGINT'},
-                {value: 6, text: 'DECIMAL'},
-                {value: 7, text: 'DOUBLE'},
-                {value: 8, text: 'FLOAT'},
-                {value: 9, text: 'TINYINT'},
-                {value: 10, text: 'BOOL'},
-                {value: 11, text: 'BOOLEAN'}
+            $scope.columnTypes = [
+                {value: 'ID', text: 'ID'},
+                {value: 'RefID', text: 'RefID'},
+                {value: 'TEXT', text: 'TEXT'},
+                {value: 'INT', text: 'INT'},
+                {value: 'BIGINT', text: 'BIGINT'},
+                {value: 'DECIMAL', text: 'DECIMAL'},
+                {value: 'DOUBLE', text: 'DOUBLE'},
+                {value: 'FLOAT', text: 'FLOAT'},
+                {value: 'TINYINT', text: 'TINYINT'},
+                {value: 'BOOL', text: 'BOOL'},
+                {value: 'BOOLEAN', text: 'BOOLEAN'}
             ];
 
             // *************** UTIL FUNCTIONS **************************

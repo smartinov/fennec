@@ -10,30 +10,32 @@ Table Name:
         <td style="width:3%"></td>
         <td style="width:32%">Column</td>
         <td style="width:15%">Column Type</td>
-        <td style="width:5%">Precision</td>
-        <td style="width:5%">PK</td>
-        <td style="width:5%">NN</td>
-        <td style="width:5%">UQ</td>
-        <td style="width:5%">AI</td>
-        <td style="width:25%">Edit</td>
+        <td style="width:4%">Precision</td>
+        <td style="width:4%">PK</td>
+        <td style="width:4%">NN</td>
+        <td style="width:4%">UQ</td>
+        <td style="width:4%">AI</td>
+        <td style="width:30%">Edit</td>
     </tr>
 
     <!-- TABLE COLUMNS -->
     <tr ng-repeat="column in selectedTable.data.columns">
         <td >
-            <img ng-show="column.cdata.ordinal != 1" src="../../../../../../../static/images/arrow_up.png" width="16" height="16" ng-click="moveColumnUp(column, selectedTable.data.columns)">
+            <img ng-show="column.cdata.ordinal != 1" src="../../../../../../../static/images/arrow_up.png"
+                 data-toggle="tooltip" data-placement="bottom" title="Move column up"
+                 width="16" height="16" ng-click="moveColumnUp(column, selectedTable.data.columns)">
             <img ng-show="column.cdata.ordinal != selectedTable.data.columns.length"
+                 data-toggle="tooltip" data-placement="bottom" title="Move column down"
                  src="../../../../../../../static/images/arrow_down.png"  width="16" height="16" ng-click="moveColumnDown(column, selectedTable.data.columns)">
         </td>
         <td>
-              <span editable-text="column.cdata.name" e-name="name" e-form="rowform"
-                      onbeforesave="checkName($data, column.id)" e-required>
+              <span editable-text="column.cdata.name" e-name="name" e-form="rowform" e-required>
                   [[ column.cdata.name || 'empty' ]]
               </span>
         </td>
         <td style="white-space: nowrap">
                             <span editable-select="column.cdata.column_type" e-name="column_type" e-form="rowform"
-                                  e-ng-options="s.value as s.text for s in dataTypes"> [[ showColumnType(column) ]]
+                                  e-ng-options="s.value as s.text for s in columnTypes"> [[ showColumnType(column) ]]
                             </span>
         </td>
         <td style="white-space: nowrap">
@@ -42,23 +44,24 @@ Table Name:
               </span>
         </td>
           <td style="white-space: nowrap">
-              <span editable-checkbox="column.cdata.primary" e-name="primary" e-form="rowform">
-                  [[ column.cdata.primary ]]
+              <span editable-checkbox="column.cdata.primary" e-name="primary" e-form="rowform"
+                    onaftersave="ifPrimarySetAsUnique($data, column.cdata)">
+                  <input type="checkbox" data-ng-model="column.cdata.primary" ng-disabled="true">
               </span>
         </td>
         <td style="white-space: nowrap">
               <span editable-checkbox="column.cdata.unique" e-name="unique" e-form="rowform">
-                  [[ column.cdata.unique ]]
+                  <input type="checkbox" data-ng-model="column.cdata.unique" ng-disabled="true">
               </span>
         </td>
         <td style="white-space: nowrap">
               <span editable-checkbox="column.cdata.nullable" e-name="nullable" e-form="rowform">
-                  [[ column.cdata.nullable ]]
+                  <input type="checkbox" data-ng-model="column.cdata.nullable" ng-disabled="true">
               </span>
         </td>
         <td style="white-space: nowrap">
               <span editable-checkbox="column.cdata.autoIncrement" e-name="nullable" e-form="rowform">
-                  [[ column.cdata.autoIncrement ]]
+                  <input type="checkbox" data-ng-model="column.cdata.autoIncrement" ng-disabled="true">
               </span>
         </td>
         <td style="white-space: nowrap">
@@ -75,11 +78,17 @@ Table Name:
                 </button>
             </form>
             <div class="buttons" ng-show="!rowform.$visible">
-                <button class="btn btn-primary" ng-click="rowform.$show()">edit</button>
-                <button class="btn btn-danger" ng-click="removeTableColumn($index)">del</button>
+                <button class="btn btn-primary"
+                         data-toggle="tooltip" data-placement="bottom" title="Edit column"
+                        ng-click="rowform.$show()">edit</button>
+                <button class="btn btn-danger"
+                        data-toggle="tooltip" data-placement="bottom" title="Delete column"
+                        ng-click="removeTableColumn($index)">del</button>
             </div>
         </td>
     </tr>
 </table>
 
-<button class="btn btn-default" ng-click="addColumn()">Add column</button>
+<button class="btn btn-default"
+        data-toggle="tooltip" data-placement="bottom" title="Add column"
+        ng-click="addColumn()">Add</button>

@@ -2,7 +2,7 @@
     'use strict';
 
     angular
-        .module('ng-drag-scroll', [])
+        .module('myApp.directives')
         .directive('dragScroll', DragScroll);
 
     DragScroll.$inject = ['$document', '$window', '$parse'];

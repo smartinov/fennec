@@ -35,50 +35,51 @@
 {% block content %}
 
 
-<!--Sidebar-->
+<!-- SIDEBAR -->
 <div class="ui-layout-west"	>
+    <!-- Project info -->
      <div class="well sidebar-nav">
         <ul class="nav nav-list"    >
             <li class="nav-header" style="padding-bottom: 10px;">Project Name - [[projectInfo.name]]</li>
 
-            <li class="nav-header">Active diagram <a editable-text="activeDiagram.data.name"
+            <li class="nav-header">Active diagram
+                <a style="cursor: pointer" data-toggle="tooltip" data-placement="bottom" title="Click to edit diagram name" editable-text="activeDiagram.data.name"
                         style="background-color: #E4F5F8; border: 1px solid #C0DEED;">[[ activeDiagram.data.name ]]</a>
             </li>
             <li class="nav-header" style="margin-top: 5px;">Active schema
-                <a editable-select="activeSchema" e-ng-options="s.data as s.data.databaseName for s in schemas" style="background-color: #E4F5F8;
+                <a style="cursor: pointer" data-toggle="tooltip" data-placement="bottom" title="Click to select another schema" editable-select="activeSchema" e-ng-options="s.data as s.data.databaseName for s in schemas" style="background-color: #E4F5F8;
                         border: 1px solid #C0DEED;">[[ activeSchema.databaseName ]]</a>
             </li>
-
-
         </ul>
      </div>
 
+    <!-- Toolbar buttons -->
      <div class="well sidebar-nav">
         <ul class="nav nav-list" >
-        <input class="toolbar-icon" type="image" src="../../../../../../../static/images/buttons/open-folder.png" alt="open"
+        <input data-toggle="tooltip" data-placement="bottom" title="Open diagram" class="toolbar-icon" type="image" src="../../../../../../../static/images/buttons/open-folder.png" alt="open"
                          ng-click="showOpenDiagramPopup()" >
-             <input class="toolbar-icon" type="image" src="../../../../../../../static/images/buttons/save_button.png" alt="open"
+             <input data-toggle="tooltip" data-placement="bottom" title="Save diagram" class="toolbar-icon" type="image" src="../../../../../../../static/images/buttons/save_button.png" alt="open"
                          ng-click="saveDiagramButton()" >
-             <input class="toolbar-icon" type="image" src="../../../../../../../static/images/buttons/toggle_property_icon.png"
+             <input data-toggle="tooltip" data-placement="bottom" title="Toggle table properties" class="toolbar-icon" type="image" src="../../../../../../../static/images/buttons/toggle_property_icon.png"
                     alt="Toggle table properies" onclick="innerLayout.toggle('south')" >
 
         <hr style="margin: 6px 0;"/>
 
-            <input class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/select_icon.png"
+            <input data-toggle="tooltip" data-placement="bottom" title="Select table"  class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/select_icon.png"
                         onclick="changeState(fennecStates.select)" alt="Select icon">
 
 
-             <input class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/drag_button.png"
+             <input data-toggle="tooltip" data-placement="bottom" title="Drag diagram"  class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/drag_button.png"
                         onclick="changeState(fennecStates.drag)" alt="Select icon">
 
 
-            <input class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/table_icon.cur"
+            <input data-toggle="tooltip" data-placement="bottom" title="New table"  class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/table_icon.cur"
                 alt="New table" onclick="changeState(fennecStates.new_table)" >
 
 
-            <input class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/link_icon.png"
+            <input data-toggle="tooltip" data-placement="bottom" title="New link" class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/link_icon.png"
                     alt="Link button" onclick="changeState(fennecStates.new_link)" >
-            <input class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/delete_icon.png"
+            <input data-toggle="tooltip" data-placement="bottom" title="Delete"  class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/delete_icon.png"
                     onclick="changeState(fennecStates.delete_obj)" alt="Delete button">
 
         </ul>
@@ -87,7 +88,7 @@
 </div>
 
 
-<!-- Diagram Side -->
+<!-- DIAGRAM SIDE -->
 <div class="ui-layout-center">
 
     <!-- Diagram -->
@@ -95,11 +96,13 @@
 		<div role="tabpanel" >
 			<ul class="nav nav-tabs" role="tablist" >
 				<li  role="presentation" ng-repeat="tab in openedDiagrams" ng-click="selectDiagram($index)" ng-class="{'active':selectedDiagram == $index}">
-					<a style="cursor: pointer" data-target="#tab"  aria-controls="home" role="tab" data-toggle="tab">[[tab.data.name]] <span ng-click="closeDiagram($index, tab)">
+					<a data-toggle="tooltip" data-placement="bottom" title="Select diagram"
+                            style="cursor: pointer" data-target="#tab"  aria-controls="home" role="tab" data-toggle="tab">[[tab.data.name]] <span ng-click="closeDiagram($index, tab)">
                         <i class="icon-remove" style="cursor: pointer"></i></span></a>
 				</li>
 				<li role="presentation" ng-click="addDiagram()">
-					<a aria-controls="home" role="tab" data-toggle="tab" style="cursor: pointer">( + )</a>
+					<a data-toggle="tooltip" data-placement="bottom" title="Create new diagram"
+                       aria-controls="home" role="tab" data-toggle="tab" style="cursor: pointer">( + )</a>
 				</li>
 			</ul>
 		</div>
