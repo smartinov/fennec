@@ -35,7 +35,7 @@ Table Name:
         </td>
         <td style="white-space: nowrap">
                             <span editable-select="column.cdata.column_type" e-name="column_type" e-form="rowform"
-                                  e-ng-options="s.value as s.text for s in columnTypes"> [[ showColumnType(column) ]]
+                                  e-ng-options="s for s in columnTypes"> [[ column.cdata.column_type ]]
                             </span>
         </td>
         <td style="white-space: nowrap">

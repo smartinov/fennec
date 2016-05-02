@@ -707,18 +707,6 @@
                 }
             }
 
-            $scope.showColumnType = function (column) {
-                var selected = [];
-                if (column.cdata.column_type) {
-                    selected = $filter('filter')($scope.columnTypes, {text: column.cdata.column_type}); // this is how can we search trough list
-                    if (selected.length == 0) {
-                        selected = $filter('filter')($scope.columnTypes, {value: column.cdata.column_type});
-                    }
-                }
-                return selected.length ? selected[0].text : 'Not set';
-            };
-
-
             // ********* CREATE SCHEMA *********
             $scope.isCreateSchemaPopupShown = false;
             $scope.showCreateSchemaPopup = function(){
@@ -756,19 +744,7 @@
                     $log.debug("Table not found for id: " + tableId);
                 return null;
             }
-            $scope.columnTypes = [
-                {value: 'ID', text: 'ID'},
-                {value: 'RefID', text: 'RefID'},
-                {value: 'TEXT', text: 'TEXT'},
-                {value: 'INT', text: 'INT'},
-                {value: 'BIGINT', text: 'BIGINT'},
-                {value: 'DECIMAL', text: 'DECIMAL'},
-                {value: 'DOUBLE', text: 'DOUBLE'},
-                {value: 'FLOAT', text: 'FLOAT'},
-                {value: 'TINYINT', text: 'TINYINT'},
-                {value: 'BOOL', text: 'BOOL'},
-                {value: 'BOOLEAN', text: 'BOOLEAN'}
-            ];
+            $scope.columnTypes = ['ID', 'RefID', 'TEXT', 'INT', 'BIGINT','DECIMAL','DOUBLE','FLOAT','TINYINT','BOOL','BOOLEAN'];
 
             // remove not necessary scopes for foreign key and index tab
             $scope.$watch('selectedTable', function(newValue,oldValue) {
