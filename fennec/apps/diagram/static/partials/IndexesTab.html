@@ -40,12 +40,13 @@
             </td>
         </tr>
     </table>
-    <button class="btn btn-default" ng-click="addIndex()">Add</button>
+    <button class="btn btn-default" ng-click="addIndex()"
+            data-toggle="tooltip" data-placement="bottom" title="Add new index">Add</button>
 </div>
 
 
-<div style="float: left; ">
-    <form id="frmIndexColumns">
+<div ng-show="indexColumns.columns.length" style="float: left; ">
+    <ng-form id="frmIndexColumns">
         <div style="float: left; ">
         <table class="table table-bordered table-hover table-condensed">
             <tr style="font-weight: bold">
@@ -60,10 +61,11 @@
         </table>
         </div>
         <div class="indexComment" style="float: left; margin-left: 10px;">
-            <textarea ng-model="selectedIndexComment"></textarea>
-            <button id="btnOk" ng-click="saveChangesOnIndexColumns(indexColumns.extendedIndex,selectedIndexComment)">Save</button>
+            <textarea ng-model="selectedIndexComment" style="width: 367px;height: 100px;"></textarea>
+            <button id="btnOk" data-toggle="tooltip" data-placement="bottom" title="Save index"
+                    ng-click="saveChangesOnIndexColumns(indexColumns.extendedIndex,selectedIndexComment)">Save</button>
         </div>
 
-    </form>
+    </ng-form>
 
 </div>

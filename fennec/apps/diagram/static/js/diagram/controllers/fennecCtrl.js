@@ -27,10 +27,14 @@
 
                 $scope.diagramData= {tables: [], links: []};
                 $scope.selectedTable = null;
+                clearTableSpecificScopes();
+            }
+            function clearTableSpecificScopes(){
                 $scope.selectedTableForeignKeys = [];
                 $scope.selectedTableForeignKeyColumns=[]; // refIndexColumns - it contain only columns which are indexed
-
                 $scope.selectedTableIndexes = [];
+                $scope.indexColumns = [];
+                $scope.selectedIndexComment = "";
             }
             function clearDeletedScopes(){
                 $log.debug("ctrl-> clearing deleted scopes");
@@ -393,7 +397,7 @@
                 $scope.$apply();
             });
             // ****** INDEX TAB - LEFT ******
-            $scope.indexTypes =["INDEX","UNIQUE"];
+            $scope.indexTypes =["PRIMARY","INDEX","UNIQUE"];
             $scope.addIndex = function () {
                 var tableDataId = $scope.selectedTable.data.id;
                 $scope.inserted = {
@@ -598,6 +602,10 @@
                 var column = getColumnForId(columnId, selectedTableColumns);
                 column.cdata.column_type = data.column_type;
                 column.modified = true;
+
+                // TODO: create index or if there already primary key that bound to that index
+                // TODO: primary key index (primary:primary) columns checked (primary cannot be deleted only when column is deleted )
+
                 $log.debug("Column: " + data.name + " ordinal: " + column.cdata.ordinal);
                 $log.debug("Column successfully saved");
             };
@@ -761,6 +769,19 @@
                 {value: 'BOOL', text: 'BOOL'},
                 {value: 'BOOLEAN', text: 'BOOLEAN'}
             ];
+
+            // remove not necessary scopes for foreign key and index tab
+            $scope.$watch('selectedTable', function(newValue,oldValue) {
+                if($scope.selectedTable == null){
+                    clearTableSpecificScopes();
+                }
+
+                 if(oldValue!=null && newValue!=null && newValue.data.id !== oldValue.data.id){
+                       $scope.indexColumns = [];
+                       $scope.selectedIndexComment = "";
+                       $scope.selectedTableForeignKeyColumns=[]; // refIndexColumns - it contain only columns which are indexed
+                 }
+            },true);
 
             // *************** UTIL FUNCTIONS **************************
             var guid = (function () {

@@ -194,11 +194,11 @@
               table.selectAll("image.attribute")
                   .attr({
                           x: function(d) {
-                              var table = getAttributeTable(d.cdata.id);
+                              var table = getColumnTable(d.cdata.id);
                               return table.element.positionX + 8;
                           },
                           y: function(d,i) {
-                              var table = getAttributeTable(d.cdata.id);
+                              var table = getColumnTable(d.cdata.id);
                               return table.element.positionY+33+((i==0)?0:(20*i));
                           },
                           height: 16,
@@ -215,11 +215,11 @@
               table.selectAll("text.attribute")
                   .attr({
                       x: function (d) {
-                          var table = getAttributeTable(d.cdata.id);
+                          var table = getColumnTable(d.cdata.id);
                           return table.element.positionX + 25;
                       },
                       y: function (d, i) {
-                          var table = getAttributeTable(d.cdata.id);
+                          var table = getColumnTable(d.cdata.id);
                           return table.element.positionY + 45 + ((i == 0) ? 0 : (20 * i));
                       },
                       height: 25,
@@ -232,27 +232,13 @@
                     return  d.cdata.name+ " (" + d.cdata.column_type +")";
                   });
 
-//              table.selectAll("rect.resize-icon")
-//                  .attr({
-//                    x: function(d) { return d.element.positionX + d.element.width-resizeRectSize; },
-//                    y: function(d) { return d.element.positionY + d.element.height - resizeRectSize; },
-//                    width: resizeRectSize,
-//                    height: resizeRectSize,
-//                    fill: "#999999"
-//                  });
-
-            $timeout(function(){
-              // Any code in here will automatically have an $scope.apply() run afterwards
-//              scope.stable = null; // nothing   selected
-            });
-
               svgTables.exit().remove();
             }
 
 
             function calculateIfColumnVisible(column){
                   $log.debug("dir-> calculateIfColumnVisible() => "+ column.name);
-                  var table = getAttributeTable(column.id);
+                  var table = getColumnTable(column.id);
                   var tableHeight = table.element.height;
                   var columnPartHeight = tableHeight - 25; // title box part
                   for(var i = 0, len=table.data.columns.length; i < len; i++){
@@ -271,15 +257,12 @@
                   return 0;
               }
 
-            function isNumber(n) {
-              return !isNaN(parseFloat(n)) && isFinite(n);
-            }
-            function getAttributeTable(attrId){
+            function getColumnTable(columnId){
               // TODO: latter extend to check all column just in case
               for(var i= 0,len=tablesData.length; i<len; i++){
                 for(var j= 0,jLen = tablesData[i].data.columns.length;j<jLen; j++){
                   var columnData = tablesData[i].data.columns[j].cdata;
-                  if(columnData.id == attrId){
+                  if(columnData.id == columnId){
                     return tablesData[i];
                   }
                 }
@@ -301,7 +284,7 @@
                   .style("stroke-dasharray", "10 5")
                   .style('marker-start', function(d) { return (d.element.cardinality==3) ? 'url(#start-arrow)' : ''; })
                   .style('marker-end', function(d) { return  'url(#end-arrow)'; });
-//              svgLinks.exit().remove();
+              svgLinks.exit().remove();
             }
 
             var tmpSourceTableLink = null;
@@ -376,7 +359,7 @@
                   }
                 }
               }
-                changeState(fennecStates.select);
+              changeState(fennecStates.select);
             }
 
             function mouseClick() {
