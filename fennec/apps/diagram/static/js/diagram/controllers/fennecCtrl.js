@@ -3,7 +3,7 @@
 
     var module = angular.module('myApp.controllers')
         .controller('DiagramController', function ($scope, $filter ,$location,$log,
-                                                   diagramService, spinnerService,Notification) {
+                                                   diagramService, spinnerService,Notification, $timeout) {
 
             init();
             function init() {
@@ -374,15 +374,19 @@
 
                 }catch (err){
                     success = false;
-                    $log.debug("Saving diagram["+$scope.activeDiagram.data.name+"] failed with msg:"+err);
+                    $log.error("Saving diagram["+$scope.activeDiagram.data.name+"] failed with msg:"+err);
                     Notification.error("Saving diagram["+$scope.activeDiagram.data.name+"] failed with msg:"+err);
                 }
-                if(success){
-                    $log.debug("Diagram["+$scope.activeDiagram.data.name+"] content saved successfully");
-                    clearDeletedScopes();
-                    Notification.success("Diagram["+$scope.activeDiagram.data.name+"] content saved successfully");
-                }
+                // wait 3sec to be sure that everything is went ok :)
+                $timeout(function() {
+                        if (success) {
+                            $log.info("Diagram[" + $scope.activeDiagram.data.name + "] content saved successfully");
+                            clearDeletedScopes();
+                            Notification.success("Diagram[" + $scope.activeDiagram.data.name + "] content saved successfully");
+                        }
+                }, 3000);
             }
+
             $scope.setTableToModified = function(selectedTable){
                 selectedTable.dataModified = true;
             }

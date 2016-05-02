@@ -27,16 +27,16 @@
             var modelDefaultHeight = 2500;
             var resizeRectSize = 12;
 
-            scope.$watch('data', function(newValue,oldValue) {
-             $log.debug("dir-> redrawing diagram"); //$log.debug(tablesData);
-             if(newValue !== oldValue){
-                 // for now i don't get why when i set in controller that $scope.diagramData={tables: [], links: []} why don't take efects here on creating new tab
-                 // this is workaround
-                 tablesData =  newValue.tables;
-                 linksData = newValue.links;
-             }
-             restart(true);
-            },true);
+            scope.$watch('data', function (newValue, oldValue) {
+                  $log.debug("dir-> diagram data modified"); //$log.debug(tablesData);
+                  if (newValue !== oldValue) {
+                      // for now i don't get why when i set in controller that $scope.diagramData={tables: [], links: []} why don't take efects here on creating new tab
+                      // this is workaround
+                      tablesData = newValue.tables;
+                      linksData = newValue.links;
+                  }
+                  restart(true);
+              }, true);
 
             scope.$watch('updateTableLinks', function (newValue, oldValue) {
                   if (newValue != null && newValue != "") {
@@ -61,7 +61,6 @@
                 .on("drag", dragResize);
 
             var svg;
-            initSvgDiagram();
             function initSvgDiagram(){
               $log.debug("dir-> init svg diagram");
               svg = d3.select(".diagram")
@@ -237,7 +236,6 @@
 
 
             function calculateIfColumnVisible(column){
-                  $log.debug("dir-> calculateIfColumnVisible() => "+ column.name);
                   var table = getColumnTable(column.id);
                   var tableHeight = table.element.height;
                   var columnPartHeight = tableHeight - 25; // title box part
@@ -246,10 +244,10 @@
                       if(col.cdata.id == column.id){
                           var columnPositionHeightInTable = column.ordinal * 20;
                           if(columnPositionHeightInTable>columnPartHeight){
-                              $log.debug(column.name+ " - not visible");
+                              $log.debug(table.data.name+" - "+column.name+ " - not visible");
                               return 0; // hide
                           }else{
-                              $log.debug(column.name+ " - visible");
+                              $log.debug(table.data.name+" - "+column.name+ " - visible");
                               return 1;
                           }
                       }
