@@ -396,6 +396,17 @@
                 }
                 $scope.$apply();
             });
+            $scope.$on('deleteLinkEvent', function (scope, deletedLink) {
+                var fk = [];
+                for(var i= 0,len=$scope.diagramData.links.length;i<len;i++){
+                        var currentLink = $scope.diagramData.links[i];
+                        if(currentLink.fk_data.tableRef == deletedLink.fk_data.tableRef){
+                            var fkData = {data:currentLink, refTable:getTableForId(currentLink.fk_data.referencedTableRef)};
+                            fk.push(fkData);
+                        }
+                }
+                $scope.deleteReferencedKey({data:deletedLink}, fk);
+            });
             // ****** INDEX TAB - LEFT ******
             $scope.indexTypes =["PRIMARY","INDEX","UNIQUE"];
             $scope.addIndex = function () {
@@ -796,6 +807,7 @@
                 }
                 return false;
             }
+            $scope.getTableForId = getTableForId;
             function getTableForId(id) {
             for (var i = 0, len=$scope.diagramData.tables.length; i < len; i++) {
                 if (id == $scope.diagramData.tables[i].data.id) {

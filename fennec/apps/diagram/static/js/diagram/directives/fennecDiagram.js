@@ -76,7 +76,7 @@
               svg.append('svg:defs').append('svg:marker')
                   .attr('id', 'end-arrow')
                   .attr('viewBox', '0 -5 10 10')
-                  .attr('refX', 6)
+                  .attr('refX', 8)
                   .attr('markerWidth', 3)
                   .attr('markerHeight', 3)
                   .attr('orient', 'auto')
@@ -297,14 +297,25 @@
             // ********* MOUSE EVENTS *********
 
             // ********* MOUSE EVENTS *********
-            function linkMouseClick(){
-              if(actionStates == fennecStates.drag){return;}
+            function linkMouseClick() {
+                  if (actionStates == fennecStates.drag) {
+                      return;
+                  }
 
-              d3.event.stopPropagation();
-              var rect=  d3.select(this);
-              rect.style("stroke", "#01ecff").style("stroke-width", "4");
-              deselectTable();
-            }
+                  d3.event.stopPropagation();
+                  var rect = d3.select(this);
+                  rect.style("stroke", "#01ecff").style("stroke-width", "4");
+
+                  if (actionStates == fennecStates.delete_obj) {
+                      var selectedLink = d3.select(this.parentNode).node().__data__;
+                      if (selectedLink != undefined) {
+                          $log.debug("dir-> Link is deleting");
+                          scope.$emit('deleteLinkEvent', selectedLink);
+                      }
+                  }
+                  deselectTable();
+                  changeState(fennecStates.select);
+              }
             function tableMouseClick(){
               if(actionStates == fennecStates.drag){return;}
 
@@ -323,6 +334,7 @@
                     height: resizeRectSize,
                     fill: "#999999"
                   });
+
               if(actionStates == fennecStates.select){
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
@@ -350,7 +362,7 @@
                   }
                 }
               }
-                if(actionStates == fennecStates.delete_obj){
+              if(actionStates == fennecStates.delete_obj){
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
                   if(tableData != undefined){
@@ -495,11 +507,12 @@
               }
               changeState(fennecStates.select);
             }
-            function deselectTable(){
-                      $timeout(function(){
-                        // Any code in here will automatically have an $scope.apply() run afterwards
-                          scope.stable = null; // nothing   selected
-                      });
+
+            function deselectTable() {
+                  $timeout(function () {
+                      // Any code in here will automatically have an $scope.apply() run afterwards
+                      scope.stable = null; // nothing   selected
+                  });
             }
             function calculateLinkPosition(sourceTableLink,targetTableLink){
               if(sourceTableLink.table.element.positionX < targetTableLink.table.element.positionX){
