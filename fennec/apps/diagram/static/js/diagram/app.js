@@ -37,7 +37,7 @@
     }]);
 
     app.config(['$logProvider', function($logProvider){
-        $logProvider.debugEnabled(true);
+        $logProvider.debugEnabled(false);
     }]);
 
     app.run(function(editableOptions){

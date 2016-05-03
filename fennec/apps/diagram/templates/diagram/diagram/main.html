@@ -43,12 +43,14 @@
             <li class="nav-header" style="padding-bottom: 10px;">Project Name - [[projectInfo.name]]</li>
 
             <li class="nav-header">Active diagram
-                <a style="cursor: pointer" data-toggle="tooltip" data-placement="bottom" title="Click to edit diagram name" editable-text="activeDiagram.data.name"
+                <a style="cursor: pointer" data-toggle="tooltip" data-placement="bottom" title="Click to edit diagram name"
+                   editable-text="activeDiagram.data.name" onshow="isKeyShortcutActiveSetFalse()" onaftersave="isKeyShortcutActiveSetTrue()"
                         style="background-color: #E4F5F8; border: 1px solid #C0DEED;">[[ activeDiagram.data.name ]]</a>
             </li>
             <li class="nav-header" style="margin-top: 5px;">Active schema
-                <a style="cursor: pointer" data-toggle="tooltip" data-placement="bottom" title="Click to select another schema" editable-select="activeSchema" e-ng-options="s.data as s.data.databaseName for s in schemas" style="background-color: #E4F5F8;
-                        border: 1px solid #C0DEED;">[[ activeSchema.databaseName ]]</a>
+                <a style="cursor: pointer" data-toggle="tooltip" data-placement="bottom" title="Click to select another schema"
+                   editable-select="activeSchema" e-ng-options="s.data as s.data.databaseName for s in schemas"
+                   style="background-color: #E4F5F8;border: 1px solid #C0DEED;">[[ activeSchema.databaseName ]]</a>
             </li>
         </ul>
      </div>
@@ -56,7 +58,8 @@
     <!-- Toolbar buttons -->
      <div class="well sidebar-nav">
         <ul class="nav nav-list" >
-        <input data-toggle="tooltip" data-placement="bottom" title="Open diagram" class="toolbar-icon" type="image" src="../../../../../../../static/images/buttons/open-folder.png" alt="open"
+        <input data-toggle="tooltip" data-placement="bottom" title="Open diagram" class="toolbar-icon"
+               type="image" src="../../../../../../../static/images/buttons/open-folder.png" alt="open"
                          ng-click="showOpenDiagramPopup()" >
              <input data-toggle="tooltip" data-placement="bottom" title="Save diagram" class="toolbar-icon" type="image" src="../../../../../../../static/images/buttons/save_button.png" alt="open"
                          ng-click="saveDiagramButton()" >
@@ -69,8 +72,9 @@
                         onclick="changeState(fennecStates.select)" alt="Select icon">
 
 
-             <input data-toggle="tooltip" data-placement="bottom" title="Drag diagram"  class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/drag_button.png"
-                        onclick="changeState(fennecStates.drag)" alt="Select icon">
+             <input data-toggle="tooltip" data-placement="bottom" title="Drag diagram (D)"
+                  class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/drag_button.png"
+                  onclick="changeState(fennecStates.drag)" alt="Select icon">
 
 
             <input data-toggle="tooltip" data-placement="bottom" title="New table"  class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/table_icon.cur"

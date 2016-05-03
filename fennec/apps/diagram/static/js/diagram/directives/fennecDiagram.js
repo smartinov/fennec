@@ -23,8 +23,8 @@
 
             var tableDefaultWidth = 220;
             var tableDefaultHeight = 100;
-            var modelDefaultWidth = 2500;
-            var modelDefaultHeight = 2500;
+            var diagramDefaultWidth = 2500;
+            var diagramDefaultHeight = 2500;
             var resizeRectSize = 12;
 
             scope.$watch('data', function (newValue, oldValue) {
@@ -68,9 +68,10 @@
                   .style("height","100%")
                   .style("float","left")
                   .append("svg")
-                  .attr('width', modelDefaultWidth)
-                  .attr('height', modelDefaultHeight)
-                  .style("outline","1px solid black").on("click", mouseClick);
+                  .attr('width', diagramDefaultWidth)
+                  .attr('height', diagramDefaultHeight)
+                  .style("outline","1px solid black")
+                  .on("click", mouseClick);
 
               svg.append('svg:defs').append('svg:marker')
                   .attr('id', 'end-arrow')
@@ -129,16 +130,7 @@
                  .attr('fill', 'url(#grid)');
             }
             var selected_table = null,
-                selected_link = null,
-                mousedown_link = null,
-                mousedown_node = null,
-                mouseup_node = null;
-
-            function resetMouseVars() {
-              mousedown_node = null;
-              mouseup_node = null;
-              mousedown_link = null;
-            }
+                selected_link = null;
 
             function restart(redrawAll){
               if(redrawAll){
@@ -376,8 +368,6 @@
               if(actionStates == fennecStates.drag){return;}
 
               d3.event.stopPropagation();
-              var rect=  d3.select(this);
-
               selected_table = d3.select(this.parentNode);
               var translateCoord = parseTranslateString(selected_table.attr("transform"));
               var point = d3.mouse(this)
@@ -430,6 +420,7 @@
                     //passing value to controller if this directive will be private (zatvoren)
                     //scope.$emit('selectedTableEvent', tableData );
                   }else{
+                        isKeyShortcutActive = true;
                         deselectTable();
                         restart(true);
                   }
@@ -564,14 +555,37 @@
               // $log.debug("d3.event.x:"+d3.event.x+" d3.event.y:"+d3.event.y);
               var startTableXPosition = parseInt(resizeTableTitleArrays.attr('x'));       // ovo je isto uvek
               var startTableYPosition = parseInt(resizeTableTitleArrays.attr('y'));       // ovo je isto uvek
-              // $log.debug("move() => startTableXPosition: "+startTableXPosition+" startTableYPosition: "+startTableYPosition);
+
+             // $log.info("move() => startTableXPosition: "+startTableXPosition+" startTableYPosition: "+startTableYPosition);
 
               relativeMovePosX += d3.event.x - startTableXPosition;
               relativeMovePosY += d3.event.y - startTableYPosition;
-              //$log.debug("move() => relativeMovePosX:"+relativeMovePosX+" relativeMovePosY:"+relativeMovePosY);
+              //$log.info("move() => relativeMovePosX:"+relativeMovePosX+" relativeMovePosY:"+relativeMovePosY);
+
+              var actualTableXPosition = startTableXPosition+ relativeMovePosX;
+              var actualTableYPosition = startTableYPosition+relativeMovePosY;
+              // prevent from moving table out of canvas
+              if (actualTableXPosition < 0) {
+                    actualTableXPosition = 0;
+                    relativeMovePosX = 0 - startTableXPosition + 1;
+              }
+              if (actualTableXPosition > diagramDefaultWidth-50) {
+                    actualTableXPosition = diagramDefaultWidth-50;
+                    relativeMovePosX = diagramDefaultWidth-50 - startTableXPosition + 1;
+              }
+              if (actualTableYPosition < 0) {
+                    actualTableYPosition = 0;
+                    relativeMovePosY = 0 - startTableYPosition + 1;
+              }
+              if (actualTableYPosition > diagramDefaultHeight-50) {
+                    actualTableYPosition = diagramDefaultHeight-50;
+                    relativeMovePosY = diagramDefaultHeight-50 - startTableYPosition + 1;
+              }
+//              $log.info("move() => relativeMovePosX:"+relativeMovePosX+" relativeMovePosY:"+relativeMovePosY);
+//              $log.info("move() => actualTableXPosition:"+actualTableXPosition+" actualTableYPosition:"+actualTableYPosition);
 
               movingTableObject.attr("transform", "translate(" + relativeMovePosX + "," + relativeMovePosY + ")");
-              updateTablePosition(movingTableObject,startTableXPosition+relativeMovePosX, startTableYPosition+relativeMovePosY);
+              updateTablePosition(movingTableObject,actualTableXPosition, actualTableYPosition);
               updateLinkPosition(movingTableObject);
             };
             function updateTablePosition(movingTableObject,x,y) {
@@ -610,8 +624,6 @@
                       redrawLines();
                   }
             }
-
-
 
             function updateLinkData(link){
               var linkTables = findLinkTables(link.fk_data.tableRef,link.fk_data.referencedTableRef);
@@ -668,6 +680,8 @@
             }
 
             // *********  TABLE RESIZE *********
+            var tableMinWidth = 100;
+            var tableMinHeight = 55;
             var resizeRectXPos ;
             var resizeRectYPos;
             function dragResize(){
@@ -691,13 +705,22 @@
               var oldx = resizeRectXPos;
               var oldy = resizeRectYPos;
 
-              resizeRectXPos = Math.max(0, Math.min(resizeRectXPos + modelDefaultWidth - (16 / 2), d3.event.x));
-              resizeRectYPos = Math.max(0, Math.min(resizeRectYPos + modelDefaultHeight - (16 ), d3.event.y));
+              resizeRectXPos = Math.max(0, Math.min(resizeRectXPos + diagramDefaultWidth - (16 / 2), d3.event.x));
+              resizeRectYPos = Math.max(0, Math.min(resizeRectYPos + diagramDefaultHeight - (16 ), d3.event.y));
 
-              resizeIconObject.attr("x", function(d) { return resizeRectXPos }).attr("y", function(d) { return resizeRectYPos })
+              resizeIconObject.attr("x", function(d) { return resizeRectXPos }).attr("y", function(d) { return resizeRectYPos });
 
               tableWidth = tableWidth - (oldx - resizeRectXPos) + translateCoord.x;
               tableHeight = tableHeight - (oldy - resizeRectYPos) + translateCoord.y;
+
+              // min width and height for table
+              if (tableWidth < tableMinWidth) {
+                    tableWidth = tableMinWidth;
+              }
+              if (tableHeight < tableMinHeight) {
+                    tableHeight = tableMinHeight;
+              }
+              //$log.info(tableWidth + " h:"+tableHeight);
 
               resizeTableArrays.attr("width", tableWidth).attr("height", tableHeight);
               resizeTableTitleArrays.attr("width", tableWidth);
@@ -774,6 +797,8 @@
 
               var lastKeyDown;
               function keydown() {
+                  console.log(isKeyShortcutActive);
+                  if(isKeyShortcutActive == false) { return;}
                   if (selected_table != null) {
                       var tableData = selected_table.node().__data__;
                       if (tableData != undefined) {
@@ -783,7 +808,7 @@
 
                   d3.event.preventDefault();
 
-                  if (lastKeyDown !== -1) return;
+//                  if (lastKeyDown !== -1) return;
                   lastKeyDown = d3.event.keyCode;
 
                   switch (d3.event.keyCode) {

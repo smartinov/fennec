@@ -386,7 +386,12 @@
                         }
                 }, 3000);
             }
-
+            $scope.isKeyShortcutActiveSetFalse = function(){
+                isKeyShortcutActive = false;
+            }
+            $scope.isKeyShortcutActiveSetTrue = function () {
+                isKeyShortcutActive = true;
+            }
             $scope.setTableToModified = function(selectedTable){
                 selectedTable.dataModified = true;
             }
@@ -725,18 +730,22 @@
             // ********* CREATE SCHEMA *********
             $scope.isCreateSchemaPopupShown = false;
             $scope.showCreateSchemaPopup = function(){
+                isKeyShortcutActive = false;
                 $scope.isCreateSchemaPopupShown = true;
                 $scope.newSchema = {id:genGuid(),databaseName:"",collation:""};
             }
             $scope.createSchemaOk = function(){
                 $scope.schemas.push({data:$scope.newSchema,modified: true});
                 $scope.isCreateSchemaPopupShown = false;
+                isKeyShortcutActive = true;
+
                 if($scope.schemas.length == 1){
                     showCurrentSchemaInDropDown($scope.schemas[0].data);
                 }
             }
             $scope.createSchemaCancel = function(){
                 $scope.isCreateSchemaPopupShown = false;
+                isKeyShortcutActive = true;
             }
             function showCurrentSchemaInDropDown(schemaData) {
                   $scope.activeSchema = schemaData;

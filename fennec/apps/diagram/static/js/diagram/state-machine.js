@@ -12,6 +12,7 @@ var fennecStates = {
 
 // STATE STAFFS
 var actionStates = 'select';
+var isKeyShortcutActive = true;
 
 function changeState(state){
     this.actionStates = state;
