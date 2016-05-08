@@ -1,0 +1,26 @@
+<div class="PopupMainPanel">
+    <div class="popup popup-small">
+            <div class="popup-header">
+                <h2>Open diagram</h2>
+                <a ng-click="cancelDiagramPopup()" class="btn-close" aria-hidden="true">×</a>
+            </div>
+            <div class="popup-body">
+                <form name="schemaForm">
+                     <div ng-if="closedDiagrams.length<=0"> All diagrams are opened! </div>
+
+                <div class="form-group" ng-if="closedDiagrams.length>0">
+                    <label for="lblDiagram">Diagrams:</label>
+                <select  id="lblDiagram" ng-init="openDiagramData.data = closedDiagrams[0]"
+                    data-ng-options="s as s.data.name for s in closedDiagrams" data-ng-model="openDiagramData.data"></select>
+                </div>
+
+                </form>
+            </div>
+            <div class="popup-footer">
+                 <button ng-if="closedDiagrams.length>0" class="btn btn-primary" ng-click="openDiagram()"
+                         ng-disabled="schemaForm.$invalid" id="ttfpOK">Open</button>
+                    <label class="btn btn-danger" ng-click="cancelDiagramPopup()" id="ttfpCancel">Cancel</label>
+            </div>
+        </div>
+
+</div>

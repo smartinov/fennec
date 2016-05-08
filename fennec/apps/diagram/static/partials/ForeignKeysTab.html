@@ -1,4 +1,6 @@
-<div id="foreignKeyFirstDiv" style="float: left; margin-right: 10px;">
+
+<div ng-show="!selectedTableForeignKeys.length" style="text-align:center;font-style: italic;font-family:Courier New;margin: 25px;"> Table doesn't have foreign keys </div>
+<div ng-show="selectedTableForeignKeys.length" id="foreignKeyFirstDiv" style="float: left; margin-right: 10px;">
     <table class="table table-bordered table-hover table-condensed">
         <tr style="font-weight: bold">
             <td>Foreign Key Name</td>
@@ -42,7 +44,7 @@
 </div>
 
 
-<div id="foreignKeySecondDiv" style="float: left; margin-left: 10px;">
+<div ng-show="selectedTableForeignKeyColumns.length" id="foreignKeySecondDiv" style="float: left; margin-left: 10px;">
     <table class="table table-bordered table-hover table-condensed">
         <tr style="font-weight: bold">
             <td>Column</td>

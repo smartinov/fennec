@@ -2,7 +2,8 @@
   'use strict';
 
   angular.module('myApp.directives')
-    .directive('fennecDiagram',  ['d3Service', '$log', '$timeout', function(d3Service, $log, $timeout) {
+    .directive('fennecDiagram',  ['d3Service', '$log', '$timeout',
+          function(d3Service, $log, $timeout) {
       return {
         restrict: 'EA',
         scope: {
@@ -12,9 +13,9 @@
             stableIndexes: "=",
             adiagram: "=",
             activeSchema: "=",
-            recal: "="
+            updateTableLinks: "="
         },
-        template:"<div class='diagram'  ></div>",
+        template:"<div class='diagram'></div>",
         link: function(scope, iElement, iAttrs) {
           d3Service.then(function(d3) {
             var tablesData = scope.data.tables;
@@ -22,27 +23,28 @@
 
             var tableDefaultWidth = 220;
             var tableDefaultHeight = 100;
-            var modelDefaultWidth = 2500;
-            var modelDefaultHeight = 2500;
+            var diagramDefaultWidth = 2500;
+            var diagramDefaultHeight = 2500;
             var resizeRectSize = 12;
 
-            scope.$watch('data', function(newValue,oldValue) {
-             $log.debug("dir-> redrawing diagram"); //$log.debug(tablesData);
-             if(newValue !== oldValue){
-                 // for now i don't get why when i set in controller that $scope.diagramData={tables: [], links: []} why don't take efects here on creating new tab
-                 // this is workaround
-                 tablesData =  newValue.tables;
-                 linksData = newValue.links;
-             }
-             restart(true);
-            },true);
-              scope.$watch('recal', function (newValue, oldValue) {
-                  if (newValue != "") {
+            scope.$watch('data', function (newValue, oldValue) {
+                  $log.debug("dir-> diagram data modified"); //$log.debug(tablesData);
+                  if (newValue !== oldValue) {
+                      // for now i don't get why when i set in controller that $scope.diagramData={tables: [], links: []} why don't take efects here on creating new tab
+                      // this is workaround
+                      tablesData = newValue.tables;
+                      linksData = newValue.links;
+                  }
+                  restart(true);
+              }, true);
+
+            scope.$watch('updateTableLinks', function (newValue, oldValue) {
+                  if (newValue != null && newValue != "") {
                       $log.debug("dir-> referencedColumn changed"); //$log.debug(tablesData);
                       updateLinkPositionForTable(newValue);
                   }
-                  scope.recal = "";
-              }, true);
+                  scope.updateTableLinks = "";
+            }, true);
 
             var drag = d3.behavior.drag()
                 .origin(function() {
@@ -59,7 +61,6 @@
                 .on("drag", dragResize);
 
             var svg;
-            initSvgDiagram();
             function initSvgDiagram(){
               $log.debug("dir-> init svg diagram");
               svg = d3.select(".diagram")
@@ -67,14 +68,15 @@
                   .style("height","100%")
                   .style("float","left")
                   .append("svg")
-                  .attr('width', modelDefaultWidth)
-                  .attr('height', modelDefaultHeight)
-                  .style("outline","1px solid black").on("click", mouseClick);
+                  .attr('width', diagramDefaultWidth)
+                  .attr('height', diagramDefaultHeight)
+                  .style("outline","1px solid black")
+                  .on("click", mouseClick);
 
               svg.append('svg:defs').append('svg:marker')
                   .attr('id', 'end-arrow')
                   .attr('viewBox', '0 -5 10 10')
-                  .attr('refX', 6)
+                  .attr('refX', 8)
                   .attr('markerWidth', 3)
                   .attr('markerHeight', 3)
                   .attr('orient', 'auto')
@@ -128,16 +130,7 @@
                  .attr('fill', 'url(#grid)');
             }
             var selected_table = null,
-                selected_link = null,
-                mousedown_link = null,
-                mousedown_node = null,
-                mouseup_node = null;
-
-            function resetMouseVars() {
-              mousedown_node = null;
-              mouseup_node = null;
-              mousedown_link = null;
-            }
+                selected_link = null;
 
             function restart(redrawAll){
               if(redrawAll){
@@ -192,11 +185,11 @@
               table.selectAll("image.attribute")
                   .attr({
                           x: function(d) {
-                              var table = getAttributeTable(d.cdata.id);
+                              var table = getColumnTable(d.cdata.id);
                               return table.element.positionX + 8;
                           },
                           y: function(d,i) {
-                              var table = getAttributeTable(d.cdata.id);
+                              var table = getColumnTable(d.cdata.id);
                               return table.element.positionY+33+((i==0)?0:(20*i));
                           },
                           height: 16,
@@ -213,11 +206,11 @@
               table.selectAll("text.attribute")
                   .attr({
                       x: function (d) {
-                          var table = getAttributeTable(d.cdata.id);
+                          var table = getColumnTable(d.cdata.id);
                           return table.element.positionX + 25;
                       },
                       y: function (d, i) {
-                          var table = getAttributeTable(d.cdata.id);
+                          var table = getColumnTable(d.cdata.id);
                           return table.element.positionY + 45 + ((i == 0) ? 0 : (20 * i));
                       },
                       height: 25,
@@ -227,41 +220,26 @@
                       }
                   })
                   .text(function(d) {
-                    return  d.cdata.name+ " (" + getTypeNameForValue(d.cdata.column_type)+")";
+                    return  d.cdata.name+ " (" + d.cdata.column_type +")";
                   });
-
-//              table.selectAll("rect.resize-icon")
-//                  .attr({
-//                    x: function(d) { return d.element.positionX + d.element.width-resizeRectSize; },
-//                    y: function(d) { return d.element.positionY + d.element.height - resizeRectSize; },
-//                    width: resizeRectSize,
-//                    height: resizeRectSize,
-//                    fill: "#999999"
-//                  });
-
-            $timeout(function(){
-              // Any code in here will automatically have an $scope.apply() run afterwards
-              scope.stable = null; // nothing   selected
-            });
 
               svgTables.exit().remove();
             }
 
 
             function calculateIfColumnVisible(column){
-                  $log.debug("dir-> calculateIfColumnVisible() => "+ column.name);
-                  var table = getAttributeTable(column.id);
+                  var table = getColumnTable(column.id);
                   var tableHeight = table.element.height;
                   var columnPartHeight = tableHeight - 25; // title box part
-                  for(var i = 0; i < table.data.columns.length; i++){
+                  for(var i = 0, len=table.data.columns.length; i < len; i++){
                       var col = table.data.columns[i];
                       if(col.cdata.id == column.id){
                           var columnPositionHeightInTable = column.ordinal * 20;
                           if(columnPositionHeightInTable>columnPartHeight){
-                              $log.debug(column.name+ " - not visible");
+                              $log.debug(table.data.name+" - "+column.name+ " - not visible");
                               return 0; // hide
                           }else{
-                              $log.debug(column.name+ " - visible");
+                              $log.debug(table.data.name+" - "+column.name+ " - visible");
                               return 1;
                           }
                       }
@@ -269,41 +247,12 @@
                   return 0;
               }
 
-            //TODO: find way to skip this and pass dataType as value
-            function getTypeNameForValue(columnType){
-              var dataTypes =  [
-                {value: 1, text: 'ID'},
-                {value: 2, text: 'RefID'},
-                {value: 3, text: 'TEXT'},
-                {value: 4, text: 'INT'},
-                {value: 5, text: 'BIGINT'},
-                {value: 6, text: 'DECIMAL'},
-                {value: 7, text: 'DOUBLE'},
-                {value: 8, text: 'FLOAT'},
-                {value: 9, text: 'TINYINT'},
-                {value: 10, text: 'BOOL'},
-                {value: 11, text: 'BOOLEAN'}
-              ];
-
-              if(isNumber(columnType)== false){
-                return columnType;
-              }else{
-                for(var i =0;i<dataTypes.length;i++){
-                  if(dataTypes[i].value == columnType){
-                    return dataTypes[i].text;
-                  }
-                }
-              }
-            }
-            function isNumber(n) {
-              return !isNaN(parseFloat(n)) && isFinite(n);
-            }
-            function getAttributeTable(attrId){
+            function getColumnTable(columnId){
               // TODO: latter extend to check all column just in case
-              for(var i=0;i<tablesData.length;i++){
-                for(var j=0;j<tablesData[i].data.columns.length;j++){
+              for(var i= 0,len=tablesData.length; i<len; i++){
+                for(var j= 0,jLen = tablesData[i].data.columns.length;j<jLen; j++){
                   var columnData = tablesData[i].data.columns[j].cdata;
-                  if(columnData.id == attrId){
+                  if(columnData.id == columnId){
                     return tablesData[i];
                   }
                 }
@@ -325,7 +274,7 @@
                   .style("stroke-dasharray", "10 5")
                   .style('marker-start', function(d) { return (d.element.cardinality==3) ? 'url(#start-arrow)' : ''; })
                   .style('marker-end', function(d) { return  'url(#end-arrow)'; });
-//              svgLinks.exit().remove();
+              svgLinks.exit().remove();
             }
 
             var tmpSourceTableLink = null;
@@ -336,13 +285,30 @@
             }
 
             // ********* MOUSE EVENTS *********
+
             // ********* MOUSE EVENTS *********
-            function linkMouseClick(){
-                 d3.event.stopPropagation();
-              var rect=  d3.select(this);
-              rect.style("stroke", "#01ecff").style("stroke-width", "4");
-            }
+            function linkMouseClick() {
+                  if (actionStates == fennecStates.drag) {
+                      return;
+                  }
+
+                  d3.event.stopPropagation();
+                  var rect = d3.select(this);
+                  rect.style("stroke", "#01ecff").style("stroke-width", "4");
+
+                  if (actionStates == fennecStates.delete_obj) {
+                      var selectedLink = d3.select(this.parentNode).node().__data__;
+                      if (selectedLink != undefined) {
+                          $log.debug("dir-> Link is deleting");
+                          scope.$emit('deleteLinkEvent', selectedLink);
+                      }
+                  }
+                  deselectTable();
+                  changeState(fennecStates.select);
+              }
             function tableMouseClick(){
+              if(actionStates == fennecStates.drag){return;}
+
               d3.event.stopPropagation();
               var rect=  d3.select(this);
 //              rect.classed("fennec_table", true).style("stroke-width", "2").style("stroke-dasharray", "10 5");
@@ -358,6 +324,7 @@
                     height: resizeRectSize,
                     fill: "#999999"
                   });
+
               if(actionStates == fennecStates.select){
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
@@ -368,7 +335,7 @@
 
                     // foreign keys
                     var fk = [];
-                    for(var i in linksData){
+                    for(var i= 0,len=linksData.length;i<len;i++){
                         var currentLink = linksData[i];
                         if(currentLink.fk_data.tableRef == tableData.data.id){
                             var fk_data = {data:currentLink, refTable:getTableForId(currentLink.fk_data.referencedTableRef)};
@@ -385,7 +352,7 @@
                   }
                 }
               }
-                if(actionStates == fennecStates.delete_obj){
+              if(actionStates == fennecStates.delete_obj){
                 if(selected_table != null){
                   var tableData = selected_table.node().__data__;
                   if(tableData != undefined){
@@ -394,13 +361,13 @@
                   }
                 }
               }
-                changeState(fennecStates.select);
+              changeState(fennecStates.select);
             }
 
             function mouseClick() {
-              d3.event.stopPropagation();
-              var rect=  d3.select(this);
+              if(actionStates == fennecStates.drag){return;}
 
+              d3.event.stopPropagation();
               selected_table = d3.select(this.parentNode);
               var translateCoord = parseTranslateString(selected_table.attr("transform"));
               var point = d3.mouse(this)
@@ -438,7 +405,7 @@
 
                     // foreign keys
                     var fk = [];
-                    for(var i in linksData){
+                    for(var i= 0, len = linksData.length; i<len;i++){
                         var currentLink = linksData[i];
                         if(currentLink.fk_data.tableRef == tableData.data.id){
                             var fk_data = {data:currentLink, refTable:getTableForId(currentLink.fk_data.referencedTableRef)};
@@ -453,6 +420,8 @@
                     //passing value to controller if this directive will be private (zatvoren)
                     //scope.$emit('selectedTableEvent', tableData );
                   }else{
+                        isKeyShortcutActive = true;
+                        deselectTable();
                         restart(true);
                   }
                 }
@@ -482,8 +451,14 @@
                 if(tmpTargetTableLink == null){
                   tmpTargetTableLink = {x:0,y:0, table:tableData, attr:columnData};
                 }
-
-                var linkPosition= calculateLinkPosition(tmpSourceTableLink,tmpTargetTableLink);
+               var linkPosition;
+                try {
+                    linkPosition = calculateLinkPosition(tmpSourceTableLink, tmpTargetTableLink);
+                }catch(err){
+                    $log.error("Select correct table columns for link.");
+                    clearTmpLinks();
+                    return;
+                }
                 tmpSourceTableLink = linkPosition.sourceTableLink;
                 tmpTargetTableLink = linkPosition.targetTableLink;
                 // $log.debug("Source("+tmpSourceTableLink.x+","+ tmpSourceTableLink.y+") Target("+tmpTargetTableLink.x+","+tmpTargetTableLink.y+")" );
@@ -520,6 +495,13 @@
                 redrawLines();
               }
               changeState(fennecStates.select);
+            }
+
+            function deselectTable() {
+                  $timeout(function () {
+                      // Any code in here will automatically have an $scope.apply() run afterwards
+                      scope.stable = null; // nothing   selected
+                  });
             }
             function calculateLinkPosition(sourceTableLink,targetTableLink){
               if(sourceTableLink.table.element.positionX < targetTableLink.table.element.positionX){
@@ -573,19 +555,42 @@
               // $log.debug("d3.event.x:"+d3.event.x+" d3.event.y:"+d3.event.y);
               var startTableXPosition = parseInt(resizeTableTitleArrays.attr('x'));       // ovo je isto uvek
               var startTableYPosition = parseInt(resizeTableTitleArrays.attr('y'));       // ovo je isto uvek
-              // $log.debug("move() => startTableXPosition: "+startTableXPosition+" startTableYPosition: "+startTableYPosition);
+
+             // $log.info("move() => startTableXPosition: "+startTableXPosition+" startTableYPosition: "+startTableYPosition);
 
               relativeMovePosX += d3.event.x - startTableXPosition;
               relativeMovePosY += d3.event.y - startTableYPosition;
-              //$log.debug("move() => relativeMovePosX:"+relativeMovePosX+" relativeMovePosY:"+relativeMovePosY);
+              //$log.info("move() => relativeMovePosX:"+relativeMovePosX+" relativeMovePosY:"+relativeMovePosY);
+
+              var actualTableXPosition = startTableXPosition+ relativeMovePosX;
+              var actualTableYPosition = startTableYPosition+relativeMovePosY;
+              // prevent from moving table out of canvas
+              if (actualTableXPosition < 0) {
+                    actualTableXPosition = 0;
+                    relativeMovePosX = 0 - startTableXPosition + 1;
+              }
+              if (actualTableXPosition > diagramDefaultWidth-50) {
+                    actualTableXPosition = diagramDefaultWidth-50;
+                    relativeMovePosX = diagramDefaultWidth-50 - startTableXPosition + 1;
+              }
+              if (actualTableYPosition < 0) {
+                    actualTableYPosition = 0;
+                    relativeMovePosY = 0 - startTableYPosition + 1;
+              }
+              if (actualTableYPosition > diagramDefaultHeight-50) {
+                    actualTableYPosition = diagramDefaultHeight-50;
+                    relativeMovePosY = diagramDefaultHeight-50 - startTableYPosition + 1;
+              }
+//              $log.info("move() => relativeMovePosX:"+relativeMovePosX+" relativeMovePosY:"+relativeMovePosY);
+//              $log.info("move() => actualTableXPosition:"+actualTableXPosition+" actualTableYPosition:"+actualTableYPosition);
 
               movingTableObject.attr("transform", "translate(" + relativeMovePosX + "," + relativeMovePosY + ")");
-              updateTablePosition(movingTableObject,startTableXPosition+relativeMovePosX, startTableYPosition+relativeMovePosY);
+              updateTablePosition(movingTableObject,actualTableXPosition, actualTableYPosition);
               updateLinkPosition(movingTableObject);
             };
             function updateTablePosition(movingTableObject,x,y) {
               var tableElemId = movingTableObject.node().__data__.element.id;
-              for (var i in tablesData) {
+              for (var i= 0, len=tablesData.length;i<len; i++) {
                 if (tablesData[i].element.id == tableElemId) {
                   tablesData[i].element.positionX = x;
                   tablesData[i].element.positionY = y;
@@ -601,7 +606,7 @@
             }
             function updateLinkPositionForTable(movingTable) {
                   var redraw = false;
-                  for (var i = 0; i < linksData.length; i++) {
+                  for (var i = 0, len = linksData.length;i<len; i++) {
                       if (linksData[i].fk_data.tableRef == movingTable.data.id) {
                           var tableLink = linksData[i];
                           //$log.debug("updateLinkPosition(movingTableObject) => link id: "+tableLink.id);
@@ -619,8 +624,6 @@
                       redrawLines();
                   }
             }
-
-
 
             function updateLinkData(link){
               var linkTables = findLinkTables(link.fk_data.tableRef,link.fk_data.referencedTableRef);
@@ -648,7 +651,7 @@
                 sourceTable:null,
                 targetTable:null
               };
-              for(var i=0;i<tablesData.length;i++) {
+              for(var i= 0, len =tablesData.length; i<len; i++) {
                 if(tablesData[i].data.id == sourceTableId){
                   result.sourceTable = tablesData[i];
                   if(result.targetTable == null){
@@ -669,7 +672,7 @@
               return result;
             }
             function getColumnForId(columns, columnId){
-                for(var i in columns){
+                for(var i= 0, len =  columns.length; i<len;i++){
                     if(columns[i].cdata.id == columnId){
                         return columns[i];
                     }
@@ -677,6 +680,8 @@
             }
 
             // *********  TABLE RESIZE *********
+            var tableMinWidth = 100;
+            var tableMinHeight = 55;
             var resizeRectXPos ;
             var resizeRectYPos;
             function dragResize(){
@@ -700,13 +705,22 @@
               var oldx = resizeRectXPos;
               var oldy = resizeRectYPos;
 
-              resizeRectXPos = Math.max(0, Math.min(resizeRectXPos + modelDefaultWidth - (16 / 2), d3.event.x));
-              resizeRectYPos = Math.max(0, Math.min(resizeRectYPos + modelDefaultHeight - (16 ), d3.event.y));
+              resizeRectXPos = Math.max(0, Math.min(resizeRectXPos + diagramDefaultWidth - (16 / 2), d3.event.x));
+              resizeRectYPos = Math.max(0, Math.min(resizeRectYPos + diagramDefaultHeight - (16 ), d3.event.y));
 
-              resizeIconObject.attr("x", function(d) { return resizeRectXPos }).attr("y", function(d) { return resizeRectYPos })
+              resizeIconObject.attr("x", function(d) { return resizeRectXPos }).attr("y", function(d) { return resizeRectYPos });
 
               tableWidth = tableWidth - (oldx - resizeRectXPos) + translateCoord.x;
               tableHeight = tableHeight - (oldy - resizeRectYPos) + translateCoord.y;
+
+              // min width and height for table
+              if (tableWidth < tableMinWidth) {
+                    tableWidth = tableMinWidth;
+              }
+              if (tableHeight < tableMinHeight) {
+                    tableHeight = tableMinHeight;
+              }
+              //$log.info(tableWidth + " h:"+tableHeight);
 
               resizeTableArrays.attr("width", tableWidth).attr("height", tableHeight);
               resizeTableTitleArrays.attr("width", tableWidth);
@@ -732,7 +746,7 @@
             }
             function updateTableSize(selectedTableElement,tableHeight, tableWidth){
               var tableId = selectedTableElement.id;
-              for (var i in tablesData) {
+              for (var i= 0, len =tablesData.length; i<len; i++) {
                 if (tablesData[i].element.id == tableId) {
                   $log.debug("Height: "+tableHeight+ "width: "+tableWidth);
                   tablesData[i].element.height = tableHeight;
@@ -758,7 +772,7 @@
                 var textAttrObjArray = resizeTableObject.select("#attribute"+i).data($(tableAttributes[i]));
                 tableAttributesObjects.push(textAttrObjArray);
               }
-              for(var i=0;i<tableAttributesObjects.length;i++){
+              for(var i= 0, len = tableAttributesObjects.length; i<len; i++){
                 var attrObjArray = tableAttributesObjects[i];
                 // $log.debug(attrObjArray.node().__data__);
                 var attrObject= $(attrObjArray[0]);
@@ -781,139 +795,116 @@
             }
 
 
-            var lastKeyDown;
-            function keydown() {
-              d3.event.preventDefault();
-
-              if(lastKeyDown !== -1) return;
-              lastKeyDown = d3.event.keyCode;
-
-              switch(d3.event.keyCode) {
-                case 8: // backspace
-                case 46: // delete
-                  if(selected_table) {
-                    tablesData.splice(tablesData.indexOf(selected_table), 1);
+              var lastKeyDown;
+              function keydown() {
+                  console.log(isKeyShortcutActive);
+                  if(isKeyShortcutActive == false) { return;}
+                  if (selected_table != null) {
+                      var tableData = selected_table.node().__data__;
+                      if (tableData != undefined) {
+                          return;
+                      }
                   }
-                  selected_table = null;
-                  restart();
-                  break;
-                case 66: // B
-                  if(selected_link) {
-                    // set link direction to both left and right
-                    selected_link.left = true;
-                    selected_link.right = true;
+
+                  d3.event.preventDefault();
+
+//                  if (lastKeyDown !== -1) return;
+                  lastKeyDown = d3.event.keyCode;
+
+                  switch (d3.event.keyCode) {
+                      case 68:  // d
+                          changeState(fennecStates.drag);
+                          break;
+                      case 27:  // esc
+                          clearTmpLinks();
+                          changeState(fennecStates.select);
                   }
-                  restart();
-                  break;
-                case 76: // L
-                  if(selected_link) {
-                    // set link direction to left only
-                    selected_link.left = true;
-                    selected_link.right = false;
+              }
+
+              function keyup() {
+                  lastKeyDown = -1;
+                  // ctrl
+                  if (d3.event.keyCode === 17) {
                   }
-                  restart();
-                  break;
-                case 82: // R
-                  if(selected_table) {
-                    // toggle node reflexivity
-                    selected_table.reflexive = !selected_table.reflexive;
-                  } else if(selected_link) {
-                    // set link direction to right only
-                    selected_link.left = false;
-                    selected_link.right = true;
+              }
+
+              // editable table messing with this, find way to ignore this methods on edit
+              d3.select(window).on('keydown', keydown).on('keyup', keyup);
+
+              // *********  HELPER FUNCTIONS *********
+              function getLinkForTableId(movingTableObject) {
+                  // TODO: this is not good , need to set like in add links part
+                  var table = movingTableObject.node().__data__;
+                  for (var i = 0, len = linksData.length; i < len; i++) {
+                      if (linksData[i].source.tableId == table.id) {
+                          return linksData[i];
+                      }
+                      if (linksData[i].target.tableId == table.id) {
+                          return linksData[i];
+                      }
                   }
-                  restart();
-                  break;
+                  return null;
               }
-            }
 
-            function keyup() {
-              lastKeyDown = -1;
+              function genGuid() {
+                  //  id-s started with number is not recognized by d3.select function
+                  var id = guid();
+                  id = id.slice(1);
+                  var possible = "abcdef";
+                  var hexLetter = possible.charAt(Math.floor(Math.random() * possible.length))
+                  id = hexLetter + id;
+                  return id;
+              }
 
-              // ctrl
-              if(d3.event.keyCode === 17) {
-                circle
-                    .on('mousedown.drag', null)
-                    .on('touchstart.drag', null);
-                svg.classed('ctrl', false);
+              function parseAllTransformation(a) {
+                  var b = {};
+                  for (var i in a = a.match(/(\w+\((\-?\d+\.?\d*,?)+\))+/g)) {
+                      var c = a[i].match(/[\w\.\-]+/g);
+                      b[c.shift()] = c;
+                  }
+                  return b;
               }
-            }
 
-            d3.select(window)
-                // editable table messing with this, find way to ignore this methods on edit
-                //.on('keydown', keydown)
-                //.on('keyup', keyup);
+              function parseTranslateString(trans) {
+                  if (trans == 'undefined' || trans == null) {
+                      return {x: 0, y: 0};
+                  }
+                  var translateObject = parseAllTransformation(trans);
+                  var resultObject = {
+                      x: parseInt(translateObject.translate[0]),
+                      y: parseInt(translateObject.translate[1])
+                  }
+                  return resultObject;
+              }
 
-            // *********  HELPER FUNCTIONS *********
-            function getLinkForTableId(movingTableObject){
-              // TODO: this is not good , need to set like in add links part
-              var table = movingTableObject.node().__data__;
-              for(var i=0;i<linksData.length;i++){
-                if(linksData[i].source.tableId == table.id){
-                  return linksData[i];
-                }
-                if(linksData[i].target.tableId == table.id){
-                  return linksData[i];
-                }
-              }
-              return null;
-            }
-            function genGuid(){
-              //  id-s started with number is not recognized by d3.select function
-              var id = guid();
-              id = id.slice(1);
-              var possible = "abcdef";
-              var hexLetter = possible.charAt(Math.floor(Math.random() * possible.length))
-              id = hexLetter+id;
-              return id;
-            }
-            function parseAllTransformation (a)
-            {
-              var b={};
-              for (var i in a = a.match(/(\w+\((\-?\d+\.?\d*,?)+\))+/g))
-              {
-                var c = a[i].match(/[\w\.\-]+/g);
-                b[c.shift()] = c;
-              }
-              return b;
-            }
-            function parseTranslateString(trans){
-              if(trans == 'undefined' || trans == null){
-                return {x:0,y:0};
-              }
-              var translateObject = parseAllTransformation(trans);
-              var resultObject = {
-                x: parseInt(translateObject.translate[0]),
-                y: parseInt(translateObject.translate[1])
-              }
-              return resultObject;
-            }
+              var guid = (function () {
+                  function s4() {
+                      return Math.floor((1 + Math.random()) * 0x10000)
+                          .toString(16)
+                          .substring(1);
+                  }
 
-            var guid = (function() {
-              function s4() {
-                return Math.floor((1 + Math.random()) * 0x10000)
-                    .toString(16)
-                    .substring(1);
+                  return function () {
+                      return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                          s4() + '-' + s4() + s4() + s4();
+                  };
+              })();
+
+              function getColumnPositionInList(myArray, searchTerm, property) {
+                  for (var i = 0, len = myArray.length; i < len; i++) {
+                      if (myArray[i].cdata[property] === searchTerm) return i;
+                  }
+                  return -1;
               }
-              return function() {
-                return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-                    s4() + '-' + s4() + s4() + s4();
-              };
-            })();
-            function getColumnPositionInList(myArray, searchTerm, property) {
-              for(var i = 0, len = myArray.length; i < len; i++) {
-                if (myArray[i].cdata[property] === searchTerm) return i;
+
+              function getTableForId(id) {
+                  for (var i = 0, len = tablesData.length; i < len; i++) {
+                      if (id == tablesData[i].data.id) {
+                          return tablesData[i];
+                      }
+                  }
+                  return null;
               }
-              return -1;
-            }
-            function getTableForId(id) {
-            for (var i = 0; i < tablesData.length; i++) {
-                if (id == tablesData[i].data.id) {
-                    return tablesData[i];
-                }
-            }
-            return null;
-        }
 
           });
         }

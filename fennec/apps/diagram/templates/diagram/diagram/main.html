@@ -17,6 +17,7 @@
     <script src="{% static "js/plugins/angular-ui-notification.min.js" %}"></script>
     <script src="{% static "js/angular/ui-bootstrap-tpls-0.4.0.js" %}"></script>
 
+
     <!-- fennec modeling diagram javascripts -->
     <script src="{% static "js/diagram/app.js" %}"></script>
     <script src="{% static "js/diagram/services/d3.js" %}"></script>
@@ -24,6 +25,7 @@
     <script src="{% static "js/diagram/services/spinnerService.js" %}"></script>
     <script src="{% static "js/diagram/controllers/fennecCtrl.js" %}"></script>
     <script src="{% static "js/diagram/directives/fennecDiagram.js" %}"></script>
+    <script src="{% static "js/diagram/directives/ng-drag-scroll.js" %}"></script>
     <script src="{% static "js/diagram/state-machine.js" %}"></script>
     <script src="{% static "js/spinjs/spin.js" %}"></script>
 
@@ -33,74 +35,87 @@
 {% block content %}
 
 
-<!--Sidebar-->
+<!-- SIDEBAR -->
 <div class="ui-layout-west"	>
+    <!-- Project info -->
      <div class="well sidebar-nav">
         <ul class="nav nav-list"    >
-            <li class="nav-header" style="padding-bottom: 10px;">Project Name - [[projectInfo.name]]</li>
+            <li class="nav-header" >Project Name - [[projectInfo.name]]</li>
+            <li class="nav-header" style="padding-bottom: 10px;">Branch - [[projectInfo.branch.name]]</li>
 
-            <li class="nav-header">Active diagram <a editable-text="activeDiagram.data.name"
+            <li class="nav-header">Active diagram
+                <a style="cursor: pointer" data-toggle="tooltip" data-placement="bottom" title="Click to edit diagram name"
+                   editable-text="activeDiagram.data.name" onshow="isKeyShortcutActiveSetFalse()" onaftersave="isKeyShortcutActiveSetTrue()"
                         style="background-color: #E4F5F8; border: 1px solid #C0DEED;">[[ activeDiagram.data.name ]]</a>
             </li>
             <li class="nav-header" style="margin-top: 5px;">Active schema
-                <a editable-select="activeSchema" e-ng-options="s.data as s.data.databaseName for s in schemas" style="background-color: #E4F5F8;
-                        border: 1px solid #C0DEED;">[[ activeSchema.databaseName ]]</a>
+                <a style="cursor: pointer" data-toggle="tooltip" data-placement="bottom" title="Click to select another schema"
+                   editable-select="activeSchema" e-ng-options="s.data as s.data.databaseName for s in schemas"
+                   style="background-color: #E4F5F8;border: 1px solid #C0DEED;">[[ activeSchema.databaseName ]]</a>
             </li>
-
-
         </ul>
      </div>
 
+    <!-- Toolbar buttons -->
      <div class="well sidebar-nav">
         <ul class="nav nav-list" >
-             <li class="nav-header">Toolbar</li>
-        <input type="image" src="../../../../../../../static/images/buttons/opened-folder.png" alt="open"
-                        style="width:22px; height:22px;" ng-click="showOpenDiagramPopup()" >
+        <input data-toggle="tooltip" data-placement="bottom" title="Open diagram" class="toolbar-icon"
+               type="image" src="../../../../../../../static/images/buttons/open-folder.png" alt="open"
+                         ng-click="showOpenDiagramPopup()" >
+             <input data-toggle="tooltip" data-placement="bottom" title="Save diagram" class="toolbar-icon" type="image" src="../../../../../../../static/images/buttons/save_button.png" alt="open"
+                         ng-click="saveDiagramButton()" >
+             <input data-toggle="tooltip" data-placement="bottom" title="Toggle table properties" class="toolbar-icon" type="image" src="../../../../../../../static/images/buttons/toggle_property_icon.png"
+                    alt="Toggle table properies" onclick="innerLayout.toggle('south')" >
 
-             <input type="image" src="../../../../../../../static/images/buttons/save.png" alt="open"
-                        style="width:22px; height:22px;" ng-click="saveDiagramButton()" >
-        <hr>
-            <input type="image" src="../../../../../../../static/images/buttons/table_icon.cur" alt="Submit" width="10" height="10" onclick="changeState(fennecStates.new_table)" >
-            <button onclick="changeState(fennecStates.select)">Select table</button>
-            <input type="image" src="../../../../../../../static/images/buttons/link_button.cur" alt="Submit" width="10" height="10" onclick="changeState(fennecStates.new_link)" >
-            <button onclick="changeState(fennecStates.delete_obj)">Delete</button>
-            <button onclick="innerLayout.toggle('south')">toggle Property div</button>
+        <hr style="margin: 6px 0;"/>
+
+            <input data-toggle="tooltip" data-placement="bottom" title="Select table"  class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/select_icon.png"
+                        onclick="changeState(fennecStates.select)" alt="Select icon">
 
 
+             <input data-toggle="tooltip" data-placement="bottom" title="Drag diagram (D)"
+                  class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/drag_button.png"
+                  onclick="changeState(fennecStates.drag)" alt="Select icon">
 
-            <ng-form class="form-horizontal" role="form">
-                <div class="form-group">
-                    <div class="col-sm-4">
-                        <button type="submit" ng-click="showCreateSchemaPopup()" class="btn btn-success">Add</button>
-                    </div>
-                </div>
-            </ng-form>
+
+            <input data-toggle="tooltip" data-placement="bottom" title="New table"  class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/table_icon.cur"
+                alt="New table" onclick="changeState(fennecStates.new_table)" >
+
+
+            <input data-toggle="tooltip" data-placement="bottom" title="New link" class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/link_icon.png"
+                    alt="Link button" onclick="changeState(fennecStates.new_link)" >
+            <input data-toggle="tooltip" data-placement="bottom" title="Delete"  class="toolbar-uml-icon" type="image" src="../../../../../../../static/images/buttons/delete_icon.png"
+                    onclick="changeState(fennecStates.delete_obj)" alt="Delete button">
+
         </ul>
 
     </div>
 </div>
 
 
-<!-- Diagram Side -->
+<!-- DIAGRAM SIDE -->
 <div class="ui-layout-center">
 
     <!-- Diagram -->
-	<div class="ui-layout-center">
-		<div role="tabpanel">
-			<ul class="nav nav-tabs" role="tablist" style="cursor: pointer">
-				<li role="presentation" ng-repeat="tab in openedDiagrams" ng-click="selectDiagram($index)" ng-class="{'active':selectedDiagram == $index}">
-					<a data-target="#tab"  aria-controls="home" role="tab" data-toggle="tab">[[tab.data.name]] <span ng-click="closeDiagram($index, tab)">
+	<div class="ui-layout-center" drag-scroll >
+		<div role="tabpanel" >
+			<ul class="nav nav-tabs" role="tablist" >
+				<li  role="presentation" ng-repeat="tab in openedDiagrams" ng-click="selectDiagram($index)" ng-class="{'active':selectedDiagram == $index}">
+					<a data-toggle="tooltip" data-placement="bottom" title="Select diagram"
+                            style="cursor: pointer" data-target="#tab"  aria-controls="home" role="tab" data-toggle="tab">[[tab.data.name]] <span ng-click="closeDiagram($index, tab)">
                         <i class="icon-remove" style="cursor: pointer"></i></span></a>
 				</li>
 				<li role="presentation" ng-click="addDiagram()">
-					<a aria-controls="home" role="tab" data-toggle="tab" style="cursor: pointer">( + )</a>
+					<a data-toggle="tooltip" data-placement="bottom" title="Create new diagram"
+                       aria-controls="home" role="tab" data-toggle="tab" style="cursor: pointer">( + )</a>
 				</li>
 			</ul>
 		</div>
         <div class="tab-content">
 				<div role="tabpanel" class="tab-pane active" id="tab">
 					 <fennec-diagram adiagram="activeDiagram.data" active-schema="activeSchema" data="diagramData"
-                        stable="selectedTable" stable-foreign-keys="selectedTableForeignKeys" stable-indexes="selectedTableIndexes" recal="recal"></fennec-diagram>
+                        stable="selectedTable" stable-foreign-keys="selectedTableForeignKeys" stable-indexes="selectedTableIndexes"
+                        update-table-links="updateTableLinks"></fennec-diagram>
 				</div>
 		</div>
 	</div>
@@ -117,8 +132,8 @@
         </div>
 
     </div>
-    <div ng-if="isCreateSchemaPopupShown" ng-include="'{% static 'partials/SchemaPopup.html' %}'"></div>
-    <div ng-if="isOpenDiagramPopupShown" ng-include="'{% static 'partials/DiagramPopup.html' %}'"></div>
+    <div ng-if="isCreateSchemaPopupShown" ng-include="'{% static 'popups/SchemaPopup.html' %}'"></div>
+    <div ng-if="isOpenDiagramPopupShown" ng-include="'{% static 'popups/DiagramPopup.html' %}'"></div>
 
 </div>
 

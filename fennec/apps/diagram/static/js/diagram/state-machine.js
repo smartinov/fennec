@@ -4,6 +4,7 @@
 
 var fennecStates = {
     select : 'select',
+    drag: 'drag',
     new_table: 'new_table',
     new_link: 'new_link',
     delete_obj: 'delete_obj'
@@ -11,6 +12,7 @@ var fennecStates = {
 
 // STATE STAFFS
 var actionStates = 'select';
+var isKeyShortcutActive = true;
 
 function changeState(state){
     this.actionStates = state;
@@ -19,13 +21,16 @@ function changeState(state){
         $('svg').css('cursor',"default");
     }
 
+    if(state == fennecStates.drag){
+        $('svg').css('cursor',"url('/static/images/grab_cursor.png'), auto");
+    }
+
     if(state == fennecStates.new_table){
            $('svg').css('cursor',"url('/static/images/table_pointer.cur'), auto");
     }
 
     if(state == fennecStates.new_link){
-        $('svg').css('cursor',"url('/static/images/link-pointer1.cur'), auto");
-        clearTmpLinks();
+        $('svg').css('cursor',"url('/static/images/link-pointer.cur'), auto");
     }
 
     if(state == fennecStates.delete_obj){
