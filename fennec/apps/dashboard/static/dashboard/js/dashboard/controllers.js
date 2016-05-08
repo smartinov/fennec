@@ -20,7 +20,20 @@ var add_branch_html_template = '<div class="ngdialog-message">' +
                                '      <button type="button" class="ngdialog-button" ng-click="closeThisDialog()">Cancel</button>' +
                                '    </div>' +
                                '</div>';
-
+var edit_project_html_template = '<div class="ngdialog-message">' +
+                               '  <h2>Edit [[selectedProject.title]]</h2>' +
+                               '<div style="margin-top: 5%;">'+
+                               '  <span>Name:</span>' +
+                               ' <input type="text" name="name" ng-model="selectedProject.name" style="margin-left: 10%; width:75%;"><br>'+
+                               '</div>'+
+                               '<div style="margin-top: 5%;">'+
+                               ' <span>Description:</span>'+
+                               ' <textarea name="description" ng-model="selectedProject.description" style="margin-left: 1%; width:75%;"></textarea></div><br>'+
+                               '    <div class="ngdialog-buttons">' +
+                               '      <button type="button" class="ngdialog-button" ng-click="save_edit_project()">Save</button>' +
+                               '      <button type="button" class="ngdialog-button" ng-click="closeThisDialog()">Cancel</button>' +
+                               '    </div>' +
+                               '</div>';
 
 app.factory('Project', function($resource){
     return $resource('/api/projects/:id', {'id':'@id'},
@@ -111,6 +124,20 @@ app.controller("ProjectsController",
             });
             $scope.cancel_add_project();
         };
+        $scope.edit_project = function(){
+            $scope.selectedProject.title = $scope.selectedProject.name;
+            ngDialog.open({ template: edit_project_html_template,
+                               scope: $scope});
+        }
+        $scope.save_edit_project = function(){
+             $http.put(projectsRoot+$scope.selectedProject.id+'/', {name:$scope.selectedProject.name, description:$scope.selectedProject.description, created_by:$scope.selectedProject.created_by}).
+                 success(function() {
+                    ngDialog.close();
+                    Notification.success('Project saved successfully.');
+                 }).error(function() {
+                    Notification.error('We have a temporary issue with saving project. Please try again.');
+                 });
+        }
         $scope.remove_project = function(){
             Project.remove({'id':$scope.selectedProject.id},
                 function(){
