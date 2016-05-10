@@ -106,7 +106,7 @@
             <div ng-if="selectedProject!=undefined" style="margin-top:5%;">
                 <span class="project-repo">Project branches</span>
                 <span class="sidebar-content-title">
-                    <select style="width:200%; margin-left:-50%;" ng-model="selectedBranch" ng-options="branch.id as branch.name for branch in selected_project_branches" ng-change="updateBranch()">
+                    <select style="width:200%; margin-left:-50%;" ng-model="selectedBranch" ng-options="branch as branch.name for branch in selected_project_branches" ng-change="updateBranch(selectedBranch)">
                     </select>
                 </span>
             </div>

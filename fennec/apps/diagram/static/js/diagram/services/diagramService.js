@@ -1,21 +1,21 @@
 ﻿//This handles retrieving data and is used by controllers. 3 options (server, factory, provider) with 
 //each doing the same thing just structuring the functions/data differently.
-var projectsRoot = '/api/branch-revisions/1/change/';
-var branchRevisionRoot = '/api/branch-revisions/';
+//var projectsRoot = '/api/branch-revisions/1/change/';
+var rootUrl = '/api/branch-revisions/';
 
 angular.module('myApp.services')
     .service('diagramService', function ($http, $log) {
 
         // ****** LOAD FUNCTIONS ******
         this.loadBranchRevisionProjectState = function (branchRevisionId) {
-            var url = branchRevisionRoot + branchRevisionId + "/project_state";
+            var url = rootUrl + branchRevisionId + "/project_state";
             $log.debug(url);
             return $http({method: "GET", url: url}).then(function (result) {
                 return result.data;
             });
         }
         this.loadDiagramElements = function (branchRevisionId, diagramId) {
-            var url = branchRevisionRoot + branchRevisionId + "/diagram?diagramId=" + diagramId;
+            var url = rootUrl + branchRevisionId + "/diagram?diagramId=" + diagramId;
             $log.debug(url);
             return $http({method: "GET", url: url}).then(function (result) {
                 return result.data;
@@ -26,7 +26,7 @@ angular.module('myApp.services')
         var loggedUserId = 1;
 
         this.saveDiagramInfo = function(branchRevisionId, diagramContent){
-            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var url = rootUrl + branchRevisionId + "/change/";
             $log.debug("save diagram data url: " + url);
 
             var data = {
@@ -38,7 +38,7 @@ angular.module('myApp.services')
                 "made_by": loggedUserId
             }
             $log.debug("Saving diagram data data: ");$log.debug(data);
-            $http.post(projectsRoot, data).
+            $http.post(url, data).
                 success(function () {
                     $log.debug("Diagram["+diagramContent.name +", "+ diagramContent.id +"] saved successfully");
                 }).error(function () {
@@ -48,7 +48,7 @@ angular.module('myApp.services')
                 });
         }
         this.saveSchema = function(branchRevisionId, schemaContent){
-            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var url = rootUrl + branchRevisionId + "/change/";
 
             var data = {
                 "content": schemaContent,
@@ -59,7 +59,7 @@ angular.module('myApp.services')
                 "made_by": loggedUserId
             }
             $log.debug("Saving schema data data: ");$log.debug(data);
-            $http.post(projectsRoot, data).
+            $http.post(url, data).
                 success(function () {
                     $log.debug("Schema["+schemaContent.databaseName +", "+ schemaContent.id +"] saved successfully");
                 }).error(function () {
@@ -70,7 +70,7 @@ angular.module('myApp.services')
         }
 
         this.saveTableData = function (branchRevisionId, tableDataContent) {
-            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var url = rootUrl + branchRevisionId + "/change/";
             $log.debug("save table data url: " + url);
 
             var data = {
@@ -83,7 +83,7 @@ angular.module('myApp.services')
             }
             $log.debug("Saving table data: ");
             $log.debug(data);
-            $http.post(projectsRoot, data).
+            $http.post(url, data).
                 success(function () {
                     $log.debug("Table["+tableDataContent.name +", "+ tableDataContent.id +"] saved successfully");
                 }).error(function () {
@@ -106,7 +106,7 @@ angular.module('myApp.services')
             }
         }
         this.saveTableElement = function (branchRevisionId, tableElementContent) {
-            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var url = rootUrl + branchRevisionId + "/change/";
             var data = {
                 "content": tableElementContent,
                 "objectType": "TableElement",
@@ -117,7 +117,7 @@ angular.module('myApp.services')
             }
             $log.debug("Saving table element: ");
             $log.debug(data);
-            $http.post(projectsRoot, data).
+            $http.post(url, data).
                 success(function () {
                     $log.debug("Table element[" + tableElementContent.id + "] saved successfully");
                 }).error(function () {
@@ -127,7 +127,7 @@ angular.module('myApp.services')
                 });
         }
         this.saveTableForeignKey = function (branchRevisionId, foreignKeyContent) {
-            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var url = rootUrl + branchRevisionId + "/change/";
             $log.debug("save foreign key data url: " + url);
 
             var data = {
@@ -140,7 +140,7 @@ angular.module('myApp.services')
             }
             $log.debug("Saving foreign key data: ");
             $log.debug(data);
-            $http.post(projectsRoot, data).
+            $http.post(url, data).
                 success(function () {
                     $log.debug("ForeignKey ["+foreignKeyContent.name +", "+ foreignKeyContent.id +"] saved successfully");
                 }).error(function () {
@@ -151,7 +151,7 @@ angular.module('myApp.services')
         }
 
         this.saveIndex = function (branchRevisionId, indexContent){
-            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var url = rootUrl + branchRevisionId + "/change/";
 
             var data = {
                 "content": indexContent,
@@ -162,7 +162,7 @@ angular.module('myApp.services')
                 "made_by": loggedUserId
             }
             $log.debug("Saving index data: "); $log.debug(data);
-            $http.post(projectsRoot, data).
+            $http.post(url, data).
                 success(function () {
                     $log.debug("Index ["+indexContent.name +", "+ indexContent.id +"] saved successfully");
                 }).error(function () {
@@ -173,7 +173,7 @@ angular.module('myApp.services')
         }
 
         this.saveColumn = function (branchRevisionId, columnContent) {
-            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var url = rootUrl + branchRevisionId + "/change/";
             var data = {
                 "content": columnContent,
                 "objectType": "Column",
@@ -184,7 +184,7 @@ angular.module('myApp.services')
             }
             $log.debug("Saving column: ");
             $log.debug(data);
-            $http.post(projectsRoot, data).
+            $http.post(url, data).
                 success(function () {
                     $log.debug("Column["+columnContent.name +", "+ columnContent.id +"] saved successfully");
                 }).error(function () {
@@ -194,7 +194,7 @@ angular.module('myApp.services')
                 });
         }
         this.saveRelationshipElement = function (branchRevisionId, relationshipElementContent) {
-            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var url = rootUrl + branchRevisionId + "/change/";
             $log.debug("save relationship element url: " + url);
 
             var data = {
@@ -207,7 +207,7 @@ angular.module('myApp.services')
             }
             $log.debug("Saving relationship element data: ");
             $log.debug(data);
-            $http.post(projectsRoot, data).
+            $http.post(url, data).
                 success(function () {
                     $log.debug("Relationship element ["+ relationshipElementContent.id +"] saved successfully");
                 }).error(function () {
@@ -219,7 +219,7 @@ angular.module('myApp.services')
 
         // ****** DELETE FUNCTIONS ******
         this.deleteTableElement = function (branchRevisionId, tableElementContent) {
-            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var url = rootUrl + branchRevisionId + "/change/";
             var data = {
                 "content": tableElementContent,
                 "objectType": "TableElement",
@@ -230,7 +230,7 @@ angular.module('myApp.services')
             }
             $log.debug("Deleting table element: ");
             $log.debug(data);
-            $http.post(projectsRoot, data).
+            $http.post(url, data).
                 success(function () {
                     $log.debug("Table element[" + tableElementContent.id + "] deleted successfully");
                 }).error(function () {
@@ -240,7 +240,7 @@ angular.module('myApp.services')
                 });
         }
         this.deleteColumn = function (branchRevisionId, columnContent) {
-            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var url = rootUrl + branchRevisionId + "/change/";
             var data = {
                 "content": columnContent,
                 "objectType": "Column",
@@ -251,7 +251,7 @@ angular.module('myApp.services')
             }
             $log.debug("Deleting column: ");
             $log.debug(data);
-            $http.post(projectsRoot, data).
+            $http.post(url, data).
                 success(function () {
                     $log.debug("Column["+columnContent.name +", "+ columnContent.id +"] deleted successfully");
                 }).error(function () {
@@ -261,7 +261,7 @@ angular.module('myApp.services')
                 });
         }
         this.deleteTableForeignKey = function (branchRevisionId, foreignKeyContent) {
-            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var url = rootUrl + branchRevisionId + "/change/";
             var data = {
                 "content": foreignKeyContent,
                 "objectType": "ForeignKey",
@@ -271,7 +271,7 @@ angular.module('myApp.services')
                 "made_by": loggedUserId
             }
             $log.debug("Deleting foreignkey: ");$log.debug(data);
-            $http.post(projectsRoot, data).
+            $http.post(url, data).
                 success(function () {
                     $log.debug("ForeignKey ["+foreignKeyContent.name +", "+ foreignKeyContent.id +"] deleted successfully");
                 }).error(function () {
@@ -281,7 +281,7 @@ angular.module('myApp.services')
                 });
         }
         this.deleteRelationshipElement = function (branchRevisionId, relationshipElementContent) {
-            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var url = rootUrl + branchRevisionId + "/change/";
             var data = {
                 "content": relationshipElementContent,
                 "objectType": "RelationshipElement",
@@ -292,7 +292,7 @@ angular.module('myApp.services')
             }
             $log.debug("Deleting relationship element: ");$log.debug(data);
 
-            $http.post(projectsRoot, data).
+            $http.post(url, data).
                 success(function () {
                     $log.debug("Relationship element["+ relationshipElementContent.id +"] deleted successfully");
                 }).error(function () {
@@ -302,7 +302,7 @@ angular.module('myApp.services')
                 });
         }
         this.deleteIndex = function (branchRevisionId, indexContent) {
-            var url = branchRevisionRoot + branchRevisionId + "/change/";
+            var url = rootUrl + branchRevisionId + "/change/";
             var data = {
                 "content": indexContent,
                 "objectType": "Index",
@@ -313,7 +313,7 @@ angular.module('myApp.services')
             }
             $log.debug("Deleting index: ");
             $log.debug(data);
-            $http.post(projectsRoot, data).
+            $http.post(url, data).
                 success(function () {
                     $log.debug("Index[" + indexContent.id + "] deleted successfully");
                 }).error(function () {

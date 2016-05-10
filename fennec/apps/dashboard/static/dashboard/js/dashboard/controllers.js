@@ -167,15 +167,16 @@ app.controller("ProjectsController",
             ProjectBranches.getProjectBranches($scope.selectedProject.id)
                 .then(function(response){
                     $scope.selected_project_branches = response.data;
-                    $scope.selectedBranch = $scope.selected_project_branches[0];
+                    $scope.updateBranch($scope.selected_project_branches[0]);
                 }, function(error){
                     $scope.selected_project_branches = [];
                     Notification.error('We have a temporary issue retrieving branches. Please try again.');
                 });
         }
 
-        $scope.updateBranch = function(){
-            if($scope.selectedBranch != undefined) {
+        $scope.updateBranch = function (selectedBranch) {
+            if (selectedBranch != undefined) {
+                $scope.selectedBranch = selectedBranch;
                 BranchRevisions.getBranchRevisions($scope.selectedBranch.id)
                     .success(function (response) {
                         $scope.selectedBracnhRevisions = response;
