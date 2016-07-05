@@ -77,15 +77,15 @@
                   .attr('id', 'end-arrow')
                   .attr('viewBox', '0 -5 10 10')
                   .attr('refX', 8)
-                  .attr('markerWidth', 3)
-                  .attr('markerHeight', 3)
+                  .attr('markerWidth', 4)
+                  .attr('markerHeight',4)
                   .attr('orient', 'auto')
                   .attr('style', 'overflow:visible;');
                    endArrowDef.append('svg:path')
                   .attr('d', 'M0,-5L10,0L0,5')
                   .attr('fill', '#000');
                   endArrowDef.append('text')
-                      .attr('style', 'font-weight: bold; font-style: normal;font-size:16')
+                      .attr('style', 'font-weight: bold; font-size:16px')
                   .attr('x', '-15')
                   .attr('y', '-10').text(function(d){
                     return '1';
@@ -95,15 +95,15 @@
                   .attr('id', 'start-arrow')
                   .attr('viewBox', '0 -5 10 10')
                   .attr('refX', 4)
-                  .attr('markerWidth', 3)
-                  .attr('markerHeight', 3)
+                  .attr('markerWidth', 4)
+                  .attr('markerHeight', 4)
                   .attr('orient', 'auto')
                   .attr('style', 'overflow:visible;');
                   startArrowDef.append('svg:path')
                   .attr('d', 'M10,-5L0,0L10,5')
                   .attr('fill', '#000')
                   startArrowDef.append('text')
-                  .attr('style', 'font-weight: bold; font-style: normal;font-size:16')
+                  .attr('style', 'font-weight: bold; font-size:16px')
                   .attr('x', '15')
                   .attr('y', '-10').text(function(d){
                     return '1';
@@ -120,8 +120,8 @@
                   noArrowDef.append('svg:path')
                   .attr('fill', '#000')
                   noArrowDef.append('text')
-                  .attr('style', 'font-weight: bold; font-style: normal;font-size:22')
-                  .attr('x', '15')
+                  .attr('style', 'font-weight: bold; font-size:27px')
+                  .attr('x', '18')
                   .attr('y', '-10').text(function(d){
                     return '∞';
                 });
