@@ -73,27 +73,58 @@
                   .style("outline","1px solid black")
                   .on("click", mouseClick);
 
-              svg.append('svg:defs').append('svg:marker')
+              var endArrowDef = svg.append('svg:defs').append('svg:marker')
                   .attr('id', 'end-arrow')
                   .attr('viewBox', '0 -5 10 10')
                   .attr('refX', 8)
                   .attr('markerWidth', 3)
                   .attr('markerHeight', 3)
                   .attr('orient', 'auto')
-                  .append('svg:path')
+                  .attr('style', 'overflow:visible;');
+                   endArrowDef.append('svg:path')
                   .attr('d', 'M0,-5L10,0L0,5')
                   .attr('fill', '#000');
+                  endArrowDef.append('text')
+                      .attr('style', 'font-weight: bold; font-style: normal;font-size:16')
+                  .attr('x', '-15')
+                  .attr('y', '-10').text(function(d){
+                    return '1';
+                });
 
-              svg.append('svg:defs').append('svg:marker')
+              var startArrowDef = svg.append('svg:defs').append('svg:marker')
                   .attr('id', 'start-arrow')
                   .attr('viewBox', '0 -5 10 10')
                   .attr('refX', 4)
                   .attr('markerWidth', 3)
                   .attr('markerHeight', 3)
                   .attr('orient', 'auto')
-                  .append('svg:path')
+                  .attr('style', 'overflow:visible;');
+                  startArrowDef.append('svg:path')
                   .attr('d', 'M10,-5L0,0L10,5')
-                  .attr('fill', '#000');
+                  .attr('fill', '#000')
+                  startArrowDef.append('text')
+                  .attr('style', 'font-weight: bold; font-style: normal;font-size:16')
+                  .attr('x', '15')
+                  .attr('y', '-10').text(function(d){
+                    return '1';
+                });
+
+                var noArrowDef = svg.append('svg:defs').append('svg:marker')
+                  .attr('id', 'no-arrow')
+                  .attr('viewBox', '0 -5 10 10')
+                  .attr('refX', 4)
+                  .attr('markerWidth', 3)
+                  .attr('markerHeight', 3)
+                  .attr('orient', 'auto')
+                  .attr('style', 'overflow:visible;');
+                  noArrowDef.append('svg:path')
+                  .attr('fill', '#000')
+                  noArrowDef.append('text')
+                  .attr('style', 'font-weight: bold; font-style: normal;font-size:22')
+                  .attr('x', '15')
+                  .attr('y', '-10').text(function(d){
+                    return '∞';
+                });
 
                 // GRID ON DIAGRAM
                 svg.append('svg:defs').append('svg:pattern')
@@ -272,8 +303,8 @@
                     y2: function(d) { return d.element.endPositionY; }
                   }).style("stroke", "#0077b3").style("stroke-width", 3)
                   .style("stroke-dasharray", "10 5")
-                  .style('marker-start', function(d) { return (d.element.cardinality==3) ? 'url(#start-arrow)' : ''; })
-                  .style('marker-end', function(d) { return  'url(#end-arrow)'; });
+                  .style('marker-start', function(d) { return (d.element.cardinality==0) ? 'url(#start-arrow)' : 'url(#no-arrow)'; }) // cardinality==0 - > one - to - one
+                  .style('marker-end', function() { return  'url(#end-arrow)'; });
               svgLinks.exit().remove();
             }
 
