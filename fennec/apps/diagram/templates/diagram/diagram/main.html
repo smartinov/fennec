@@ -18,7 +18,7 @@
     <script src="{% static "js/angular/ui-bootstrap-tpls-0.4.0.js" %}"></script>
 
 
-    <!-- fennec modeling diagram javascripts -->
+    <!-- Fennec modeling diagram javascripts -->
     <script src="{% static "js/diagram/app.js" %}"></script>
     <script src="{% static "js/diagram/services/d3.js" %}"></script>
     <script src="{% static "js/diagram/services/diagramService.js" %}"></script>
@@ -29,11 +29,9 @@
     <script src="{% static "js/diagram/state-machine.js" %}"></script>
     <script src="{% static "js/spinjs/spin.js" %}"></script>
 
-
 {% endblock %}
 {% block  ng-controller %}DiagramController{% endblock %}
 {% block content %}
-
 
 <!-- SIDEBAR -->
 <div class="ui-layout-west"	>
@@ -92,7 +90,6 @@
     </div>
 </div>
 
-
 <!-- DIAGRAM SIDE -->
 <div class="ui-layout-center">
 
@@ -134,7 +131,6 @@
     </div>
     <div ng-if="isCreateSchemaPopupShown" ng-include="'{% static 'popups/SchemaPopup.html' %}'"></div>
     <div ng-if="isOpenDiagramPopupShown" ng-include="'{% static 'popups/DiagramPopup.html' %}'"></div>
-
 </div>
 
 {% endblock %}

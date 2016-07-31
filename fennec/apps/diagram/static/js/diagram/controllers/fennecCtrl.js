@@ -5,8 +5,8 @@
         .controller('DiagramController', function ($scope, $filter ,$location,$log,
                                                    diagramService, spinnerService,Notification, $timeout) {
 
-            init();
-            function init() {
+            load();
+            function load() {
                 $scope.projectInfo = {};
                 $scope.schemas = [];
                 $scope.activeSchema = {};
@@ -60,7 +60,7 @@
                 clearDiagramSpecificsScopes();
 //                this was before $scope.activeDiagram = angular.copy(extNewDiagramInfo);
                 $scope.activeDiagram = extNewDiagramInfo;
-            }
+            };
             $scope.closeDiagram = function (index, closingDiagram) {
                 $scope.closedDiagrams.push(closingDiagram);
                 $scope.openedDiagrams.splice(index, 1); // remove the object from the array based on index
@@ -155,11 +155,11 @@
                 }
 
                 // ADD SCHEMAS to scope
-                setSchemasAndCreateDataToDisplay(branchRevisionData, diagramElements);
+                setSchemasAndCreateDataToSVGDiagram(branchRevisionData, diagramElements);
                 $log.debug("Front diagram data:");
                 $log.debug($scope.diagramData);
             }
-            function setSchemasAndCreateDataToDisplay(branchRevisionData, diagramElements) {
+            function setSchemasAndCreateDataToSVGDiagram(branchRevisionData, diagramElements) {
                 // Load all data with project_state and then load diagram elements and bound the two together
                 $scope.schemas = [];
 
@@ -392,29 +392,12 @@
             $scope.isKeyShortcutActiveSetTrue = function () {
                 isKeyShortcutActive = true;
             }
+
+
             $scope.setTableToModified = function(selectedTable){
                 selectedTable.dataModified = true;
             }
-            $scope.$on('deleteTableEvent', function (scope, deletedTable) {
-                deleteTableElement(deletedTable.data.id, $scope.diagramData.tables);
 
-                // when select the table this method is called
-                if ($scope.selectedTable != null && $scope.selectedTable.data.id == deletedTable.data.id) {
-                     $scope.selectedTable = null;
-                }
-                $scope.$apply();
-            });
-            $scope.$on('deleteLinkEvent', function (scope, deletedLink) {
-                var fk = [];
-                for(var i= 0,len=$scope.diagramData.links.length;i<len;i++){
-                        var currentLink = $scope.diagramData.links[i];
-                        if(currentLink.fk_data.tableRef == deletedLink.fk_data.tableRef){
-                            var fkData = {data:currentLink, refTable:getTableForId(currentLink.fk_data.referencedTableRef)};
-                            fk.push(fkData);
-                        }
-                }
-                $scope.deleteReferencedKey({data:deletedLink}, fk);
-            });
 
 
             // ****** INDEX TAB - LEFT ******
@@ -557,6 +540,26 @@
 
 
              // ********* REMOVE TABLE *********
+            $scope.$on('deleteTableEvent', function (scope, deletedTable) {
+                deleteTableElement(deletedTable.data.id, $scope.diagramData.tables);
+
+                // when select the table this method is called
+                if ($scope.selectedTable != null && $scope.selectedTable.data.id == deletedTable.data.id) {
+                     $scope.selectedTable = null;
+                }
+                $scope.$apply();
+            });
+            $scope.$on('deleteLinkEvent', function (scope, deletedLink) {
+                var fk = [];
+                for(var i= 0,len=$scope.diagramData.links.length;i<len;i++){
+                        var currentLink = $scope.diagramData.links[i];
+                        if(currentLink.fk_data.tableRef == deletedLink.fk_data.tableRef){
+                            var fkData = {data:currentLink, refTable:getTableForId(currentLink.fk_data.referencedTableRef)};
+                            fk.push(fkData);
+                        }
+                }
+                $scope.deleteReferencedKey({data:deletedLink}, fk);
+            });
             function deleteTableElement(tableId, tables) {
                 for (var i = 0, len=tables.length; i < len; i++) {
                     if (tables[i].data.id === tableId) {
@@ -582,6 +585,7 @@
                     }
                 }
             }
+
 
             // ********* ADD/EDIT COLUMN *********
             $scope.addColumn = function () {
