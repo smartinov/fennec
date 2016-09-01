@@ -26,6 +26,10 @@
             var diagramDefaultWidth = 2500;
             var diagramDefaultHeight = 2500;
             var resizeRectSize = 12;
+            var tableSettings = {
+                titleBox:{height: 25, color: "#0088cc"},
+                column: {height: 25,  iconSize: 16, color: "#999999"}
+            };
 
             scope.$watch('data', function (newValue, oldValue) {
                   $log.debug("dir-> diagram data modified"); //$log.debug(tablesData);
@@ -35,7 +39,7 @@
                       tablesData = newValue.tables;
                       linksData = newValue.links;
                   }
-                  restart(true);
+                  drawDiagram(true);
               }, true);
 
             scope.$watch('updateTableLinks', function (newValue, oldValue) {
@@ -60,123 +64,126 @@
                 })
                 .on("drag", dragResize);
 
-            var svg;
-            function initSvgDiagram(){
-              $log.debug("dir-> init svg diagram");
-              svg = d3.select(".diagram")
-                  .style("width","100%")
-                  .style("height","100%")
-                  .style("float","left")
-                  .append("svg")
-                  .attr('width', diagramDefaultWidth)
-                  .attr('height', diagramDefaultHeight)
-                  .style("outline","1px solid black")
-                  .on("click", mouseClick);
+            var svgDiagram;
+            function initSvgDiagram() {
+                  $log.debug("dir-> init svg diagram");
+                  svgDiagram = d3.select(".diagram")
+                      .style("width", "100%")
+                      .style("height", "100%")
+                      .style("float", "left")
+                      .append("svg")
+                      .attr('width', diagramDefaultWidth)
+                      .attr('height', diagramDefaultHeight)
+                      .style("outline", "1px solid black")
+                      .on("click", mouseClick);
 
-              var endArrowDef = svg.append('svg:defs').append('svg:marker')
-                  .attr('id', 'end-arrow')
-                  .attr('viewBox', '0 -5 10 10')
-                  .attr('refX', 8)
-                  .attr('markerWidth', 4)
-                  .attr('markerHeight',4)
-                  .attr('orient', 'auto')
-                  .attr('style', 'overflow:visible;');
-                   endArrowDef.append('svg:path')
-                  .attr('d', 'M0,-5L10,0L0,5')
-                  .attr('fill', '#000');
-                  endArrowDef.append('text')
+                  var endArrowDef = svgDiagram.append('svg:defs').append('svg:marker')
+                      .attr('id', 'end-arrow')
+                      .attr('viewBox', '0 -5 10 10')
+                      .attr('refX', 8)
+                      .attr('markerWidth', 4)
+                      .attr('markerHeight', 4)
+                      .attr('orient', 'auto')
+                      .attr('style', 'overflow:visible;');
+
+                      endArrowDef.append('svg:path')
+                      .attr('d', 'M0,-5L10,0L0,5')
+                      .attr('fill', '#000');
+
+                      endArrowDef.append('text')
                       .attr('style', 'font-weight: bold; font-size:16px')
-                  .attr('x', '-15')
-                  .attr('y', '-10').text(function(d){
-                    return '1';
-                });
+                      .attr('x', '-15')
+                      .attr('y', '-10').text(function (d) {
+                          return '1';
+                      });
 
-              var startArrowDef = svg.append('svg:defs').append('svg:marker')
-                  .attr('id', 'start-arrow')
-                  .attr('viewBox', '0 -5 10 10')
-                  .attr('refX', 4)
-                  .attr('markerWidth', 4)
-                  .attr('markerHeight', 4)
-                  .attr('orient', 'auto')
-                  .attr('style', 'overflow:visible;');
+                  var startArrowDef = svgDiagram.append('svg:defs').append('svg:marker')
+                      .attr('id', 'start-arrow')
+                      .attr('viewBox', '0 -5 10 10')
+                      .attr('refX', 4)
+                      .attr('markerWidth', 4)
+                      .attr('markerHeight', 4)
+                      .attr('orient', 'auto')
+                      .attr('style', 'overflow:visible;');
                   startArrowDef.append('svg:path')
-                  .attr('d', 'M10,-5L0,0L10,5')
-                  .attr('fill', '#000')
+                      .attr('d', 'M10,-5L0,0L10,5')
+                      .attr('fill', '#000')
                   startArrowDef.append('text')
-                  .attr('style', 'font-weight: bold; font-size:16px')
-                  .attr('x', '15')
-                  .attr('y', '-10').text(function(d){
-                    return '1';
-                });
+                      .attr('style', 'font-weight: bold; font-size:16px')
+                      .attr('x', '15')
+                      .attr('y', '-10').text(function (d) {
+                          return '1';
+                      });
 
-                var noArrowDef = svg.append('svg:defs').append('svg:marker')
-                  .attr('id', 'no-arrow')
-                  .attr('viewBox', '0 -5 10 10')
-                  .attr('refX', 4)
-                  .attr('markerWidth', 3)
-                  .attr('markerHeight', 3)
-                  .attr('orient', 'auto')
-                  .attr('style', 'overflow:visible;');
+                  var noArrowDef = svgDiagram.append('svg:defs').append('svg:marker')
+                      .attr('id', 'no-arrow')
+                      .attr('viewBox', '0 -5 10 10')
+                      .attr('refX', 4)
+                      .attr('markerWidth', 3)
+                      .attr('markerHeight', 3)
+                      .attr('orient', 'auto')
+                      .attr('style', 'overflow:visible;');
                   noArrowDef.append('svg:path')
-                  .attr('fill', '#000')
+                      .attr('fill', '#000')
                   noArrowDef.append('text')
-                  .attr('style', 'font-weight: bold; font-size:27px')
-                  .attr('x', '18')
-                  .attr('y', '-10').text(function(d){
-                    return '∞';
-                });
+                      .attr('style', 'font-weight: bold; font-size:27px')
+                      .attr('x', '18')
+                      .attr('y', '-10').text(function (d) {
+                          return '∞';
+                      });
 
-                // GRID ON DIAGRAM
-                svg.append('svg:defs').append('svg:pattern')
-                  .attr('id', 'smallGrid')
-                  .attr('patternUnits', 'userSpaceOnUse')
-                  .attr('width', "8")
-                  .attr('height', "8")
-                  .append('svg:path')
-                  .attr('d','M 8 0 L 0 0 0 8')
-                  .attr('fill','none')
-                .attr('stroke','gray')
-                .attr('stroke-width','0.5');
+                  // GRID ON DIAGRAM
+                  svgDiagram.append('svg:defs').append('svg:pattern')
+                      .attr('id', 'smallGrid')
+                      .attr('patternUnits', 'userSpaceOnUse')
+                      .attr('width', "8")
+                      .attr('height', "8")
+                      .append('svg:path')
+                      .attr('d', 'M 8 0 L 0 0 0 8')
+                      .attr('fill', 'none')
+                      .attr('stroke', 'gray')
+                      .attr('stroke-width', '0.5');
 
-                var grid = svg.append('svg:defs').append('svg:pattern')
-                  .attr('id', 'grid')
-                  .attr('patternUnits', 'userSpaceOnUse')
-                  .attr('width', "80")
-                  .attr('height', "80");
+                  var grid = svgDiagram.append('svg:defs').append('svg:pattern')
+                      .attr('id', 'grid')
+                      .attr('patternUnits', 'userSpaceOnUse')
+                      .attr('width', "80")
+                      .attr('height', "80");
 
-                grid.append('svg:rect')
-                   .attr('width', "80")
-                  .attr('height', "80")
-                  .attr('fill','url(#smallGrid)');
+                  grid.append('svg:rect')
+                      .attr('width', "80")
+                      .attr('height', "80")
+                      .attr('fill', 'url(#smallGrid)');
 
-                grid.append('svg:path')
-                  .attr('d','M 80 0 L 0 0 0 80')
-                  .attr('fill','none')
-                .attr('stroke','gray')
-                .attr('stroke-width','1');
+                  grid.append('svg:path')
+                      .attr('d', 'M 80 0 L 0 0 0 80')
+                      .attr('fill', 'none')
+                      .attr('stroke', 'gray')
+                      .attr('stroke-width', '1');
 
-                svg.append('rect')
-                    .attr('width', '100%')
-                  .attr('height', '100%')
-                 .attr('fill', 'url(#grid)');
+                  svgDiagram.append('rect')
+                      .attr('width', '100%')
+                      .attr('height', '100%')
+                      .attr('fill', 'url(#grid)');
             }
+
             var selected_table = null,
                 selected_link = null;
 
-            function restart(redrawAll){
+            function drawDiagram(redrawAll){
               if(redrawAll){
                 d3.select(".diagram").selectAll("*").remove();
                 initSvgDiagram();
               }
-              redrawLines();// Create table links
-              redrawTables();
+              drawLines(); // Create table links
+              drawTables();
             }
-            function redrawTables(){
+            function drawTables(){
               // Create table with attributes
-              var svgTables = svg.selectAll("g.table").data(tablesData);
+              var svgTables = svgDiagram.selectAll("g.table").data(tablesData);
               var table = svgTables.enter().append("g").classed("table", true).attr("id", function(d,i) { return "table"+i});
               table.append("rect").classed("fennec_table", true).on("click", tableMouseClick);
-              var t = table.append("rect").classed("titleBox", true).call(drag);
+              table.append("rect").classed("titleBox", true).call(drag);
               table.append("text").classed("name", true).data(tablesData);
 
               var attributes =  table.append("g").classed("attributes",true).selectAll("attribute").data(function(d) { return d.data.columns});
@@ -198,40 +205,40 @@
                     x: function(t) { return t.element.positionX; },
                     y: function(t) { return t.element.positionY; },
                     width: function(t) { return t.element.width; },
-                    height: 25,
-                    fill: "#0088cc"
+                    height: tableSettings.titleBox.height,
+                    fill: tableSettings.titleBox.color
                   });
 
               table.selectAll("text.name")
                   .attr({
                     x: function(t) { return t.element.positionX + 10; },
                     y: function(t) { return t.element.positionY + 20; },
-                    height: 25
+                    height: tableSettings.titleBox.height
                   })
                   .text(function(t) {
                     return t.data.name;
                   });
 
 
-              table.selectAll("image.attribute")
-                  .attr({
-                          x: function(d) {
-                              var table = getColumnTable(d.cdata.id);
-                              return table.element.positionX + 8;
-                          },
-                          y: function(d,i) {
-                              var table = getColumnTable(d.cdata.id);
-                              return table.element.positionY+33+((i==0)?0:(20*i));
-                          },
-                          height: 16,
-                          width: 16,
-                          'xlink:href': function(d) {
-                                return d.cdata.primary?"/static/images/primary-key.png":"/static/images/blue_circle_icon.png";
-                          },
-                          opacity: function(d) {
-                             return calculateIfColumnVisible(d.cdata);
-                          }
-                  });
+                table.selectAll("image.attribute")
+                    .attr({
+                        x: function (d) {
+                            var table = getColumnTable(d.cdata.id);
+                            return table.element.positionX + 8;
+                        },
+                        y: function (d, i) {
+                            var table = getColumnTable(d.cdata.id);
+                            return table.element.positionY + 33 + ((i == 0) ? 0 : (20 * i));
+                        },
+                        height: tableSettings.column.iconSize,
+                        width: tableSettings.column.iconSize,
+                        'xlink:href': function (d) {
+                            return d.cdata.primary ? "/static/images/primary-key.png" : "/static/images/blue_circle_icon.png";
+                        },
+                        opacity: function (d) {
+                            return calculateIfColumnVisible(d.cdata);
+                        }
+                    });
 
               // TODO: find better way than using getAttributeTableMethod
               table.selectAll("text.attribute")
@@ -244,8 +251,8 @@
                           var table = getColumnTable(d.cdata.id);
                           return table.element.positionY + 45 + ((i == 0) ? 0 : (20 * i));
                       },
-                      height: 25,
-                      fill: "#999999",
+                      height: tableSettings.column.height,
+                      fill: tableSettings.column.color,
                       opacity: function (d) {
                           return calculateIfColumnVisible(d.cdata);
                       }
@@ -289,10 +296,10 @@
                 }
               }
             }
-            function redrawLines(){
+            function drawLines(){
               d3.select(".diagram").selectAll("g.link").remove();
 
-              var svgLinks = svg.selectAll("g.link").data(linksData);
+              var svgLinks = svgDiagram.selectAll("g.link").data(linksData);
               var link = svgLinks.enter().append("g").classed("link", true);
               link.append("svg:line").classed("link",true).attr("id", function(d) { return d.element.id}).on("click", linkMouseClick);
               link.selectAll("line.link")
@@ -423,7 +430,7 @@
                     elModified: true
                 }
                 );
-                restart(true);
+                drawDiagram(true);
 //                innerLayout.close('south');
               }
               if(actionStates == fennecStates.select){
@@ -453,7 +460,7 @@
                   }else{
                         isKeyShortcutActive = true;
                         deselectTable();
-                        restart(true);
+                        drawDiagram(true);
                   }
                 }
               }
@@ -523,7 +530,7 @@
                       }
                   );
                 clearTmpLinks();
-                redrawLines();
+                drawLines();
               }
               changeState(fennecStates.select);
             }
@@ -652,7 +659,7 @@
                       }
                   }
                   if (redraw) {
-                      redrawLines();
+                      drawLines();
                   }
             }
 
