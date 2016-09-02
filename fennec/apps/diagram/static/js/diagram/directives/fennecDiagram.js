@@ -27,7 +27,7 @@
             var diagramDefaultHeight = 2500;
             var resizeRectSize = 12;
             var tableSettings = {
-                titleBox:{height: 25, color: "#0088cc"},
+                titleBox:{height: 25},
                 column: {height: 25,  iconSize: 16, color: "#999999"}
             };
 
@@ -86,9 +86,9 @@
                       .attr('orient', 'auto')
                       .attr('style', 'overflow:visible;');
 
-                      endArrowDef.append('svg:path')
-                      .attr('d', 'M0,-5L10,0L0,5')
-                      .attr('fill', '#000');
+//                      endArrowDef.append('svg:path')
+//                      .attr('d', 'M0,-5L10,0L0,5')
+//                      .attr('fill', '#000');
 
                       endArrowDef.append('text')
                       .attr('style', 'font-weight: bold; font-size:16px')
@@ -179,18 +179,19 @@
               drawTables();
             }
             function drawTables(){
-              // Create table with attributes
+              // Create table with columns
               var svgTables = svgDiagram.selectAll("g.table").data(tablesData);
-              var table = svgTables.enter().append("g").classed("table", true).attr("id", function(d,i) { return "table"+i});
+              var table = svgTables.enter().append("g").classed("table", true).attr("id", function(table,i) { return "table"+i});
               table.append("rect").classed("fennec_table", true).on("click", tableMouseClick);
               table.append("rect").classed("titleBox", true).call(drag);
               table.append("text").classed("name", true).data(tablesData);
-
-              var attributes =  table.append("g").classed("attributes",true).selectAll("attribute").data(function(d) { return d.data.columns});
-              attributes.enter().append("image").classed("attribute", true).attr("id", function(d,i) { return "image"+i}).on("click", mouseClick);
-              var attribute = attributes.enter().append("text").classed("attribute", true).attr("id", function(d,i) { return "attribute"+i}).on("click", mouseClick);
               table.append("rect").classed("resize-icon", true).call(resize);
 
+              var columns =  table.append("g").classed("columns",true).selectAll("column").data(function(table) { return table.data.columns});
+              columns.enter().append("image").classed("column", true).attr("id", function(column,i) { return "image"+i}).on("click", mouseClick);
+              var column = columns.enter().append("text").classed("column", true).attr("id", function(column,i) { return "column"+i}).on("click", mouseClick);
+
+              // t - stands for table
               table.selectAll("rect.fennec_table")
                   .attr({
                     x: function(t) { return t.element.positionX; },
@@ -206,7 +207,7 @@
                     y: function(t) { return t.element.positionY; },
                     width: function(t) { return t.element.width; },
                     height: tableSettings.titleBox.height,
-                    fill: tableSettings.titleBox.color
+                    fill: function(t) { return t.element.color; }
                   });
 
               table.selectAll("text.name")
@@ -219,46 +220,46 @@
                     return t.data.name;
                   });
 
-
-                table.selectAll("image.attribute")
+                // c - column
+                table.selectAll("image.column")
                     .attr({
-                        x: function (d) {
-                            var table = getColumnTable(d.cdata.id);
+                        x: function (c) {
+                            var table = getColumnTable(c.cdata.id);
                             return table.element.positionX + 8;
                         },
-                        y: function (d, i) {
-                            var table = getColumnTable(d.cdata.id);
+                        y: function (c, i) {
+                            var table = getColumnTable(c.cdata.id);
                             return table.element.positionY + 33 + ((i == 0) ? 0 : (20 * i));
                         },
                         height: tableSettings.column.iconSize,
                         width: tableSettings.column.iconSize,
-                        'xlink:href': function (d) {
-                            return d.cdata.primary ? "/static/images/primary-key.png" : "/static/images/blue_circle_icon.png";
+                        'xlink:href': function (c) {
+                            return c.cdata.primary ? "/static/images/primary-key.png" : "/static/images/blue_circle_icon.png";
                         },
-                        opacity: function (d) {
-                            return calculateIfColumnVisible(d.cdata);
+                        opacity: function (c) {
+                            return calculateIfColumnVisible(c.cdata);
                         }
                     });
 
               // TODO: find better way than using getAttributeTableMethod
-              table.selectAll("text.attribute")
+              table.selectAll("text.column")
                   .attr({
-                      x: function (d) {
-                          var table = getColumnTable(d.cdata.id);
+                      x: function (c) {
+                          var table = getColumnTable(c.cdata.id);
                           return table.element.positionX + 25;
                       },
-                      y: function (d, i) {
-                          var table = getColumnTable(d.cdata.id);
+                      y: function (c, i) {
+                          var table = getColumnTable(c.cdata.id);
                           return table.element.positionY + 45 + ((i == 0) ? 0 : (20 * i));
                       },
                       height: tableSettings.column.height,
                       fill: tableSettings.column.color,
-                      opacity: function (d) {
-                          return calculateIfColumnVisible(d.cdata);
+                      opacity: function (c) {
+                          return calculateIfColumnVisible(c.cdata);
                       }
                   })
-                  .text(function(d) {
-                    return  d.cdata.name+ " (" + d.cdata.column_type +")";
+                  .text(function(c) {
+                    return  c.cdata.name+ " (" + c.cdata.column_type +")";
                   });
 
               svgTables.exit().remove();
@@ -326,9 +327,7 @@
 
             // ********* MOUSE EVENTS *********
             function linkMouseClick() {
-                  if (actionStates == fennecStates.drag) {
-                      return;
-                  }
+                  if (actionStates == fennecStates.drag) { return; }
 
                   d3.event.stopPropagation();
                   var rect = d3.select(this);
@@ -402,138 +401,110 @@
               changeState(fennecStates.select);
             }
 
-            function mouseClick() {
-              if(actionStates == fennecStates.drag){return;}
+              function mouseClick() {
+                  if (actionStates == fennecStates.drag) {return;}
 
-              d3.event.stopPropagation();
-              selected_table = d3.select(this.parentNode);
-              var translateCoord = parseTranslateString(selected_table.attr("transform"));
-              var point = d3.mouse(this)
+                  d3.event.stopPropagation(); // Calling stopPropagation will only prevent propagation of a single event at a time
 
-              var mouseClickX = point[0];
-              var mouseClickY = point[1];
-              //$log.debug("mouseClick on x:"+mouseClickX+" y: "+mouseClickY);
-              if(actionStates == fennecStates.new_table){
-                var tableDataId = genGuid();
-                  $log.debug("dir-> mouseClick() => active diagram:"); $log.debug(scope.adiagram);
-                  $log.debug(scope.activeSchema);
-                tablesData.push(
-                  { data:{
-                      id:tableDataId, name:"Table "+(tablesData.length+1),"comment":"no comment","collation":scope.activeSchema.collation,namespaceRef:"",
-                      columns: [],indexes: [],foreignKeys: [],schemaRef:scope.activeSchema.id
-                  },
-                   element:{
-                      id:genGuid(),positionX:mouseClickX,positionY:mouseClickY,width:tableDefaultWidth, height:tableDefaultHeight, tableRef: tableDataId,
-                      diagramRef:scope.adiagram.id, color:"#FFFFFF",collapsed:false
-                  },
-                    dataModified: true,
-                    elModified: true
-                }
-                );
-                drawDiagram(true);
+                  if (actionStates == fennecStates.new_table) {
+                      var point = d3.mouse(this)
+                      var mouseClickX = point[0];
+                      var mouseClickY = point[1];
+                      //$log.debug("mouseClick on x:"+mouseClickX+" y: "+mouseClickY);
+
+                      var tableDataId = genGuid();
+                      $log.debug("dir-> mouseClick() => active diagram:");
+                      $log.debug(scope.adiagram);
+                      $log.debug(scope.activeSchema);
+                      tablesData.push(
+                          { data: {
+                              id: tableDataId, name: "Table " + (tablesData.length + 1), "comment": "no comment", "collation": scope.activeSchema.collation, namespaceRef: "",
+                              columns: [], indexes: [], foreignKeys: [], schemaRef: scope.activeSchema.id
+                          },
+                              element: {
+                                  id: genGuid(), positionX: mouseClickX, positionY: mouseClickY, width: tableDefaultWidth, height: tableDefaultHeight, tableRef: tableDataId,
+                                  diagramRef: scope.adiagram.id, color: activeColor, collapsed: false
+                              },
+                              dataModified: true,
+                              elModified: true
+                          }
+                      );
+                      drawDiagram(true);
 //                innerLayout.close('south');
-              }
-              if(actionStates == fennecStates.select){
-                if(selected_table != null){
-                  var tableData = selected_table.node().__data__;
-                  if(tableData != undefined){
-                    $log.debug("dir-> mouseClick()=> table selected: "+tableData.data.name);
-                    scope.stable = tableData;
-                    // $log.debug(scope.stableForeignKeys);
-
-                    // foreign keys
-                    var fk = [];
-                    for(var i= 0, len = linksData.length; i<len;i++){
-                        var currentLink = linksData[i];
-                        if(currentLink.fk_data.tableRef == tableData.data.id){
-                            var fk_data = {data:currentLink, refTable:getTableForId(currentLink.fk_data.referencedTableRef)};
-                            fk.push(fk_data);
-                        }
-                    }
-                    scope.stableForeignKeys = fk;
-
-                    // indexes
-                    scope.stableIndexes = tableData.data.indexes;
-                    scope.$apply();
-                    //passing value to controller if this directive will be private (zatvoren)
-                    //scope.$emit('selectedTableEvent', tableData );
-                  }else{
-                        isKeyShortcutActive = true;
-                        deselectTable();
-                        drawDiagram(true);
                   }
-                }
-              }
-              if(actionStates == fennecStates.delete_obj){
-                if(selected_table != null){
-                  var tableData = selected_table.node().__data__;
-                  if(tableData != undefined){
-                    $log.debug("dir-> table["+tableData.data.name+"] is deleting");
-                    scope.$emit('deleteTableEvent', tableData );
 
-                  }
-                }
-              }
-              if(actionStates == fennecStates.new_link){
-                // TODO: check is link already exist between table and if exist and direction is opposite then set biDirection to true
-                // TODO: link table to self
-                var selectedAttributeArrays = d3.select(this);                       // [[text#attribute0.attribute]]
-                var tableOfAttrArrays = d3.select(this.parentNode.parentNode);               // [[g#table0.table]]
-                var tableData =tableOfAttrArrays.node().__data__;
-                var columnData = selectedAttributeArrays.node().__data__;  // $log.debug(columnData);
+                  if (actionStates == fennecStates.new_link) {
+                      // TODO: check is link already exist between table and if exist and direction is opposite then set biDirection to true
+                      // TODO: link table to self
+                      var selectedColumnArrays = d3.select(this);                       // [[text#column0.column]]
+                      var tableArrays = d3.select(this.parentNode.parentNode);               // [[g#table0.table]]
+                      var tableData = tableArrays.node().__data__;
+                      var columnData = selectedColumnArrays.node().__data__;  // $log.debug(columnData);
 
-                if(tmpSourceTableLink == null ){
-                  tmpSourceTableLink = {x:0,y:0, table:tableData, attr:columnData};
-                  return;
-                }
-                if(tmpTargetTableLink == null){
-                  tmpTargetTableLink = {x:0,y:0, table:tableData, attr:columnData};
-                }
-               var linkPosition;
-                try {
-                    linkPosition = calculateLinkPosition(tmpSourceTableLink, tmpTargetTableLink);
-                }catch(err){
-                    $log.error("Select correct table columns for link.");
-                    clearTmpLinks();
-                    return;
-                }
-                tmpSourceTableLink = linkPosition.sourceTableLink;
-                tmpTargetTableLink = linkPosition.targetTableLink;
-                // $log.debug("Source("+tmpSourceTableLink.x+","+ tmpSourceTableLink.y+") Target("+tmpTargetTableLink.x+","+tmpTargetTableLink.y+")" );
-
-                  var fk_data_id = genGuid();
-                  linksData.push(
-                      {
-                          fk_data: {
-                              "id":fk_data_id,
-                              "name":"fk_"+tmpSourceTableLink.attr.cdata.name+"_"+tmpTargetTableLink.attr.cdata.name+"1",
-                              "onUpdate":3,
-                              "onDelete":3,
-                              "sourceColumn": tmpSourceTableLink.attr.cdata.id,
-                              "referencedColumn":tmpTargetTableLink.attr.cdata.id,
-                              "tableRef":tmpSourceTableLink.table.data.id,
-                              "referencedTableRef": tmpTargetTableLink.table.data.id
-                          },
-                          element: {
-                              "id":genGuid(),
-                              "startPositionX":tmpSourceTableLink.x,
-                              "startPositionY":tmpSourceTableLink.y,
-                              "endPositionX":tmpTargetTableLink.x,
-                              "endPositionY":tmpTargetTableLink.y,
-                              "drawStyle":0,
-                              "cardinality":1,  // 0-one-to-one,1- one-to-many,2- many-to-one,3- many-to-many
-                              "foreignKeyRef":fk_data_id,
-                              "diagramRef":scope.adiagram.id
-                          },
-                          dataModified: true,
-                          elModified: true
+                      if (tmpSourceTableLink == null) {
+                          tmpSourceTableLink = {x: 0, y: 0, table: tableData, attr: columnData};
+                          return;
                       }
-                  );
-                clearTmpLinks();
-                drawLines();
+                      if (tmpTargetTableLink == null) {
+                          tmpTargetTableLink = {x: 0, y: 0, table: tableData, attr: columnData};
+                      }
+                      var linkPosition;
+                      try {
+                          linkPosition = calculateLinkPosition(tmpSourceTableLink, tmpTargetTableLink);
+                      } catch (err) {
+                          $log.error("Select correct table columns for link.");
+                          clearTmpLinks();
+                          return;
+                      }
+                      tmpSourceTableLink = linkPosition.sourceTableLink;
+                      tmpTargetTableLink = linkPosition.targetTableLink;
+                      // $log.debug("Source("+tmpSourceTableLink.x+","+ tmpSourceTableLink.y+") Target("+tmpTargetTableLink.x+","+tmpTargetTableLink.y+")" );
+
+                      var fk_data_id = genGuid();
+                      linksData.push(
+                          {
+                              fk_data: {
+                                  "id": fk_data_id,
+                                  "name": "fk_" + tmpSourceTableLink.attr.cdata.name + "_" + tmpTargetTableLink.attr.cdata.name + "1",
+                                  "onUpdate": 3,
+                                  "onDelete": 3,
+                                  "sourceColumn": tmpSourceTableLink.attr.cdata.id,
+                                  "referencedColumn": tmpTargetTableLink.attr.cdata.id,
+                                  "tableRef": tmpSourceTableLink.table.data.id,
+                                  "referencedTableRef": tmpTargetTableLink.table.data.id
+                              },
+                              element: {
+                                  "id": genGuid(),
+                                  "startPositionX": tmpSourceTableLink.x,
+                                  "startPositionY": tmpSourceTableLink.y,
+                                  "endPositionX": tmpTargetTableLink.x,
+                                  "endPositionY": tmpTargetTableLink.y,
+                                  "drawStyle": 0,
+                                  "cardinality": 1,  // 0-one-to-one,1- one-to-many,2- many-to-one,3- many-to-many
+                                  "foreignKeyRef": fk_data_id,
+                                  "diagramRef": scope.adiagram.id
+                              },
+                              dataModified: true,
+                              elModified: true
+                          }
+                      );
+                      clearTmpLinks();
+                      drawLines();
+                  }
+
+                  selected_table = d3.select(this.parentNode); // get table if there is in click position
+                  if (actionStates == fennecStates.select) {
+                      if (selected_table != null) {
+                          var tableData = selected_table.node().__data__;
+                          if (tableData == undefined) {
+                              isKeyShortcutActive = true;
+                              deselectTable();
+                              drawDiagram(true);
+                          }
+                      }
+                  }
+                  changeState(fennecStates.select);
               }
-              changeState(fennecStates.select);
-            }
 
             function deselectTable() {
                   $timeout(function () {
@@ -801,13 +772,13 @@
               var attrNumber =tableAttributes.length;
               //attribute0, attribute1, image0, image1
               for (var i = attrNumber-1; i>= 0; i--) {
-                 // Note: when select attribute(child element) from resizeTableObject, the data will be inherited from parent object in this case from table, we lose attribute data
-                // to fix this d3 logic :), add attribute data here ( this is how d3 work, it is build to inherit all data from parent to childs because of data consistency)
+                 // Note: when select column(child element) from resizeTableObject, the data will be inherited from parent object in this case from table, we lose column data
+                // to fix this d3 logic :), add column data here ( this is how d3 work, it is build to inherit all data from parent to childs because of data consistency)
                 // icon in front of the text
                 var imgAttrObjArray = resizeTableObject.select("#image"+i).data($(tableAttributes[i]));
                 tableAttributesObjects.push(imgAttrObjArray);
                 // text
-                var textAttrObjArray = resizeTableObject.select("#attribute"+i).data($(tableAttributes[i]));
+                var textAttrObjArray = resizeTableObject.select("#column"+i).data($(tableAttributes[i]));
                 tableAttributesObjects.push(textAttrObjArray);
               }
               for(var i= 0, len = tableAttributesObjects.length; i<len; i++){
